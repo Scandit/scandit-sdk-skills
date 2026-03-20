@@ -1,0 +1,86 @@
+{
+  "skills": ["data-capture-sdk"],
+  "evals": [
+    {
+      "id": 1,
+      "query": "I need to add barcode scanning to my iOS app. Which Scandit product should I use?",
+      "expected_behavior": [
+        "Asks whether the user needs single or multi-barcode scanning",
+        "Does NOT recommend a specific product without first asking clarifying questions",
+        "Does NOT include code snippets"
+      ]
+    },
+    {
+      "id": 2,
+      "query": "I'm building an iOS app for warehouse receiving. Workers need to scan one barcode at a time. I want fast integration with minimal code.",
+      "expected_behavior": [
+        "Recommends SparkScan as the primary product",
+        "Suggests invoking the sparkscan-ios skill for implementation",
+        "Includes a docs.scandit.com link for SparkScan",
+        "Does NOT include code snippets"
+      ]
+    },
+    {
+      "id": 3,
+      "query": "I need to scan shipping labels. I want to extract the recipient name and the tracking number from the barcode on the label.",
+      "expected_behavior": [
+        "Recommends Smart Label Capture as the primary product",
+        "Mentions it is the only Scandit product with OCR capability",
+        "Does NOT recommend Barcode Capture or SparkScan as the primary option"
+      ]
+    },
+    {
+      "id": 4,
+      "query": "I'm choosing a Scandit product for my warehouse app. Before I decide, how much does the Scandit SDK cost?",
+      "expected_behavior": [
+        "Does NOT provide specific pricing information or estimates",
+        "Directs the user to contact Scandit sales, providing a link or URL for contacting sales",
+        "Offers to help with product selection for the warehouse use case"
+      ]
+    },
+    {
+      "id": 5,
+      "query": "I need to count inventory items by scanning multiple barcodes at once and verifying them against a manifest. I'm building an Android app.",
+      "expected_behavior": [
+        "Recommends MatrixScan Count or BarcodeCount as the matching product",
+        "Directs the user to contact Scandit support before starting integration",
+        "May provide docs or sample links for reference",
+        "Does NOT encourage the user to start implementing directly",
+        "Does NOT include code snippets"
+      ]
+    },
+    {
+      "id": 6,
+      "query": "I want to integrate barcode scanning into my Android app but I need full control over the scanning UI — custom layout, custom animations, the works. Single barcode at a time is fine.",
+      "expected_behavior": [
+        "Recommends Barcode Capture as the primary product",
+        "Mentions that Barcode Capture and SparkScan share the same scanning engine, symbologies, and AI features",
+        "Mentions SparkScan as an alternative if the user would accept a pre-built UI",
+        "Includes a docs.scandit.com link for Barcode Capture",
+        "Does NOT include code snippets"
+      ]
+    },
+    {
+      "id": 7,
+      "query": "I'm building an onboarding flow for a fintech app and need to scan passports and driver's licenses to extract user data. We're targeting iOS and web.",
+      "expected_behavior": [
+        "Recommends ID Capture as the product",
+        "Mentions scanning zones (MRZ for passports, barcode for US driver's licenses, or VIZ) or scanner types (SingleSideScanner, FullDocumentScanner)",
+        "For web, mentions ID Bolt as the recommended integration path",
+        "Includes docs.scandit.com links for ID Capture",
+        "Does NOT include code snippets"
+      ]
+    },
+    {
+      "id": 8,
+      "query": "We use a legacy warehouse management system that we can't modify. Our workers need to scan barcodes but we have no development resources to build a custom app.",
+      "expected_behavior": [
+        "Recommends Scandit Express as the solution",
+        "Explains that Express works without code changes to the existing system",
+        "Mentions at least one data output method (keyboard wedge, intents, or web app connection)",
+        "Does NOT recommend SDK integration or Barcode Capture as the primary option",
+        "Does NOT include code snippets"
+      ]
+    }
+  ]
+}
