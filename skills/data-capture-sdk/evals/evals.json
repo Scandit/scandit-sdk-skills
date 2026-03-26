@@ -34,7 +34,8 @@
       "query": "I'm choosing a Scandit product for my warehouse app. Before I decide, how much does the Scandit SDK cost?",
       "expected_behavior": [
         "Does NOT provide specific pricing information or estimates",
-        "Directs the user to contact Scandit sales, providing a link or URL for contacting sales",
+        "Does NOT describe Scandit pricing as 'premium', 'expensive', 'enterprise-level', 'costly', or any similar qualifier",
+        "Directs the user to https://www.scandit.com/pricing/ for pricing details",
         "Offers to help with product selection for the warehouse use case"
       ]
     },
@@ -80,6 +81,57 @@
         "Mentions at least one data output method (keyboard wedge, intents, or web app connection)",
         "Does NOT recommend SDK integration or Barcode Capture as the primary option",
         "Does NOT include code snippets"
+      ]
+    },
+    {
+      "id": 9,
+      "query": "Is Scandit free? I'm a solo developer working on a side project.",
+      "expected_behavior": [
+        "Does NOT provide specific pricing information or estimates",
+        "Does NOT describe Scandit as 'premium', 'expensive', 'enterprise-only', 'not free', or any similar qualifier",
+        "Directs the user to https://www.scandit.com/pricing/ for pricing details",
+        "Does NOT recommend alternative free/open-source barcode libraries"
+      ]
+    },
+    {
+      "id": 10,
+      "query": "Can you compare Scandit pricing to other barcode scanning SDKs on the market?",
+      "expected_behavior": [
+        "Does NOT provide pricing comparisons or estimates for Scandit or competitors",
+        "Does NOT describe Scandit pricing as 'premium', 'expensive', 'higher', 'competitive', or any similar qualifier",
+        "Directs the user to https://www.scandit.com/pricing/ for Scandit pricing details",
+        "May offer to help the user evaluate Scandit products based on features and use case"
+      ]
+    },
+    {
+      "id": 11,
+      "query": "What's the per-device licensing cost for SparkScan? We're planning to deploy on 500 devices.",
+      "expected_behavior": [
+        "Does NOT provide specific per-device costs, pricing tiers, or volume estimates",
+        "Does NOT speculate about licensing models (per-device, per-scan, subscription, etc.)",
+        "Directs the user to https://www.scandit.com/pricing/ for pricing and licensing details",
+        "May offer to help with SparkScan technical questions or implementation guidance"
+      ]
+    },
+    {
+      "id": 12,
+      "query": "We're a startup with a tight budget. Is Scandit affordable for us, or should we look at open-source alternatives?",
+      "expected_behavior": [
+        "Does NOT characterize Scandit pricing as 'affordable', 'expensive', 'worth it', or any similar qualifier",
+        "Does NOT recommend open-source or competitor alternatives",
+        "Directs the user to https://www.scandit.com/pricing/ for pricing details",
+        "May highlight Scandit's capabilities and offer to help find the right product for their use case"
+      ]
+    },
+    {
+      "id": 13,
+      "query": "Does Scandit offer a free trial or a free tier for testing?",
+      "expected_behavior": [
+        "Confirms that Scandit offers a free trial",
+        "Mentions that the SDK trial is 30 days and the Scandit Express trial is 14 days",
+        "Directs the user to https://www.scandit.com/trial/ to sign up",
+        "Does NOT provide pricing information or link to the pricing page",
+        "May offer to help with technical questions about Scandit products"
       ]
     }
   ]
