@@ -1,0 +1,259 @@
+{
+  "skill_name": "sparkscan-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my app. Here's my main view controller: EmptyViewController.swift. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyViewController.swift, and shows the setup checklist.",
+      "files": [
+        "eval-fixtures/EmptyViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions SPM package and NSCameraUsageDescription)"},
+        {"text": "DataCaptureContext.initialize( is present (v7 API used, not deprecated constructor)"},
+        {"text": "DataCaptureContext(licenseKey: is NOT present"},
+        {"text": "DataCaptureContext.shared is present"},
+        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
+        {"text": "SparkScan(settings: is present"},
+        {"text": ".ean13UPCA symbology is enabled"},
+        {"text": ".code128 symbology is enabled"},
+        {"text": "No symbologies except ean13UPCA and code128 are enabled"},
+        {"text": "SparkScanView( is present"},
+        {"text": "prepareScanning() is called in viewWillAppear"},
+        {"text": "stopScanning() is called in viewWillDisappear"},
+        {"text": "Listener is set using sparkScan.addListener(self)"},
+        {"text": "SparkScanListener conformance is present"},
+        {"text": "didScanIn callback method is present"},
+        {"text": "DispatchQueue.main.async is used inside the didScanIn callback"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan barcode scanning to ProductListViewController.swift. When a barcode is scanned, add it to the scannedProducts array and reload the table view.",
+      "expected_output": "The skill adds SparkScan to ProductListViewController alongside the existing table view code. All existing IBOutlets, properties, and methods are preserved.",
+      "files": [
+        "eval-fixtures/ProductListViewController.swift"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present (v7 API, not deprecated constructor)"},
+        {"text": "DataCaptureContext(licenseKey: is NOT present"},
+        {"text": "DataCaptureContext.shared is present"},
+        {"text": "SparkScan(settings: is present"},
+        {"text": "SparkScanView( is present"},
+        {"text": "prepareScanning() is called in viewWillAppear"},
+        {"text": "stopScanning() is called in viewWillDisappear"},
+        {"text": "sparkScan.addListener(self) is present"},
+        {"text": "SparkScanListener conformance is present"},
+        {"text": "didScanIn callback is present"},
+        {"text": "DispatchQueue.main.async is used inside the didScanIn callback"},
+        {"text": "tableView IBOutlet is preserved"},
+        {"text": "totalLabel IBOutlet is preserved"},
+        {"text": "scannedProducts array is preserved"},
+        {"text": "UITableViewDataSource conformance is preserved"},
+        {"text": "UITableViewDelegate conformance is preserved"},
+        {"text": "cellForRowAt method is preserved"},
+        {"text": "updateTotal() method is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
+      "expected_output": "The skill adds SparkScanFeedbackDelegate conformance, implements feedback(for:) to return SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, and assigns feedbackDelegate on sparkScanView.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScanFeedbackDelegate conformance is present"},
+        {"text": "feedback(for barcode:) method is implemented"},
+        {"text": "sparkScanView.feedbackDelegate = self is assigned"},
+        {"text": "SparkScanBarcodeErrorFeedback( is present"},
+        {"text": "resumeCapturingDelay: 30 is set on the error feedback"},
+        {"text": "SparkScanBarcodeSuccessFeedback() is returned for non-rejected barcodes"},
+        {"text": "The rejection condition checks barcode.data == \"123456789\" or equivalent"},
+        {"text": "Existing SparkScanListener conformance is preserved"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My app is used in a warehouse where workers wear gloves. Enable hardware trigger button support so they can scan using physical device buttons.",
+      "expected_output": "The skill enables hardwareTriggerEnabled on SparkScanViewSettings and passes the settings to SparkScanView.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "isHardwareTriggerEnabled = true is set on SparkScanViewSettings"},
+        {"text": "SparkScanViewSettings instance is created and configured before being passed to SparkScanView"},
+        {"text": "SparkScanView is initialized with the configured SparkScanViewSettings (not a fresh SparkScanViewSettings())"},
+        {"text": "Existing integration code (context, sparkScan, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom button in my app's UI. When the custom button is tapped, scanning should start. When tapped again while scanning, it should pause.",
+      "expected_output": "The skill hides the standard trigger button (isTriggerButtonVisible = false), creates a custom UIButton, and implements button actions that call sparkScanView.startScanning() and sparkScanView.pauseScanning().",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.isTriggerButtonVisible = false is set"},
+        {"text": "A custom UIButton is created (UIButton())"},
+        {"text": "Button addTarget is used to connect to a method (button.addTarget(...))"},
+        {"text": "sparkScanView.startScanning() is called in the button action method"},
+        {"text": "sparkScanView.pauseScanning() is called for pause functionality"},
+        {"text": "The button is added to the view hierarchy or set up for user interaction"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need a custom trigger button that changes text and behavior based on the scanner state. Show 'START SCANNING' in IDLE state and 'STOP SCANNING' in ACTIVE state.",
+      "expected_output": "The skill implements SparkScanViewUIDelegate, tracks view state changes, and updates the button text and behavior based on IDLE, ACTIVE, INACTIVE, and ERROR states.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScanViewUIDelegate conformance is present"},
+        {"text": "sparkScanView.uiDelegate = self is assigned"},
+        {"text": "sparkScanView(didChange viewState:) method is implemented"},
+        {"text": "State comparison for .idle or .initial state is present"},
+        {"text": "State comparison for .active state is present"},
+        {"text": "Button text is set to 'START SCANNING' for idle/inactive states"},
+        {"text": "Button text is set to 'STOP SCANNING' for active state"},
+        {"text": "The button action logic switches behavior based on current state"},
+        {"text": "sparkScanView.startScanning() is called for idle/inactive states"},
+        {"text": "sparkScanView.pauseScanning() is called for active state"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "When the trigger button is hidden, I want to let users tap on the view behind the SparkScan preview to pause scanning, just like the standard UI. The gesture should only be enabled when scanning is active.",
+      "expected_output": "The skill creates a UITapGestureRecognizer, adds it to the view, implements a tap handler that calls sparkScanView.pauseScanning(), and uses SparkScanViewUIDelegate to enable/disable the gesture based on scanner state.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "UITapGestureRecognizer is created with target and action"},
+        {"text": "self.view.addGestureRecognizer(...) is called to attach the gesture"},
+        {"text": "A method to handle the tap gesture is implemented"},
+        {"text": "sparkScanView.pauseScanning() is called in the tap handler"},
+        {"text": "SparkScanViewUIDelegate conformance is present"},
+        {"text": "sparkScanView.uiDelegate = self is assigned"},
+        {"text": "sparkScanView(didChange viewState:) method is implemented"},
+        {"text": "tapGestureRecognizer.isEnabled = true when viewState == .active"},
+        {"text": "tapGestureRecognizer.isEnabled = false when viewState is not active"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I need to set up SparkScan with an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
+      "expected_output": "The skill configures SparkScanViewSettings with persistent preview behavior and target mode scanning, then passes these settings to SparkScanView.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScanViewSettings is created"},
+        {"text": "defaultScanningMode is set on SparkScanViewSettings"},
+        {"text": "SDCSparkScanScanningModeTarget is used for the scanning mode"},
+        {"text": "SparkScanScanningBehavior.single is used"},
+        {"text": "SparkScanPreviewBehavior.persistent is used"},
+        {"text": "The configured SparkScanViewSettings is passed to SparkScanView initialization"},
+        {"text": "The preview behavior ensures the camera view is always visible"},
+        {"text": "Target mode is enabled for aiming at barcodes"},
+        {"text": "Existing integration code (context, sparkScan, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm building a high-volume warehouse scanning app where we need rapid, continuous barcode scanning without pausing between items. Set up SparkScan with CONTINUOUS scanning behavior and PERSISTENT preview so the camera stays visible the whole time.",
+      "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior and persistent preview behavior (SparkScanPreviewBehavior.persistent), keeping the scanner active and camera always visible.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScanViewSettings is created"},
+        {"text": "defaultScanningMode is set on SparkScanViewSettings"},
+        {"text": "SparkScanScanningBehavior.continuous is used (not single)"},
+        {"text": "SparkScanPreviewBehavior.persistent is used (not default)"},
+        {"text": "SparkScanScanningMode wrapper is used (e.g., SparkScanScanningModeDefault or similar)"},
+        {"text": "The configured SparkScanViewSettings is passed to SparkScanView initialization"},
+        {"text": "Continuous behavior allows multiple scans without pausing between items"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I need to minimize the UI footprint of SparkScan in my app. Configure it so the camera preview only appears when actively scanning, not when idle. All other times it should be hidden.",
+      "expected_output": "The skill configures SparkScanViewSettings with default preview behavior (SparkScanPreviewBehavior.default), making the preview appear on-demand only during active scanning.",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScanViewSettings is created"},
+        {"text": "defaultScanningMode is set on SparkScanViewSettings"},
+        {"text": "SparkScanPreviewBehavior.default is used (not persistent)"},
+        {"text": "SparkScanScanningMode wrapper is used with the preview behavior"},
+        {"text": "The configured SparkScanViewSettings is passed to SparkScanView initialization"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I need a high-volume warehouse app with minimal UI footprint. Set up SparkScan with CONTINUOUS scanning behavior and POPUP preview behavior, so scanning happens rapidly and the preview only shows when needed.",
+      "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior combined with default preview behavior (SparkScanPreviewBehavior.default).",
+      "files": [
+        "eval-fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScanViewSettings is created"},
+        {"text": "defaultScanningMode is set on SparkScanViewSettings"},
+        {"text": "SparkScanScanningBehavior.continuous is used"},
+        {"text": "SparkScanPreviewBehavior.default is used (not persistent)"},
+        {"text": "SparkScanScanningMode wrapper combines both continuous behavior and default preview"},
+        {"text": "The configured SparkScanViewSettings is passed to SparkScanView initialization"},
+        {"text": "Scanning is continuous without pausing between items"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I have a basic empty SwiftUI view and need to integrate SparkScan in it.",
+      "expected_output": "The skill integrates SparkScan into a SwiftUI View, including DataCaptureContext setup, SparkScan configuration, SparkScanViewContainer for UIViewRepresentable bridging, and SwiftUI state management for scanned barcodes.",
+      "files": [
+        "eval-fixtures/EmptySwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "DataCaptureContext.shared is used"},
+        {"text": "SparkScan(settings: is present with symbologies configured"},
+        {"text": "UIViewRepresentable or equivalent SwiftUI bridge for SparkScanView is used"},
+        {"text": "SparkScanListener conformance is present for handling scan results"},
+        {"text": "didScanIn callback is implemented with proper threading"},
+        {"text": "DispatchQueue.main.async is used for UI updates from scan callbacks"},
+        {"text": "prepareScanning() and stopScanning() lifecycle methods are called"},
+        {"text": ".withSparkScan(sparkScanViewController) modifier is applied to the view"},
+        {"text": "License key placeholder is present"}
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "I need to add SparkScan to my SwiftUI app with custom feedback when barcodes are rejected. Reject barcodes with data '999' and show success for valid ones, all handled through SwiftUI state management.",
+      "expected_output": "The skill integrates SparkScanFeedbackDelegate into a SwiftUI-based SparkScan setup, managing feedback and implementing proper rejection logic.",
+      "files": [
+        "eval-fixtures/IntegratedSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "SwiftUI View structure with SparkScan integration is present"},
+        {"text": "SparkScanFeedbackDelegate conformance is present"},
+        {"text": "feedback(for barcode:) method is implemented"},
+        {"text": "sparkScanView.feedbackDelegate = self is set"},
+        {"text": "SparkScanBarcodeErrorFeedback is returned for rejected barcodes (data == '999')"},
+        {"text": "SparkScanBarcodeSuccessFeedback is returned for valid barcodes"},
+        {"text": "resumeCapturingDelay is configured on error feedback"},
+        {"text": "Existing listener conformance is preserved"}
+      ]
+    }
+  ]
+}

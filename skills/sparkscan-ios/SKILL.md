@@ -4,7 +4,7 @@ description: Guide for SparkScan on iOS using the Scandit Data Capture SDK. Use 
 license: MIT
 metadata:
   author: scandit
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # SparkScan iOS Skill
@@ -13,16 +13,20 @@ metadata:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan") → read `references/integration.md` and follow the instructions there.
+- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan", "how do I handle feedback in SparkScan") → read `references/integration.md` and follow the instructions there.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
-Only use APIs that are explicitly documented in the Scandit references listed below. Do not invent or guess method signatures, parameters, or view modifiers. If you are not certain an API exists or how it is called, fetch the relevant reference page first. If a compile error occurs, fetch the API reference to find the correct API before attempting a fix.
+Only use APIs that are explicitly documented in the Scandit references below. Do not invent or guess method signatures, parameters, or view modifiers. If unsure whether an API exists or how it is called — or if a compile error occurs — fetch the relevant reference page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
+
+**Never construct or guess documentation URLs.** When you need a specific class or property's API page:
+1. First check whether the page you already fetched (e.g. the Advanced Configurations page) contains a direct hyperlink to it — topic pages link directly to relevant API symbols. Always request links alongside content in your fetch prompt.
+2. If no direct link was found, fetch the API index (see **Full API reference** in the table below), extract the actual link from it, and follow that.
+
+URL structures can vary (e.g. `api/ui/` subdirectory) and guessing will lead to 404s.
 
 ## References
-
-If you are unsure whether a specific SparkScan behavior or feature is supported, or if a compile error indicates a wrong API, fetch the relevant page from the table below before responding. Do not tell the user to check the docs themselves — look it up first. After answering, always include the relevant link so the user can explore further details if they want.
 
 Direct users to the right resource based on their question:
 

@@ -25,7 +25,7 @@ After providing the code, show this setup checklist:
 2. Make sure you have `NSCameraUsageDescription` added to your `Info.plist`
 3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
 
-The code example below is for UIKit. If the user is using SwiftUI, refer them to the SwiftUI get-started guide and sample instead (see References).
+The code example below is for UIKit. If the user is using SwiftUI, use the SwiftUI get-started guide and sample instead (see References).
 
 ```swift
 import ScanditBarcodeCapture
