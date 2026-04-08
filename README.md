@@ -4,6 +4,18 @@ AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scan
 
 ## Install
 
+### Claude Code
+
+```
+/plugin install scandit-sdk@scandit-plugins
+```
+
+### Cursor
+
+Search for **Scandit SDK** in the Cursor plugin marketplace, or install from Settings > Plugins.
+
+### Skills CLI (40+ agents)
+
 ```bash
 npx skills add Scandit/scandit-sdk-skills
 ```
