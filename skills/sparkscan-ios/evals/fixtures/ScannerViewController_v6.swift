@@ -45,7 +45,6 @@ class ViewController: UIViewController {
             settings: viewSettings
         )
 
-        // v6 SparkScanView properties (set on the view after creation)
         sparkScanView.isTorchButtonVisible = true
         sparkScanView.captureButtonBackgroundColor = .blue
         sparkScanView.captureButtonTintColor = .white

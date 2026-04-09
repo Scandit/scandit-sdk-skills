@@ -1,6 +1,6 @@
 ---
 name: sparkscan-ios
-description: Guides SparkScan integration and migration on iOS using the Scandit Data Capture SDK. Triggers when a developer asks how to add SparkScan to an iOS app, set up barcode scanning, handle scan results, or migrate/upgrade an existing SparkScan integration from one SDK version to another.
+description: Use when SparkScan is involved in an iOS project — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new iOS app, modifying scan settings, handling scan results, customizing the SparkScan UI, upgrading between SDK versions, or troubleshooting SparkScan behavior. If the project is iOS and SparkScan is in play, use this skill.
 license: MIT
 metadata:
   author: scandit

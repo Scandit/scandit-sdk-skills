@@ -1,6 +1,6 @@
 ---
 name: data-capture-sdk
-description: Expert guide for the Scandit Data Capture SDK. Helps users choose the right Scandit product (SparkScan, Barcode Capture, MatrixScan, Smart Label Capture, ID Capture, etc.), points to the correct documentation and sample apps for their platform, and hands off to implementation skills. Triggers when a user mentions Scandit, data capture SDK, barcode scanning products, smart data capture, choosing a scanning product, comparing scanning features, supported barcode symbologies, system requirements, device compatibility, or Scandit pricing.
+description: Use when a user mentions Scandit, data capture SDK, barcode scanning products, smart data capture, choosing a scanning product, comparing scanning features, supported barcode symbologies, system requirements, device compatibility, or Scandit pricing. Helps choose the right Scandit product (SparkScan, Barcode Capture, MatrixScan, Smart Label Capture, ID Capture, etc.), points to the correct documentation and sample apps for their platform, and hands off to implementation skills.
 license: MIT
 metadata:
   author: scandit
