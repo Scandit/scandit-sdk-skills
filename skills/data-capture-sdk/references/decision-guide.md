@@ -4,6 +4,16 @@ Follow this qualification flow when helping a user choose a Scandit product. Ask
 
 **Keep it conversational.** Ask one or two questions at a time — do not present all options upfront. If the user's request is vague, start by asking them to describe their task or workflow in their own words rather than presenting technical categories they may not be familiar with.
 
+**Confidence shortcut.** If the user's description already contains enough detail to confidently match a Q5 workflow (count-and-verify, search-and-find, batch capture, or custom AR overlays), skip Q1–Q4 and go directly to the product recommendation. Then ask Q6 (platform) to provide the right docs and sample links. Examples of clear signals:
+- "count inventory and compare against a manifest/expected list" → MatrixScan Count
+- "find/locate a specific item among many", "highlight the right package" → MatrixScan Find
+- "scan all barcodes into a list", "proof of delivery batch" → MatrixScan Batch
+- "overlay custom info on each barcode", "show price/expiry on each item" → MatrixScan AR
+
+When the workflow could plausibly match more than one Q5 product, ask one targeted clarifying question to disambiguate rather than guessing. For example, high-volume receiving could be either MatrixScan Batch (capture all barcodes into a list) or MatrixScan Count (scan and verify against a manifest) — ask whether they need to verify scanned items against an expected shipment list, or just capture everything as fast as possible. One question is enough to resolve the ambiguity; don't over-qualify beyond that.
+
+Only fall back to Q1–Q4 when the request is genuinely ambiguous or could match multiple products.
+
 ## Qualification Flow
 
 ### Q0: Can you describe what you're trying to do?

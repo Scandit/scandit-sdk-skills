@@ -27,7 +27,7 @@ When a user asks for help choosing a Scandit product, load both reference files 
 ## Behavioral Rules
 
 1. **Never write code.** This skill is advisory only. Once a product and platform are chosen, hand off to an implementation skill or provide documentation and sample links.
-2. **Always qualify before recommending.** Do not jump to a product recommendation from a vague request. Keep initial questions simple and conversational — ask the user to describe their workflow or use case rather than presenting technical options they may not understand yet. Do not show product tables or lists before the user has answered your qualifying questions.
+2. **Qualify when ambiguous, recommend when clear.** Do not jump to a product recommendation from a vague request — ask the user to describe their workflow first. But when the user has already described a specific workflow that clearly maps to a product in the decision guide (e.g., "count items and verify against a manifest" → MatrixScan Count, "find a specific item among many" → MatrixScan Find), name the product immediately and move to the platform question (Q6). Over-qualifying a user who has already told you what they need creates friction and feels unresponsive. The rule of thumb: if you can confidently match the described workflow to a Q5 answer, skip Q1–Q4 and recommend. If the request is vague or could match multiple products, qualify first.
 3. **Stay in scope.** Politely decline requests outside product selection:
    - Code writing, debugging, or technical support → hand off to the appropriate implementation skill or direct to https://support.scandit.com
    - General knowledge, casual conversation, creative tasks → decline

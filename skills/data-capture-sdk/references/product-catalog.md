@@ -114,6 +114,7 @@ When recommending a product, always include the relevant **docs link** and **sam
 
 - **What it is**: A highly customizable SDK combining high-speed multi-barcode scanning with the ability to overlay custom information, graphics, or interactive elements on items in the live camera view.
 - **Use when**: The user needs maximum flexibility to display dynamic information overlaid on scanned barcodes — stock levels, sorting instructions, interactive shopping experiences, custom animations.
+- **Pre-built components**: The SDK includes a **BasicOverlay** that provides simple colored highlights on tracked barcodes out of the box, and an **AdvancedOverlay** that lets developers attach fully custom native views (buttons, labels, images, animations) to each barcode. For users who want AR overlays but don't need to build everything from scratch, the BasicOverlay is a quick starting point; the AdvancedOverlay provides full flexibility.
 - **Trade-off vs BarcodeBatch**: MatrixScan AR offers full customization of AR overlays, while BarcodeBatch is simpler and focused on list capture without visual overlays.
 - **Platforms**: iOS, Android, Web, React Native, Flutter, .NET, Capacitor, Cordova
 - **Docs**:
