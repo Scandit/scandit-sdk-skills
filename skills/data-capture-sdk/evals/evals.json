@@ -1,0 +1,284 @@
+{
+  "skill_name": "data-capture-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to add barcode scanning to my iOS app. Which Scandit product should I use?",
+      "expected_output": "Asks whether the user needs single or multi-barcode scanning. Does NOT recommend a specific product without first asking clarifying questions. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Asks whether the user needs single or multi-barcode scanning"},
+        {"type": "content_check", "text": "Does NOT recommend a specific product without first asking clarifying questions"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building an iOS app for warehouse receiving. Workers need to scan one barcode at a time. I want fast integration with minimal code.",
+      "expected_output": "Recommends SparkScan as the primary product. Suggests invoking the sparkscan-ios skill for implementation. Includes a docs.scandit.com link for SparkScan. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends SparkScan as the primary product"},
+        {"type": "content_check", "text": "Suggests invoking the sparkscan-ios skill for implementation"},
+        {"type": "content_check", "text": "Includes a docs.scandit.com link for SparkScan"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need to scan shipping labels. I want to extract the recipient name and the tracking number from the barcode on the label.",
+      "expected_output": "Recommends Smart Label Capture as the primary product. Mentions it is the only Scandit product with OCR capability. Does NOT recommend Barcode Capture or SparkScan as the primary option.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends Smart Label Capture as the primary product"},
+        {"type": "content_check", "text": "Mentions it is the only Scandit product with OCR capability"},
+        {"type": "content_check", "text": "Does NOT recommend Barcode Capture or SparkScan as the primary option"}
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "I'm choosing a Scandit product for my warehouse app. Before I decide, how much does the Scandit SDK cost?",
+      "expected_output": "Does NOT provide specific pricing information or estimates. Does NOT describe Scandit pricing as 'premium', 'expensive', 'enterprise-level', 'costly', or any similar qualifier. Directs the user to https://www.scandit.com/pricing/ for pricing details. Offers to help with product selection for the warehouse use case.",
+      "assertions": [
+        {"type": "content_check", "text": "Does NOT provide specific pricing information or estimates"},
+        {"type": "content_check", "text": "Does NOT describe Scandit pricing as 'premium', 'expensive', 'enterprise-level', 'costly', or any similar qualifier"},
+        {"type": "content_check", "text": "Directs the user to https://www.scandit.com/pricing/ for pricing details"},
+        {"type": "content_check", "text": "Offers to help with product selection for the warehouse use case"}
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "I need to count inventory items by scanning multiple barcodes at once and verifying them against a manifest. I'm building an Android app.",
+      "expected_output": "Recommends MatrixScan Count or BarcodeCount as the matching product. Directs the user to contact Scandit support before starting integration. May provide docs or sample links for reference. Does NOT encourage the user to start implementing directly. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends MatrixScan Count or BarcodeCount as the matching product"},
+        {"type": "content_check", "text": "Directs the user to contact Scandit support before starting integration"},
+        {"type": "content_check", "text": "Does NOT encourage the user to start implementing directly"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "I want to integrate barcode scanning into my Android app but I need full control over the scanning UI — custom layout, custom animations, the works. Single barcode at a time is fine.",
+      "expected_output": "Recommends Barcode Capture as the primary product. Mentions that Barcode Capture and SparkScan share the same scanning engine, symbologies, and AI features. Mentions SparkScan as an alternative if the user would accept a pre-built UI. Includes a docs.scandit.com link for Barcode Capture. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends Barcode Capture as the primary product"},
+        {"type": "content_check", "text": "Mentions that Barcode Capture and SparkScan share the same scanning engine, symbologies, and AI features"},
+        {"type": "content_check", "text": "Mentions SparkScan as an alternative if the user would accept a pre-built UI"},
+        {"type": "content_check", "text": "Includes a docs.scandit.com link for Barcode Capture"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "I'm building an onboarding flow for a fintech app and need to scan passports and driver's licenses to extract user data. We're targeting iOS and web.",
+      "expected_output": "Recommends ID Capture as the product. Mentions scanning zones (MRZ for passports, barcode for US driver's licenses, or VIZ) or scanner types (SingleSideScanner, FullDocumentScanner). For web, mentions ID Bolt as the recommended integration path. Includes docs.scandit.com links for ID Capture. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends ID Capture as the product"},
+        {"type": "content_check", "text": "Mentions scanning zones (MRZ, barcode, VIZ) or scanner types (SingleSideScanner, FullDocumentScanner)"},
+        {"type": "content_check", "text": "For web, mentions ID Bolt as the recommended integration path"},
+        {"type": "content_check", "text": "Includes docs.scandit.com links for ID Capture"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "We use a legacy warehouse management system that we can't modify. Our workers need to scan barcodes but we have no development resources to build a custom app.",
+      "expected_output": "Recommends Scandit Express as the solution. Explains that Express works without code changes to the existing system. Mentions at least one data output method (keyboard wedge, intents, or web app connection). Does NOT recommend SDK integration or Barcode Capture as the primary option. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends Scandit Express as the solution"},
+        {"type": "content_check", "text": "Explains that Express works without code changes to the existing system"},
+        {"type": "content_check", "text": "Mentions at least one data output method (keyboard wedge, intents, or web app connection)"},
+        {"type": "content_check", "text": "Does NOT recommend SDK integration or Barcode Capture as the primary option"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "Is Scandit free? I'm a solo developer working on a side project.",
+      "expected_output": "Does NOT provide specific pricing information or estimates. Does NOT describe Scandit as 'premium', 'expensive', 'enterprise-only', 'not free', or any similar qualifier. Directs the user to https://www.scandit.com/pricing/ for pricing details. Does NOT recommend alternative free/open-source barcode libraries.",
+      "assertions": [
+        {"type": "content_check", "text": "Does NOT provide specific pricing information or estimates"},
+        {"type": "content_check", "text": "Does NOT describe Scandit as 'premium', 'expensive', 'enterprise-only', 'not free', or any similar qualifier"},
+        {"type": "content_check", "text": "Directs the user to https://www.scandit.com/pricing/ for pricing details"},
+        {"type": "content_check", "text": "Does NOT recommend alternative free/open-source barcode libraries"}
+      ],
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Can you compare Scandit pricing to other barcode scanning SDKs on the market?",
+      "expected_output": "Does NOT provide pricing comparisons or estimates for Scandit or competitors. Does NOT describe Scandit pricing as 'premium', 'expensive', 'higher', 'competitive', or any similar qualifier. Directs the user to https://www.scandit.com/pricing/ for Scandit pricing details. May offer to help the user evaluate Scandit products based on features and use case.",
+      "assertions": [
+        {"type": "content_check", "text": "Does NOT provide pricing comparisons or estimates for Scandit or competitors"},
+        {"type": "content_check", "text": "Does NOT describe Scandit pricing as 'premium', 'expensive', 'higher', 'competitive', or any similar qualifier"},
+        {"type": "content_check", "text": "Directs the user to https://www.scandit.com/pricing/ for Scandit pricing details"},
+        {"type": "content_check", "text": "May offer to help the user evaluate Scandit products based on features and use case"}
+      ],
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "What's the per-device licensing cost for SparkScan? We're planning to deploy on 500 devices.",
+      "expected_output": "Does NOT provide specific per-device costs, pricing tiers, or volume estimates. Does NOT speculate about licensing models (per-device, per-scan, subscription, etc.). Directs the user to https://www.scandit.com/pricing/ for pricing and licensing details. May offer to help with SparkScan technical questions or implementation guidance.",
+      "assertions": [
+        {"type": "content_check", "text": "Does NOT provide specific per-device costs, pricing tiers, or volume estimates"},
+        {"type": "content_check", "text": "Does NOT speculate about licensing models (per-device, per-scan, subscription, etc.)"},
+        {"type": "content_check", "text": "Directs the user to https://www.scandit.com/pricing/ for pricing and licensing details"},
+        {"type": "content_check", "text": "May offer to help with SparkScan technical questions or implementation guidance"}
+      ],
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "We're a startup with a tight budget. Is Scandit affordable for us, or should we look at open-source alternatives?",
+      "expected_output": "Does NOT characterize Scandit pricing as 'affordable', 'expensive', 'worth it', or any similar qualifier. Does NOT recommend open-source or competitor alternatives. Directs the user to https://www.scandit.com/pricing/ for pricing details. May highlight Scandit's capabilities and offer to help find the right product for their use case.",
+      "assertions": [
+        {"type": "content_check", "text": "Does NOT characterize Scandit pricing as 'affordable', 'expensive', 'worth it', or any similar qualifier"},
+        {"type": "content_check", "text": "Does NOT recommend open-source or competitor alternatives"},
+        {"type": "content_check", "text": "Directs the user to https://www.scandit.com/pricing/ for pricing details"},
+        {"type": "content_check", "text": "May highlight Scandit's capabilities and offer to help find the right product for their use case"}
+      ],
+      "files": []
+    },
+    {
+      "id": 13,
+      "prompt": "Does Scandit offer a free trial or a free tier for testing?",
+      "expected_output": "Confirms that Scandit offers a free trial. Mentions that the SDK trial is 30 days and the Scandit Express trial is 14 days. Directs the user to https://www.scandit.com/trial/ to sign up. Does NOT provide pricing information or link to the pricing page. May offer to help with technical questions about Scandit products.",
+      "assertions": [
+        {"type": "content_check", "text": "Confirms that Scandit offers a free trial"},
+        {"type": "content_check", "text": "Mentions that the SDK trial is 30 days and the Scandit Express trial is 14 days"},
+        {"type": "content_check", "text": "Directs the user to https://www.scandit.com/trial/ to sign up"},
+        {"type": "content_check", "text": "Does NOT provide pricing information or link to the pricing page"},
+        {"type": "content_check", "text": "May offer to help with technical questions about Scandit products"}
+      ],
+      "files": []
+    },
+    {
+      "id": 14,
+      "prompt": "I'm building a retail app where store associates need to find a specific parcel in a pile of packages at a pickup point. They should point the camera and see the right package highlighted. What Scandit product fits?",
+      "expected_output": "Recommends MatrixScan Find as the primary product. Mentions AR highlighting of the target item among many. May mention PUDO point or parcel location as a known use case. Does NOT recommend MatrixScan Count or SparkScan as the primary option. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends MatrixScan Find as the primary product"},
+        {"type": "content_check", "text": "Mentions AR highlighting of the target item among many"},
+        {"type": "content_check", "text": "Does NOT recommend MatrixScan Count or SparkScan as the primary option"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 15,
+      "prompt": "We run monthly cycle counts across 3 warehouse zones. Currently it takes a full day with handheld scanners. We need to see which items in each zone are present vs missing compared to our inventory system.",
+      "expected_output": "Recommends MatrixScan Count as the primary product. Mentions the ability to compare scanned items against an expected list or inventory system. May mention speed improvements or time savings. Directs the user to contact Scandit support before starting integration. Does NOT recommend SparkScan or Barcode Capture as the primary option. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends MatrixScan Count as the primary product"},
+        {"type": "content_check", "text": "Mentions comparing scanned items against an expected list or inventory system"},
+        {"type": "content_check", "text": "Directs the user to contact Scandit support before starting integration"},
+        {"type": "content_check", "text": "Does NOT recommend SparkScan or Barcode Capture as the primary option"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 16,
+      "prompt": "I want to scan multiple barcodes at once and show custom information overlaid on each barcode — like price, expiry date, or product name pulled from our database. Full control over the AR UI is important.",
+      "expected_output": "Recommends MatrixScan AR as the primary approach. Mentions that this requires custom AR integration for full flexibility. May mention pre-built components offered within the API which can be used out of the box. Does NOT recommend MatrixScan Count or MatrixScan Find as the primary option. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends MatrixScan AR as the primary approach"},
+        {"type": "content_check", "text": "Mentions that this requires custom AR integration for full flexibility"},
+        {"type": "content_check", "text": "May mention pre-built components offered within the API which can be used out of the box"},
+        {"type": "content_check", "text": "Does NOT recommend MatrixScan Count or MatrixScan Find as the primary option"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 17,
+      "prompt": "I need to capture multiple barcodes in one session for proof of delivery — scan all packages in a batch and export the list. No AR needed.",
+      "expected_output": "Recommends MatrixScan Batch as the primary product. Mentions batch capture capability. Mentions proof of delivery as a known use case. Does NOT recommend MatrixScan Find or MatrixScan Pick as the primary option. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends MatrixScan Batch as the primary product"},
+        {"type": "content_check", "text": "Mentions batch capture capability"},
+        {"type": "content_check", "text": "Mentions proof of delivery as a known use case"},
+        {"type": "content_check", "text": "Does NOT recommend MatrixScan Find or MatrixScan Pick as the primary option"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 18,
+      "prompt": "We're an e-commerce retailer and need our in-store pickers to fulfill online orders faster. They currently walk the aisles with a paper list and it's slow and error-prone.",
+      "expected_output": "Recommends MatrixScan Find as the primary product for search-and-find picking. Mentions AR-guided highlighting to locate target products on shelves. May mention reduced onboarding time and lower error rates. Does NOT recommend SparkScan or Barcode Capture as the primary option. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends MatrixScan Find as the primary product"},
+        {"type": "content_check", "text": "Mentions AR-guided highlighting to locate target products"},
+        {"type": "content_check", "text": "Does NOT recommend SparkScan or Barcode Capture as the primary option"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 19,
+      "prompt": "Our receiving dock processes hundreds of cartons per truck. Currently workers scan each carton one by one with a handheld scanner. We want to speed this up dramatically.",
+      "expected_output": "Recognizes this could be either MatrixScan Batch (capture all barcodes) or MatrixScan Count (verify against manifest). Asks a clarifying question about whether they need to verify against an expected shipment list. Mentions the ability to scan many items simultaneously. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Mentions both MatrixScan Batch and MatrixScan Count as possible options OR asks whether they need manifest verification"},
+        {"type": "content_check", "text": "Mentions the ability to scan many items simultaneously"},
+        {"type": "content_check", "text": "Does NOT immediately commit to one product without clarifying the workflow"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 20,
+      "prompt": "I need to scan multiple barcodes in my app. What should I use?",
+      "expected_output": "Asks clarifying questions about the workflow (counting, searching, task management, or batch capture). Does NOT immediately recommend a specific MatrixScan sub-product without understanding the use case. May outline the MatrixScan family to help the user decide. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Asks clarifying questions about the workflow"},
+        {"type": "content_check", "text": "Does NOT immediately recommend a specific MatrixScan sub-product without understanding the use case"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    },
+    {
+      "id": 21,
+      "prompt": "We need to scan items during stocktaking. Each worker scans one barcode at a time and confirms the quantity. Should I use MatrixScan Count?",
+      "expected_output": "Clarifies that MatrixScan Count is designed for scanning many barcodes simultaneously, not one at a time. Suggests SparkScan as a potentially better fit for single-scan-at-a-time workflows. May ask whether the user would benefit from multi-scan to speed up the process. Does NOT dismiss MatrixScan Count entirely without understanding full requirements.",
+      "assertions": [
+        {"type": "content_check", "text": "Clarifies that MatrixScan Count is for scanning many barcodes simultaneously, not one at a time"},
+        {"type": "content_check", "text": "Suggests SparkScan as a potentially better fit for single-scan workflows"},
+        {"type": "content_check", "text": "Does NOT dismiss MatrixScan Count entirely without understanding full requirements"}
+      ],
+      "files": []
+    },
+    {
+      "id": 22,
+      "prompt": "We need to start counting inventory within the next two weeks but we don't have a development team. We've heard MatrixScan Count could help — what are our options?",
+      "expected_output": "Mentions Scandit Express as a no-code deployment option for the immediate deadline. Explains that Express provides a turnkey app without requiring custom development. May mention the SDK path as a longer-term option if they later bring on developers. Does NOT assume the user must build a custom app.",
+      "assertions": [
+        {"type": "content_check", "text": "Mentions Scandit Express as a no-code option for the immediate need"},
+        {"type": "content_check", "text": "Explains that Express provides a turnkey app without custom development"},
+        {"type": "content_check", "text": "May mention the SDK path as a longer-term option with more customization"},
+        {"type": "content_check", "text": "Does NOT assume the user must build a custom app"}
+      ],
+      "files": []
+    },
+    {
+      "id": 23,
+      "prompt": "What platforms does MatrixScan Find support? We need it on iOS, Android, and our React Native app.",
+      "expected_output": "Confirms MatrixScan Find supports iOS and Android natively. Confirms React Native is a supported framework. May mention other supported frameworks (Flutter, .NET, Capacitor). Includes a docs.scandit.com link for MatrixScan Find. Does NOT include code snippets.",
+      "assertions": [
+        {"type": "content_check", "text": "Confirms MatrixScan Find supports iOS and Android natively"},
+        {"type": "content_check", "text": "Confirms React Native is a supported framework"},
+        {"type": "content_check", "text": "Includes a docs.scandit.com link for MatrixScan Find"},
+        {"type": "content_check", "text": "Does NOT include code snippets"}
+      ],
+      "files": []
+    }
+  ]
+}
