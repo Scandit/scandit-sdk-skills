@@ -37,6 +37,9 @@
           "text": "Import statements use scoped packages (@scandit/web-datacapture-barcode, @scandit/web-datacapture-core) instead of unscoped (scandit-web-datacapture-*)"
         },
         {
+          "text": "libraryLocation path is updated from build/engine to sdc-lib"
+        },
+        {
           "text": "triggerButtonCollapsedColor, triggerButtonExpandedColor, and triggerButtonAnimationColor are present (replacement for captureButtonBackgroundColor)"
         },
         {
@@ -47,19 +50,28 @@
     {
       "id": 2,
       "prompt": "We're upgrading our app from Scandit SDK 7 to 8. Here's our SparkScan file: scanner-v7.ts. Please apply any necessary changes.",
-      "expected_output": "The skill notes that 7→8 has no breaking SparkScan changes for web and summarizes accordingly.",
+      "expected_output": "The skill replaces configure() + DataCaptureContext.create() with DataCaptureContext.forLicenseKey() and updates the context reference.",
       "files": [
         "eval-fixtures/scanner-v7.ts"
       ],
       "assertions": [
         {
-          "text": "A summary is present"
+          "text": "configure( is NOT present in the output file"
         },
         {
-          "text": "Summary acknowledges that 7→8 has no breaking SparkScan changes"
+          "text": "DataCaptureContext.create() is NOT present in the output file"
         },
         {
-          "text": "The output TypeScript file is functionally equivalent to the input (no unnecessary changes made)"
+          "text": "DataCaptureContext.forLicenseKey( is present in the output file"
+        },
+        {
+          "text": "libraryLocation and moduleLoaders are passed as options to forLicenseKey"
+        },
+        {
+          "text": "DataCaptureContext.sharedInstance is used where the old context variable was referenced"
+        },
+        {
+          "text": "A summary is present describing the initialization change"
         }
       ]
     },
@@ -82,6 +94,9 @@
         },
         {
           "text": "Import statements use scoped packages (@scandit/web-datacapture-*) instead of unscoped"
+        },
+        {
+          "text": "configure() and DataCaptureContext.create() are replaced with DataCaptureContext.forLicenseKey() (7→8 change)"
         },
         {
           "text": "Summary covers both migration steps (references both 6→7 and 7→8)"
@@ -111,6 +126,9 @@
         },
         {
           "text": "Import statements use scoped packages (@scandit/web-datacapture-*) instead of unscoped"
+        },
+        {
+          "text": "configure() and DataCaptureContext.create() are replaced with DataCaptureContext.forLicenseKey()"
         },
         {
           "text": "Do not ask the user for their version — proceeded autonomously using package.json"

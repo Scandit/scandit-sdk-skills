@@ -6,16 +6,16 @@ import {
     SparkScanViewSettings,
     Symbology,
 } from "@scandit/web-datacapture-barcode";
-import { DataCaptureContext } from "@scandit/web-datacapture-core";
+import { configure, DataCaptureContext } from "@scandit/web-datacapture-core";
 
 async function run() {
-    await DataCaptureContext.forLicenseKey(
-        "-- LICENSE KEY --",
-        {
-            libraryLocation: new URL("sdc-lib", document.baseURI).toString(),
-            moduleLoaders: [barcodeCaptureLoader()],
-        }
-    );
+    await configure({
+        libraryLocation: new URL("sdc-lib", document.baseURI).toString(),
+        licenseKey: "-- LICENSE KEY --",
+        moduleLoaders: [barcodeCaptureLoader()],
+    });
+
+    const context = await DataCaptureContext.create();
 
     const settings = new SparkScanSettings();
     settings.enableSymbologies([Symbology.EAN13UPCA, Symbology.Code128]);
@@ -35,7 +35,7 @@ async function run() {
 
     const sparkScanView = SparkScanView.forElement(
         document.getElementById("spark-scan-view")!,
-        DataCaptureContext.sharedInstance,
+        context,
         sparkScan,
         sparkScanViewSettings
     );

@@ -1,16 +1,21 @@
 import {
+    barcodeCaptureLoader,
     SparkScan,
     SparkScanSettings,
     SparkScanView,
     SparkScanViewSettings,
     Symbology,
 } from "scandit-web-datacapture-barcode";
-import { DataCaptureContext } from "scandit-web-datacapture-core";
+import { configure, DataCaptureContext } from "scandit-web-datacapture-core";
 
 async function run() {
-    const context = DataCaptureContext.forLicenseKey(
-        "-- ENTER YOUR SCANDIT LICENSE KEY HERE --"
-    );
+    await configure({
+        libraryLocation: new URL("build/engine", document.baseURI).toString(),
+        licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
+        moduleLoaders: [barcodeCaptureLoader()],
+    });
+
+    const context = await DataCaptureContext.create();
 
     const settings = new SparkScanSettings();
     settings.enableSymbologies([Symbology.EAN13UPCA]);

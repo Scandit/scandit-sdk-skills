@@ -43,16 +43,18 @@ Find the files that use SparkScan (search for `SparkScan`, `SparkScanView`, `Spa
 
 ## Migration: 6 → 7
 
-### Package rename
+### Package and hosting changes
 
-v6 used unscoped npm packages. v7 uses the `@scandit/` scope:
+v7 introduces critical changes to how the Web SDK is installed and hosted:
 
-| Old (v6) | New (v7+) |
-|---|---|
-| `scandit-web-datacapture-core` | `@scandit/web-datacapture-core` |
-| `scandit-web-datacapture-barcode` | `@scandit/web-datacapture-barcode` |
+| Change | Old (v6) | New (v7+) |
+|---|---|---|
+| NPM scope | `scandit-web-datacapture-core`, `scandit-web-datacapture-barcode` | `@scandit/web-datacapture-core`, `@scandit/web-datacapture-barcode` |
+| Engine directory | `build/engine` | `sdc-lib` |
 
-Update all import statements in the project to use the new scoped package names.
+Apply these changes:
+1. Update all import statements to use the new scoped package names
+2. Update `libraryLocation` paths from `build/engine` to `sdc-lib` (or the project's equivalent self-hosted path)
 
 ### Where these properties live in v6
 
@@ -114,17 +116,51 @@ If the project uses `BarcodeTracking` (MatrixScan) alongside SparkScan, rename a
 
 The default scan intention is now `ScanIntention.Smart`. If the project explicitly set `ScanIntention.Manual` or another value on `BarcodeCaptureSettings` or `SparkScanSettings`, leave it as is. If the project relied on an explicit `ScanIntention.Smart` setting that is now the default, the code still works — no change needed.
 
+> If the user wants to use `ScanIntention.Smart` or `ScanIntention.SmartSelection`, browser multithreading must be enabled. This requires the server to set the following HTTP headers on the HTML page and serving the sdc-lib files:
+>
+> - `Cross-Origin-Opener-Policy: same-origin`
+> - `Cross-Origin-Embedder-Policy: require-corp` (self-hosted SDK) or `credentialless` (CDN-hosted SDK)
+>
+> See the [multithreading guide](https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading) and [cross-origin headers guide](https://docs.scandit.com/sdks/web/matrixscan/get-started/#configure-cross-origin-headers).
+
 ---
 
 ## Migration: 7 → 8
 
+### DataCaptureContext initialization change
+
+v8 replaces `configure()` + `DataCaptureContext.create()` with a single `DataCaptureContext.forLicenseKey()` call.
+
+**Old (v7):**
+```typescript
+import { configure, DataCaptureContext } from "@scandit/web-datacapture-core";
+
+await configure({
+    libraryLocation: new URL("sdc-lib", document.baseURI).toString(),
+    licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
+    moduleLoaders: [barcodeCaptureLoader()],
+});
+const context = await DataCaptureContext.create();
+```
+
+**New (v8):**
+```typescript
+import { DataCaptureContext } from "@scandit/web-datacapture-core";
+
+await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+    libraryLocation: new URL("sdc-lib", document.baseURI).toString(),
+    moduleLoaders: [barcodeCaptureLoader()],
+});
+```
+
+Apply this change:
+1. Remove the `configure` import from `@scandit/web-datacapture-core`
+2. Replace the `configure({ ... })` call and `DataCaptureContext.create()` with `DataCaptureContext.forLicenseKey(licenseKey, { libraryLocation, moduleLoaders })`
+3. If the code stored the result of `DataCaptureContext.create()` in a variable and passed it to `SparkScanView.forElement`, replace it with `DataCaptureContext.sharedInstance`
+
 ### SparkScan text scanning (beta, opt-in)
 
 v8 adds the ability to scan text alongside barcodes in SparkScan. This is purely additive and opt-in — no existing code breaks. Mention it only if the user asks about new features.
-
-### No other breaking SparkScan changes
-
-The 7→8 migration is light for SparkScan on web. No breaking API changes for SparkScan-specific code.
 
 ---
 
