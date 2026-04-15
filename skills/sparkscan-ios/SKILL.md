@@ -1,6 +1,6 @@
 ---
 name: sparkscan-ios
-description: Use when SparkScan is involved in an iOS project — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new iOS app, modifying scan settings, handling scan results, customizing the SparkScan UI, upgrading between SDK versions, or troubleshooting SparkScan behavior. If the project is iOS and SparkScan is in play, use this skill.
+description: Use when SparkScan is involved in an iOS project — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new iOS app, modifying scan settings, handling scan results, customizing the SparkScan UI, upgrading between SDK versions, troubleshooting SparkScan behavior, or replacing a third-party barcode scanning library with SparkScan. If the project is iOS and SparkScan is in play, use this skill.
 license: MIT
 metadata:
   author: scandit
@@ -21,6 +21,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan", "how do I handle feedback in SparkScan") → read `references/integration.md` and follow the instructions there.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Replacing a third-party barcode scanner with SparkScan** (e.g. "replace my [scanner] with SparkScan", "migrate from [framework] to SparkScan", "switch from [library] barcode scanning to SparkScan") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
