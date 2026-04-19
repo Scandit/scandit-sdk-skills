@@ -4,10 +4,16 @@
     "name": "Scandit",
     "url": "https://www.scandit.com/"
   },
+  "metadata": {
+    "description": "Official Scandit marketplace: AI agent skills for integrating the Scandit Data Capture SDK."
+  },
   "plugins": [
     {
       "name": "scandit-sdk",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "Scandit/scandit-sdk-skills"
+      },
       "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture."
     }
   ]
