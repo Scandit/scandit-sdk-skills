@@ -11,8 +11,8 @@
     {
       "name": "scandit-sdk",
       "source": {
-        "source": "github",
-        "repo": "Scandit/scandit-sdk-skills"
+        "source": "url",
+        "url": "https://github.com/Scandit/scandit-sdk-skills.git"
       },
       "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture."
     }
