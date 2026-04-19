@@ -7,6 +7,7 @@ AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scan
 ### Claude Code
 
 ```
+/plugin marketplace add Scandit/scandit-sdk-skills
 /plugin install scandit-sdk@scandit-plugins
 ```
 
