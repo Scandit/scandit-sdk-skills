@@ -1,0 +1,139 @@
+{
+  "skill_name": "sparkscan-web",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my SparkScan to v7. Here's my scanner file: scanner-v6.ts",
+      "expected_output": "The skill reads migration.md, applies the 6→7 renames and removes deprecated properties in scanner-v6.ts, and summarizes all changes made.",
+      "files": [
+        "eval-fixtures/scanner-v6.ts"
+      ],
+      "assertions": [
+        {
+          "text": "isTorchControlVisible is present in the output file"
+        },
+        {
+          "text": "isTorchButtonVisible is NOT present in the output file"
+        },
+        {
+          "text": "triggerButtonTintColor is present in the output file"
+        },
+        {
+          "text": "captureButtonTintColor is NOT present in the output file"
+        },
+        {
+          "text": "captureButtonBackgroundColor is NOT present in the output file"
+        },
+        {
+          "text": "isBarcodeFindButtonVisible is present in the output file"
+        },
+        {
+          "text": "isFastFindButtonVisible is NOT present in the output file"
+        },
+        {
+          "text": "Removed properties (isHandModeButtonVisible, isSoundModeButtonVisible, isHapticModeButtonVisible, shouldShowScanAreaGuides, captureButtonActiveBackgroundColor, defaultHandMode, stopCapturingText, startCapturingText, resumeCapturingText, scanningCapturingText) are NOT present"
+        },
+        {
+          "text": "Import statements use scoped packages (@scandit/web-datacapture-barcode, @scandit/web-datacapture-core) instead of unscoped (scandit-web-datacapture-*)"
+        },
+        {
+          "text": "libraryLocation path is updated from build/engine to sdc-lib"
+        },
+        {
+          "text": "triggerButtonCollapsedColor, triggerButtonExpandedColor, and triggerButtonAnimationColor are present (replacement for captureButtonBackgroundColor)"
+        },
+        {
+          "text": "A summary is present describing changes"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're upgrading our app from Scandit SDK 7 to 8. Here's our SparkScan file: scanner-v7.ts. Please apply any necessary changes.",
+      "expected_output": "The skill replaces configure() + DataCaptureContext.create() with DataCaptureContext.forLicenseKey() and updates the context reference.",
+      "files": [
+        "eval-fixtures/scanner-v7.ts"
+      ],
+      "assertions": [
+        {
+          "text": "configure( is NOT present in the output file"
+        },
+        {
+          "text": "DataCaptureContext.create() is NOT present in the output file"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present in the output file"
+        },
+        {
+          "text": "libraryLocation and moduleLoaders are passed as options to forLicenseKey"
+        },
+        {
+          "text": "DataCaptureContext.sharedInstance is used where the old context variable was referenced"
+        },
+        {
+          "text": "A summary is present describing the initialization change"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to upgrade our SparkScan integration from SDK 6 all the way to v8. Here's our current code: scanner-v6.ts",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
+      "files": [
+        "eval-fixtures/scanner-v6.ts"
+      ],
+      "assertions": [
+        {
+          "text": "isTorchControlVisible is present (6→7 rename applied)"
+        },
+        {
+          "text": "isTorchButtonVisible is NOT present"
+        },
+        {
+          "text": "Removed v6 properties (isHandModeButtonVisible, isSoundModeButtonVisible, isHapticModeButtonVisible, captureButtonActiveBackgroundColor) are NOT present"
+        },
+        {
+          "text": "Import statements use scoped packages (@scandit/web-datacapture-*) instead of unscoped"
+        },
+        {
+          "text": "configure() and DataCaptureContext.create() are replaced with DataCaptureContext.forLicenseKey() (7→8 change)"
+        },
+        {
+          "text": "Summary covers both migration steps (references both 6→7 and 7→8)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to upgrade my SparkScan to the latest Scandit SDK version. Here's my code and package.json.",
+      "expected_output": "The skill reads package.json to detect v6.28.1, determines the target is v8, applies both migrations without asking the user for their version.",
+      "files": [
+        "eval-fixtures/scanner-v6.ts",
+        "eval-fixtures/package-v6.json"
+      ],
+      "assertions": [
+        {
+          "text": "Summary mentions the detected version (6.28.1 or v6)"
+        },
+        {
+          "text": "isTorchButtonVisible is NOT present (6→7 rename applied)"
+        },
+        {
+          "text": "isTorchControlVisible is present"
+        },
+        {
+          "text": "Removed v6 properties (isHandModeButtonVisible, isSoundModeButtonVisible, isHapticModeButtonVisible, captureButtonActiveBackgroundColor) are NOT present"
+        },
+        {
+          "text": "Import statements use scoped packages (@scandit/web-datacapture-*) instead of unscoped"
+        },
+        {
+          "text": "configure() and DataCaptureContext.create() are replaced with DataCaptureContext.forLicenseKey()"
+        },
+        {
+          "text": "Do not ask the user for their version — proceeded autonomously using package.json"
+        }
+      ]
+    }
+  ]
+}
