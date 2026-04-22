@@ -34,7 +34,7 @@ skills/label-capture-web/
     ├── migration-evals.json
     └── fixtures/
         ├── empty-app.ts
-        ├── before-8.1-regex.ts
+        ├── before-8.0-regex.ts
         ├── before-8.2-validation-flow.ts
         ├── before-8.5-builders.ts
         ├── package-8.1.json
@@ -121,7 +121,7 @@ metadata:
 
 Four ordered sections. Each section: short "what changed and why", before snippet, after snippet, migration notes.
 
-### 1. v8.0 → v8.1 — `LabelFieldDefinition` regex renames (breaking)
+### 1. v7.6 → v8.0 — `LabelFieldDefinition` regex renames (breaking)
 
 | Old | New |
 |---|---|
@@ -233,7 +233,7 @@ At minimum, three eval prompts: one minimal-no-validation, one v8.2+ with Valida
 
 Four eval prompts, one per migration section. Each seeds a `before-*.ts` fixture and asserts the assistant rewrote the file to the "after" state described in `migration.md`:
 
-1. v8.0 → v8.1 regex renames — assert all four renames applied; old names gone.
+1. v7.6 → v8.0 regex renames — assert all four renames applied; old names gone.
 2. v8.1 → v8.2 Validation Flow — assert deprecated text properties removed; redesigned-API customisation applied.
 3. v8.2 → v8.4 new listener — assert the new optional method is added only if the user asked for it, and has the correct `(type, fields, frameData)` signature.
 4. v8.4 → v8.5 ergonomic builders — assert the rewrite to name-in-constructor + single-outer-`await` style when the user opted in; otherwise the original style is left untouched.
@@ -241,7 +241,7 @@ Four eval prompts, one per migration section. Each seeds a `before-*.ts` fixture
 ### Fixtures
 
 - `empty-app.ts` — empty TypeScript starter for integration evals.
-- `before-8.1-regex.ts` — minimal snippet using `pattern` and `dataTypePattern`.
+- `before-8.0-regex.ts` — minimal snippet using `pattern` and `dataTypePattern`.
 - `before-8.2-validation-flow.ts` — minimal snippet using `requiredFieldErrorText`, `missingFieldsHintText`, `manualInputButtonText`.
 - `before-8.5-builders.ts` — minimal snippet using the verbose `await new Builder().build(name)` chain.
 - `package-8.1.json` / `package-8.2.json` — pin `@scandit/web-datacapture-label` so Validation Flow evals can exercise version-aware branches.

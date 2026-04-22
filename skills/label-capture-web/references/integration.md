@@ -45,7 +45,7 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 ## Minimal Integration (Web)
 
-Once the user has answered Questions A, B, and C, generate the integration code using the class-builder API. This form works across all shipped 8.x versions. Substitute the placeholders `[LABEL_NAME]`, `[FIELD_NAME]`, and the correct field builders based on the user's answers. Fields marked optional should call `.setIsOptional(true)`; required fields can omit the call (required is the default) or call `.setIsOptional(false)` explicitly for clarity.
+Once the user has answered Questions A, B, and C, generate the integration code using the class-builder API. This form works across all shipped 8.x versions. Substitute the placeholders `[LABEL_NAME]`, `[FIELD_NAME]`, and the correct field builders based on the user's answers. Fields marked optional should call `.isOptional(true)`; required fields can omit the call (required is the default) or call `.isOptional(false)` explicitly for clarity.
 
 ```typescript
 import { Symbology } from "@scandit/web-datacapture-barcode";
@@ -86,12 +86,12 @@ async function run() {
         .addCustomBarcode(
           await new CustomBarcodeBuilder()
             .setSymbologies([Symbology.EAN13UPCA, Symbology.Code128])
-            .setIsOptional(false)
+            .isOptional(false)
             .build("Barcode")
         )
         .addExpiryDateText(
           await new ExpiryDateTextBuilder()
-            .setIsOptional(false)
+            .isOptional(false)
             .build("Expiry Date")
         )
         .build("Perishable Product")

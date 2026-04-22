@@ -31,7 +31,7 @@ skills/label-capture-web/
         ├── empty-app.ts
         ├── package-8.1.json
         ├── package-8.2.json
-        ├── before-8.1-regex.ts
+        ├── before-8.0-regex.ts
         ├── before-8.2-validation-flow.ts
         └── before-8.5-builders.ts
 ```
@@ -309,7 +309,7 @@ git commit -m "Add interactive label-definition flow to integration.md"
 Replace the `<!-- Filled in by Task 2.3 -->` marker under "Minimal Integration (Web)" with:
 
 ````markdown
-Once the user has answered Questions A, B, and C, generate the integration code using the class-builder API. This form works across all shipped 8.x versions. Substitute the placeholders `[LABEL_NAME]`, `[FIELD_NAME]`, and the correct field builders based on the user's answers. Fields marked optional should call `.setIsOptional(true)`; required fields can omit the call (required is the default) or call `.setIsOptional(false)` explicitly for clarity.
+Once the user has answered Questions A, B, and C, generate the integration code using the class-builder API. This form works across all shipped 8.x versions. Substitute the placeholders `[LABEL_NAME]`, `[FIELD_NAME]`, and the correct field builders based on the user's answers. Fields marked optional should call `.isOptional(true)`; required fields can omit the call (required is the default) or call `.isOptional(false)` explicitly for clarity. Note: the method name is `isOptional(bool)` — there is no `setIsOptional` prefix, confirmed against the SDK sources and the versioned sample for 8.0.0.
 
 ```typescript
 import { Symbology } from "@scandit/web-datacapture-barcode";
@@ -350,12 +350,12 @@ async function run() {
         .addCustomBarcode(
           await new CustomBarcodeBuilder()
             .setSymbologies([Symbology.EAN13UPCA, Symbology.Code128])
-            .setIsOptional(false)
+            .isOptional(false)
             .build("Barcode")
         )
         .addExpiryDateText(
           await new ExpiryDateTextBuilder()
-            .setIsOptional(false)
+            .isOptional(false)
             .build("Expiry Date")
         )
         .build("Perishable Product")
@@ -500,7 +500,7 @@ git commit -m "Add version-aware Validation Flow section to integration.md"
 
 ## Phase 3 — Write `references/migration.md`
 
-### Task 3.1: Create migration.md scaffold + §1 (v8.0 → v8.1 regex renames)
+### Task 3.1: Create migration.md scaffold + §1 (v7.6 → v8.0 regex renames)
 
 **Files:**
 - Create: `skills/label-capture-web/references/migration.md`
@@ -514,7 +514,7 @@ When a user asks to upgrade or migrate a Label Capture integration, identify whi
 
 The sections below are cumulative — if the user is going from v8.0 to v8.5, walk them through §1, §2, §3, and §4 in order.
 
-## 1. v8.0 → v8.1 — `LabelFieldDefinition` regex renames (breaking)
+## 1. v7.6 → v8.0 — `LabelFieldDefinition` regex renames (breaking)
 
 The regex-configuration properties on every `LabelFieldDefinition` subclass were renamed. The old names no longer exist.
 
@@ -779,7 +779,7 @@ git commit -m "Add migration.md §4 v8.4→v8.5 ergonomic builder improvements"
 - Create: `skills/label-capture-web/evals/fixtures/empty-app.ts`
 - Create: `skills/label-capture-web/evals/fixtures/package-8.1.json`
 - Create: `skills/label-capture-web/evals/fixtures/package-8.2.json`
-- Create: `skills/label-capture-web/evals/fixtures/before-8.1-regex.ts`
+- Create: `skills/label-capture-web/evals/fixtures/before-8.0-regex.ts`
 - Create: `skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts`
 - Create: `skills/label-capture-web/evals/fixtures/before-8.5-builders.ts`
 
@@ -821,7 +821,7 @@ run();
 }
 ```
 
-- [ ] **Step 4: Write `before-8.1-regex.ts`** — uses the old regex property names:
+- [ ] **Step 4: Write `before-8.0-regex.ts`** — uses the old regex property names:
 
 ```typescript
 import { Symbology } from "@scandit/web-datacapture-barcode";
@@ -951,7 +951,7 @@ git commit -m "Add eval fixtures for integration + migration scenarios"
         { "text": "new CustomBarcodeBuilder() is used, with setSymbology(Symbology.EAN13UPCA) or setSymbologies including EAN13UPCA, and .build(\"Barcode\") or a similar field name" },
         { "text": "Symbology.EAN13UPCA is enabled" },
         { "text": "new ExpiryDateTextBuilder() is used with .build(\"Expiry Date\") or similar field name" },
-        { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (setIsOptional(true))" },
+        { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (isOptional(true))" },
         { "text": "LabelCapture.forContext( is present" },
         { "text": "LabelCaptureBasicOverlay.withLabelCaptureForView( is present" },
         { "text": "addListener with didUpdateSession callback is present" },
@@ -1024,10 +1024,10 @@ git commit -m "Add integration evals for label-capture-web"
   "evals": [
     {
       "id": 1,
-      "prompt": "I'm upgrading my Label Capture integration from Scandit SDK 8.0 to 8.1. Update the regex-property names in before-8.1-regex.ts.",
+      "prompt": "I'm upgrading my Label Capture integration from Scandit SDK 7.6 to 8.0. Update the regex-property names in before-8.0-regex.ts.",
       "expected_output": "The skill renames pattern→valueRegex, patterns→valueRegexes, dataTypePattern→anchorRegex, dataTypePatterns→anchorRegexes (and the corresponding setter methods) throughout the file; leaves everything else untouched.",
       "files": [
-        "eval-fixtures/before-8.1-regex.ts"
+        "eval-fixtures/before-8.0-regex.ts"
       ],
       "assertions": [
         { "text": "setPattern is renamed to setValueRegex" },
@@ -1195,7 +1195,7 @@ Expected files (in order):
 skills/label-capture-web/DESIGN.md
 skills/label-capture-web/PLAN.md
 skills/label-capture-web/SKILL.md
-skills/label-capture-web/evals/fixtures/before-8.1-regex.ts
+skills/label-capture-web/evals/fixtures/before-8.0-regex.ts
 skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts
 skills/label-capture-web/evals/fixtures/before-8.5-builders.ts
 skills/label-capture-web/evals/fixtures/empty-app.ts
@@ -1236,8 +1236,8 @@ Expected: `clean` for both — integration.md must not teach the renamed-away AP
 
 Run:
 ```bash
-# before-8.1-regex.ts must use the OLD names (to be migrated FROM):
-grep -nE "setPattern|setDataTypePattern" skills/label-capture-web/evals/fixtures/before-8.1-regex.ts
+# before-8.0-regex.ts must use the OLD names (to be migrated FROM):
+grep -nE "setPattern|setDataTypePattern" skills/label-capture-web/evals/fixtures/before-8.0-regex.ts
 # before-8.2-validation-flow.ts must use the OLD async setter methods, with a listener lacking onManualInput:
 grep -nE "setRequiredFieldErrorText|setMissingFieldsHintText|setManualInputButtonText" skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts
 ! grep -n "onManualInput" skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts

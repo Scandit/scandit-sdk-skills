@@ -18,7 +18,7 @@
         { "text": "new CustomBarcodeBuilder() is used, with setSymbology(Symbology.EAN13UPCA) or setSymbologies including EAN13UPCA, and .build(\"Barcode\") or a similar field name" },
         { "text": "Symbology.EAN13UPCA is enabled" },
         { "text": "new ExpiryDateTextBuilder() is used with .build(\"Expiry Date\") or similar field name" },
-        { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (setIsOptional(true))" },
+        { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (isOptional(true))" },
         { "text": "LabelCapture.forContext( is present" },
         { "text": "LabelCaptureBasicOverlay.withLabelCaptureForView( is present" },
         { "text": "addListener with didUpdateSession callback is present" },

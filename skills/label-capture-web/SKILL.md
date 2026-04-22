@@ -13,7 +13,7 @@ metadata:
 
 Your training data may contain outdated or incorrect Scandit Label Capture APIs. Label Capture has evolved across recent SDK releases:
 
-- In v8.1, `LabelFieldDefinition` regex properties were renamed (`pattern`→`valueRegex`, `patterns`→`valueRegexes`, `dataTypePattern`→`anchorRegex`, `dataTypePatterns`→`anchorRegexes`).
+- At the v7→v8 major bump (v7.6 → v8.0), `LabelFieldDefinition` regex properties were renamed (`pattern`→`valueRegex`, `patterns`→`valueRegexes`, `dataTypePattern`→`anchorRegex`, `dataTypePatterns`→`anchorRegexes`).
 - In v8.2, the Validation Flow UI was redesigned and three customisation properties were deprecated.
 - In v8.5, additive ergonomic shorthands were introduced for the builders.
 

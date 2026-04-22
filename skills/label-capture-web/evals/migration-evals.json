@@ -3,10 +3,10 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I'm upgrading my Label Capture integration from Scandit SDK 8.0 to 8.1. Update the regex-property names in before-8.1-regex.ts.",
+      "prompt": "I'm upgrading my Label Capture integration from Scandit SDK 7.6 to 8.0. Update the regex-property names in before-8.0-regex.ts.",
       "expected_output": "The skill renames pattern→valueRegex, patterns→valueRegexes, dataTypePattern→anchorRegex, dataTypePatterns→anchorRegexes (and the corresponding setter methods) throughout the file; leaves everything else untouched.",
       "files": [
-        "eval-fixtures/before-8.1-regex.ts"
+        "eval-fixtures/before-8.0-regex.ts"
       ],
       "assertions": [
         { "text": "setPattern is renamed to setValueRegex" },

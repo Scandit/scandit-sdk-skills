@@ -2,13 +2,13 @@
 
 When a user asks to upgrade or migrate a Label Capture integration, identify which version boundary they're crossing. Prefer reading `package.json` for `@scandit/web-datacapture-label`. Otherwise ask directly: "Which version are you on, and which version are you upgrading to?"
 
-The sections below are cumulative — if the user is going from v8.0 to v8.5, walk them through §1, §2, §3, and §4 in order.
+The sections below are cumulative — if the user is going from v7.6 to v8.5, walk them through §1, §2, §3, and §4 in order.
 
-## 1. v8.0 → v8.1 — `LabelFieldDefinition` regex renames (breaking)
+## 1. v7.6 → v8.0 — `LabelFieldDefinition` regex renames (breaking)
 
-The regex-configuration properties on every `LabelFieldDefinition` subclass were renamed. The old names no longer exist.
+At the v7 → v8 major version bump, the regex-configuration properties on every `LabelFieldDefinition` subclass were renamed. The old names no longer exist from v8.0 onwards.
 
-| Old | New |
+| Old (v7.x) | New (v8.0+) |
 |---|---|
 | `pattern` | `valueRegex` |
 | `patterns` | `valueRegexes` |
@@ -17,7 +17,7 @@ The regex-configuration properties on every `LabelFieldDefinition` subclass were
 
 The same rename applies to the matching setter methods on every field builder (`CustomTextBuilder`, `ExpiryDateTextBuilder`, `TotalPriceTextBuilder`, `WeightTextBuilder`, etc.): `setPattern` → `setValueRegex`, `setPatterns` → `setValueRegexes`, `setDataTypePattern` → `setAnchorRegex`, `setDataTypePatterns` → `setAnchorRegexes`.
 
-### Before (v8.0)
+### Before (v7.x)
 
 ```typescript
 const expiryBuilder = new ExpiryDateTextBuilder()
@@ -25,7 +25,7 @@ const expiryBuilder = new ExpiryDateTextBuilder()
   .setPattern("\\d{2}/\\d{2}/\\d{2,4}");
 ```
 
-### After (v8.1+)
+### After (v8.0+)
 
 ```typescript
 const expiryBuilder = new ExpiryDateTextBuilder()
@@ -33,7 +33,7 @@ const expiryBuilder = new ExpiryDateTextBuilder()
   .setValueRegex("\\d{2}/\\d{2}/\\d{2,4}");
 ```
 
-Apply the rename across every field definition in the user's codebase. No other logic changes.
+Apply the rename across every field definition in the user's codebase. No other logic changes. If the user is already on v8.0 or later, this section does not apply — skip to §2.
 
 ## 2. v8.1 → v8.2 — Validation Flow listener change + redesign
 
