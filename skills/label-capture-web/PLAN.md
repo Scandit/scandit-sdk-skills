@@ -455,11 +455,11 @@ overlay.listener = {
 } satisfies LabelCaptureValidationFlowListener;
 ```
 
-Do NOT set `requiredFieldErrorText`, `missingFieldsHintText`, or `manualInputButtonText` — those properties were removed in the v8.2 redesign. Use `setPlaceholderTextForLabelDefinition` (and other methods on `LabelCaptureValidationFlowSettings`) for customisation.
+The setter methods `setRequiredFieldErrorText`, `setMissingFieldsHintText`, and `setManualInputButtonText` still exist in 8.2.x for backward compatibility, but they are deprecated — they have no effect in the redesigned UI. Do not call them for new v8.2+ integrations. Use `setPlaceholderTextForLabelDefinition` (and other new methods on `LabelCaptureValidationFlowSettings`) for customisation.
 
 ### v8.1 and earlier — Original Validation Flow
 
-For users still on v8.1 or earlier, the customisation surface is different. Keep `LabelCaptureBasicOverlay` (or replace it with `LabelCaptureValidationFlowOverlay` if the user wants validation UI), and configure the older text properties directly on the Validation Flow settings:
+On v8.1 the listener interface has **only** `onValidationFlowLabelCaptured` — `onManualInput` did not exist yet (it was added in v8.2). Customise the flow via async setter methods on `LabelCaptureValidationFlowSettings`. There is **no** `setPlaceholderTextForLabelDefinition` in 8.1 — that method was added in v8.2.
 
 ```typescript
 import {
@@ -472,15 +472,12 @@ import {
 const overlay = await LabelCaptureValidationFlowOverlay.withLabelCaptureForView(mode, view);
 
 const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
-validationFlowSettings.requiredFieldErrorText = "This field is required";
-validationFlowSettings.missingFieldsHintText = "Please fill the missing fields";
-validationFlowSettings.manualInputButtonText = "Enter manually";
+await validationFlowSettings.setRequiredFieldErrorText("This field is required");
+await validationFlowSettings.setMissingFieldsHintText("Please fill the missing fields");
+await validationFlowSettings.setManualInputButtonText("Enter manually");
 await overlay.applySettings(validationFlowSettings);
 
 overlay.listener = {
-  onManualInput: (_field: LabelField, _oldValue: string | null, _newValue: string) => {
-    // User manually entered or corrected a value for a field.
-  },
   onValidationFlowLabelCaptured: (fields: LabelField[]) => {
     for (const field of fields) {
       console.log(field.name, "=", field.barcode?.data ?? field.text);
@@ -489,7 +486,7 @@ overlay.listener = {
 } satisfies LabelCaptureValidationFlowListener;
 ```
 
-If the user plans to upgrade to v8.2+, route them to the migration guide (`migration.md` §2) for the rewrite.
+If the user plans to upgrade to v8.2+, route them to the migration guide (`migration.md` §2) for the listener change (`onManualInput` becomes required) and the optional switch to `setPlaceholderTextForLabelDefinition`.
 ````
 
 - [ ] **Step 2: Commit**
@@ -565,36 +562,57 @@ git commit -m "Add migration.md with §1 v8.0→v8.1 regex renames"
 
 ```markdown
 
-## 2. v8.1 → v8.2 — Validation Flow redesign (deprecations, non-breaking)
+## 2. v8.1 → v8.2 — Validation Flow listener change + redesign
 
-The Validation Flow UI was redesigned in v8.2. Three text-customisation properties on `LabelCaptureValidationFlowSettings` no longer apply to the redesigned flow and are deprecated:
+Two things change between 8.1 and 8.2.
 
-- `requiredFieldErrorText`
-- `missingFieldsHintText`
-- `manualInputButtonText`
+**(a) Listener interface gains `onManualInput` (breaking).** `LabelCaptureValidationFlowListener` in 8.1 had only `onValidationFlowLabelCaptured`. In 8.2 a second required method is added:
 
-The old properties are still present in the 8.2.x line for backward compatibility — users not ready to adopt the redesign can stay on them. New customisation points in the redesigned flow include `setPlaceholderTextForLabelDefinition(name, placeholder)` for per-field placeholder hints.
+```ts
+onManualInput(field: LabelField, oldValue: string | undefined, newValue: string): void;
+```
+
+Existing listeners that don't implement it will fail to satisfy the interface after upgrade — add the method (a no-op is fine if the user doesn't care about manual-input events).
+
+**(b) Redesigned flow deprecates the old text setters (non-breaking).** The Validation Flow UI was redesigned. These async setters on `LabelCaptureValidationFlowSettings` still exist and are callable, but they have no effect in the redesigned UI:
+
+- `setRequiredFieldErrorText`
+- `setMissingFieldsHintText`
+- `setManualInputButtonText`
+
+A new method, `setPlaceholderTextForLabelDefinition(fieldName, placeholder)`, is the recommended way to customise per-field hints in the redesigned flow. If the user wants their existing text customisation to have a visible effect, switch to the new method.
 
 ### Before (v8.1)
 
 ```typescript
 const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
-validationFlowSettings.requiredFieldErrorText = "This field is required";
-validationFlowSettings.missingFieldsHintText = "Please fill the missing fields";
-validationFlowSettings.manualInputButtonText = "Enter manually";
+await validationFlowSettings.setRequiredFieldErrorText("This field is required");
+await validationFlowSettings.setMissingFieldsHintText("Please fill the missing fields");
+await validationFlowSettings.setManualInputButtonText("Enter manually");
 await overlay.applySettings(validationFlowSettings);
+
+overlay.listener = {
+  onValidationFlowLabelCaptured: (fields) => { /* ... */ },
+} satisfies LabelCaptureValidationFlowListener;
 ```
 
-### After (v8.2+, redesigned)
+### After (v8.2+)
 
 ```typescript
 const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
 await validationFlowSettings.setPlaceholderTextForLabelDefinition("Expiry Date", "MM.DD.YY");
 await validationFlowSettings.setPlaceholderTextForLabelDefinition("Total Price", "e.g., $13.66");
 await overlay.applySettings(validationFlowSettings);
+
+overlay.listener = {
+  onValidationFlowLabelCaptured: (fields) => { /* ... */ },
+  onManualInput: (_field, _oldValue, _newValue) => {
+    // Fires when the user manually enters or corrects a value.
+  },
+} satisfies LabelCaptureValidationFlowListener;
 ```
 
-If the user prefers to keep the old flow in 8.2.x, leave their code as-is. Only rewrite to the redesigned API when the user explicitly asks to adopt the new UI.
+Leave the old setter calls in place if the user wants to stay with a non-redesigned build path, but add `onManualInput` — it is now a required listener method.
 ```
 
 - [ ] **Step 2: Commit**
@@ -840,7 +858,7 @@ export async function buildSettings() {
 }
 ```
 
-- [ ] **Step 5: Write `before-8.2-validation-flow.ts`** — uses deprecated validation flow texts:
+- [ ] **Step 5: Write `before-8.2-validation-flow.ts`** — represents v8.1 Validation Flow code that a user would bring into a v8.2 migration. Listener has only `onValidationFlowLabelCaptured`; text customisation uses the now-deprecated async setters:
 
 ```typescript
 import {
@@ -854,13 +872,12 @@ export async function attachValidationFlow(mode: any, view: any) {
   const overlay = await LabelCaptureValidationFlowOverlay.withLabelCaptureForView(mode, view);
 
   const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
-  validationFlowSettings.requiredFieldErrorText = "This field is required";
-  validationFlowSettings.missingFieldsHintText = "Please fill the missing fields";
-  validationFlowSettings.manualInputButtonText = "Enter manually";
+  await validationFlowSettings.setRequiredFieldErrorText("This field is required");
+  await validationFlowSettings.setMissingFieldsHintText("Please fill the missing fields");
+  await validationFlowSettings.setManualInputButtonText("Enter manually");
   await overlay.applySettings(validationFlowSettings);
 
   overlay.listener = {
-    onManualInput: (_field: LabelField, _oldValue: string | null, _newValue: string) => {},
     onValidationFlowLabelCaptured: (fields: LabelField[]) => {
       for (const field of fields) {
         console.log(field.name, field.text ?? field.barcode?.data);
@@ -968,7 +985,7 @@ git commit -m "Add eval fixtures for integration + migration scenarios"
     {
       "id": 3,
       "prompt": "Add Label Capture with the Validation Flow to my empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My package.json pins @scandit/web-datacapture-label to 8.1.0.",
-      "expected_output": "The skill detects the v8.1 SDK version and uses the original Validation Flow API with the requiredFieldErrorText, missingFieldsHintText, and manualInputButtonText properties.",
+      "expected_output": "The skill detects the v8.1 SDK version and uses the v8.1 Validation Flow API: async setter methods for text customisation and a listener with only onValidationFlowLabelCaptured (onManualInput was added in v8.2 and does not exist yet in v8.1).",
       "files": [
         "eval-fixtures/empty-app.ts",
         "eval-fixtures/package-8.1.json"
@@ -976,9 +993,10 @@ git commit -m "Add eval fixtures for integration + migration scenarios"
       "assertions": [
         { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used" },
         { "text": "LabelCaptureValidationFlowSettings.create() is called" },
-        { "text": "requiredFieldErrorText, missingFieldsHintText, or manualInputButtonText is set on the validation-flow settings (original v8.1 API)" },
-        { "text": "setPlaceholderTextForLabelDefinition is NOT called (that is the v8.2+ redesign API; the user is on v8.1)" },
-        { "text": "overlay.listener is assigned with onValidationFlowLabelCaptured and onManualInput handlers" },
+        { "text": "At least one of await validationFlowSettings.setRequiredFieldErrorText, setMissingFieldsHintText, or setManualInputButtonText is called (v8.1 async setter API)" },
+        { "text": "Text customisation is done via async method calls (setXxx(...)) not property assignments (xxx = ...)" },
+        { "text": "setPlaceholderTextForLabelDefinition is NOT called (not available in v8.1)" },
+        { "text": "overlay.listener is assigned with only onValidationFlowLabelCaptured — onManualInput is NOT in the listener object (it was added in v8.2)" },
         { "text": "Symbology.EAN13UPCA is enabled" }
       ]
     }
@@ -1023,17 +1041,18 @@ git commit -m "Add integration evals for label-capture-web"
     {
       "id": 2,
       "prompt": "Migrate my Validation Flow from Scandit SDK 8.1 to 8.2 in before-8.2-validation-flow.ts. Adopt the redesigned API.",
-      "expected_output": "The skill removes the deprecated requiredFieldErrorText / missingFieldsHintText / manualInputButtonText assignments and replaces them with setPlaceholderTextForLabelDefinition calls. Listener shape preserved.",
+      "expected_output": "The skill adds the new required onManualInput method to the listener, replaces the deprecated async setters (setRequiredFieldErrorText, setMissingFieldsHintText, setManualInputButtonText) with setPlaceholderTextForLabelDefinition calls, and preserves the existing onValidationFlowLabelCaptured handler.",
       "files": [
         "eval-fixtures/before-8.2-validation-flow.ts"
       ],
       "assertions": [
-        { "text": "requiredFieldErrorText is no longer set in the generated code" },
-        { "text": "missingFieldsHintText is no longer set" },
-        { "text": "manualInputButtonText is no longer set" },
+        { "text": "onManualInput is added to the overlay.listener object with signature (field, oldValue, newValue)" },
+        { "text": "The existing onValidationFlowLabelCaptured handler is preserved" },
+        { "text": "setRequiredFieldErrorText is no longer called in the generated code (deprecated in the redesigned flow)" },
+        { "text": "setMissingFieldsHintText is no longer called" },
+        { "text": "setManualInputButtonText is no longer called" },
         { "text": "setPlaceholderTextForLabelDefinition is called at least once on validationFlowSettings" },
-        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView is preserved" },
-        { "text": "onValidationFlowLabelCaptured and onManualInput listener methods are preserved" }
+        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView is preserved" }
       ]
     },
     {
@@ -1219,8 +1238,9 @@ Run:
 ```bash
 # before-8.1-regex.ts must use the OLD names (to be migrated FROM):
 grep -nE "setPattern|setDataTypePattern" skills/label-capture-web/evals/fixtures/before-8.1-regex.ts
-# before-8.2-validation-flow.ts must use the OLD properties:
-grep -nE "requiredFieldErrorText|missingFieldsHintText|manualInputButtonText" skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts
+# before-8.2-validation-flow.ts must use the OLD async setter methods, with a listener lacking onManualInput:
+grep -nE "setRequiredFieldErrorText|setMissingFieldsHintText|setManualInputButtonText" skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts
+! grep -n "onManualInput" skills/label-capture-web/evals/fixtures/before-8.2-validation-flow.ts
 # before-8.5-builders.ts must use the verbose form:
 grep -nE "\\.build\\(\"" skills/label-capture-web/evals/fixtures/before-8.5-builders.ts
 ```
