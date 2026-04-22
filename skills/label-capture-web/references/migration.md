@@ -34,3 +34,55 @@ const expiryBuilder = new ExpiryDateTextBuilder()
 ```
 
 Apply the rename across every field definition in the user's codebase. No other logic changes.
+
+## 2. v8.1 → v8.2 — Validation Flow listener change + redesign
+
+Two things change between 8.1 and 8.2.
+
+**(a) Listener interface gains `onManualInput` (breaking).** `LabelCaptureValidationFlowListener` in 8.1 had only `onValidationFlowLabelCaptured`. In 8.2 a second required method is added:
+
+```ts
+onManualInput(field: LabelField, oldValue: string | undefined, newValue: string): void;
+```
+
+Existing listeners that don't implement it will fail to satisfy the interface after upgrade — add the method (a no-op is fine if the user doesn't care about manual-input events).
+
+**(b) Redesigned flow deprecates the old text setters (non-breaking).** The Validation Flow UI was redesigned. These async setters on `LabelCaptureValidationFlowSettings` still exist and are callable, but they have no effect in the redesigned UI:
+
+- `setRequiredFieldErrorText`
+- `setMissingFieldsHintText`
+- `setManualInputButtonText`
+
+A new method, `setPlaceholderTextForLabelDefinition(fieldName, placeholder)`, is the recommended way to customise per-field hints in the redesigned flow. If the user wants their existing text customisation to have a visible effect, switch to the new method.
+
+### Before (v8.1)
+
+```typescript
+const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
+await validationFlowSettings.setRequiredFieldErrorText("This field is required");
+await validationFlowSettings.setMissingFieldsHintText("Please fill the missing fields");
+await validationFlowSettings.setManualInputButtonText("Enter manually");
+await overlay.applySettings(validationFlowSettings);
+
+overlay.listener = {
+  onValidationFlowLabelCaptured: (fields) => { /* ... */ },
+} satisfies LabelCaptureValidationFlowListener;
+```
+
+### After (v8.2+)
+
+```typescript
+const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
+await validationFlowSettings.setPlaceholderTextForLabelDefinition("Expiry Date", "MM.DD.YY");
+await validationFlowSettings.setPlaceholderTextForLabelDefinition("Total Price", "e.g., $13.66");
+await overlay.applySettings(validationFlowSettings);
+
+overlay.listener = {
+  onValidationFlowLabelCaptured: (fields) => { /* ... */ },
+  onManualInput: (_field, _oldValue, _newValue) => {
+    // Fires when the user manually enters or corrects a value.
+  },
+} satisfies LabelCaptureValidationFlowListener;
+```
+
+Leave the old setter calls in place if the user wants to stay with a non-redesigned build path, but add `onManualInput` — it is now a required listener method.
