@@ -14,7 +14,34 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
 
 ## Interactive Label Definition
 
-<!-- Filled in by Task 2.2 -->
+Before writing any code, walk the user through their label. Ask one question at a time.
+
+**Question A — What's on your label?** Present this checklist of supported field types and ask the user to pick everything that applies.
+
+*Barcode fields:*
+- `CustomBarcodeBuilder` — any barcode, user chooses symbologies
+- `ImeiOneBarcodeBuilder` — IMEI 1 (typically for smartphone boxes)
+- `ImeiTwoBarcodeBuilder` — IMEI 2
+- `PartNumberBarcodeBuilder` — part number
+- `SerialNumberBarcodeBuilder` — serial number
+
+*Text fields (preset recognisers):*
+- `ExpiryDateTextBuilder` — expiry date (with configurable date format)
+- `PackingDateTextBuilder` — packing date
+- `DateTextBuilder` — generic date
+- `WeightTextBuilder` — weight
+- `UnitPriceTextBuilder` — unit price
+- `TotalPriceTextBuilder` — total price
+
+*Text fields (custom):*
+- `CustomTextBuilder` — any text, user provides a regex
+
+**Question B — For each selected field:**
+- Is it **required** or **optional**? (required = label is not considered captured until this field matches; optional = captured when/if it matches)
+- For `CustomBarcodeBuilder`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy.
+- For `CustomTextBuilder`: what **regex pattern** should the text match?
+
+**Question C — Which file should the integration code go in?** Then write the code directly into that file. Do not just show it in chat.
 
 ## Minimal Integration (Web)
 
