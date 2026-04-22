@@ -86,3 +86,49 @@ overlay.listener = {
 ```
 
 Leave the old setter calls in place if the user wants to stay with a non-redesigned build path, but add `onManualInput` — it is now a required listener method.
+
+## 3. v8.2 → v8.4 — new optional `onValidationFlowResultUpdate` listener (additive, non-breaking)
+
+`LabelCaptureValidationFlowListener` gains an optional method that fires when a validation-flow result is updated during capture. Existing listeners continue to work unchanged.
+
+```typescript
+export interface LabelCaptureValidationFlowListener {
+  onValidationFlowLabelCaptured(fields: LabelField[]): void;
+  onManualInput(field: LabelField, oldValue: string | undefined, newValue: string): void;
+  onValidationFlowResultUpdate?(
+    type: LabelResultUpdateType,
+    fields: LabelField[],
+    frameData: FrameData | null
+  ): void;
+}
+```
+
+`LabelResultUpdateType` is a new enum shipped alongside the listener method — import it from `@scandit/web-datacapture-label` when you use the new method.
+
+### When to add it
+
+The new method is useful if the user needs fine-grained progress feedback as the Validation Flow accumulates partial results (e.g. to update UI during the flow rather than only at its end). If the user doesn't ask for that, leave their listener alone — the method is optional.
+
+### Example — adding the method
+
+```typescript
+import {
+  type LabelCaptureValidationFlowListener,
+  type LabelField,
+  LabelResultUpdateType,
+} from "@scandit/web-datacapture-label";
+import type { FrameData } from "@scandit/web-datacapture-core";
+
+overlay.listener = {
+  onManualInput: (_field, _oldValue, _newValue) => { /* ... */ },
+  onValidationFlowLabelCaptured: (_fields) => { /* ... */ },
+  onValidationFlowResultUpdate: (
+    type: LabelResultUpdateType,
+    fields: LabelField[],
+    _frameData: FrameData | null
+  ) => {
+    // Fires when the validation flow's current result is updated.
+    // See LabelResultUpdateType for the update kind (e.g. added, modified).
+  },
+} satisfies LabelCaptureValidationFlowListener;
+```
