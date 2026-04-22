@@ -138,7 +138,73 @@ After writing the integration code, show this checklist:
 
 ## Optional: Validation Flow
 
-<!-- Filled in by Task 2.4 -->
+If the user wants to confirm OCR results, manually correct errors, or capture missing fields without rescanning, enable the Validation Flow. Skip this section if the user is fine with the minimal scan-and-handle path above.
+
+**Before writing Validation Flow code, determine the user's SDK version.** Prefer reading `package.json` for `@scandit/web-datacapture-label`. If that is unreadable or missing, ask: "Which version of `@scandit/web-datacapture-label` are you on?" Then write the version-matched block below — write only one, not both.
+
+### v8.2+ — Redesigned Validation Flow
+
+Import the Validation Flow classes and replace the `LabelCaptureBasicOverlay` line in the minimal integration with the Validation Flow overlay. Replace the existing `mode.addListener` block with the redesigned listener.
+
+```typescript
+import {
+  LabelCaptureValidationFlowOverlay,
+  LabelCaptureValidationFlowSettings,
+  type LabelCaptureValidationFlowListener,
+  type LabelField,
+} from "@scandit/web-datacapture-label";
+
+const overlay = await LabelCaptureValidationFlowOverlay.withLabelCaptureForView(mode, view);
+
+const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
+await validationFlowSettings.setPlaceholderTextForLabelDefinition("Expiry Date", "MM.DD.YY");
+await validationFlowSettings.setPlaceholderTextForLabelDefinition("Total Price", "e.g., $13.66");
+await overlay.applySettings(validationFlowSettings);
+
+overlay.listener = {
+  onManualInput: (_field: LabelField, _oldValue: string | undefined, _newValue: string) => {
+    // User manually entered or corrected a value for a field.
+  },
+  onValidationFlowLabelCaptured: (fields: LabelField[]) => {
+    for (const field of fields) {
+      console.log(field.name, "=", field.barcode?.data ?? field.text);
+    }
+  },
+} satisfies LabelCaptureValidationFlowListener;
+```
+
+The setter methods `setRequiredFieldErrorText`, `setMissingFieldsHintText`, and `setManualInputButtonText` still exist in 8.2.x for backward compatibility, but they are deprecated — they have no effect in the redesigned UI. Do not call them for new v8.2+ integrations. Use `setPlaceholderTextForLabelDefinition` (and other new methods on `LabelCaptureValidationFlowSettings`) for customisation.
+
+### v8.1 and earlier — Original Validation Flow
+
+On v8.1 the listener interface has **only** `onValidationFlowLabelCaptured` — `onManualInput` did not exist yet (it was added in v8.2). Customise the flow via async setter methods on `LabelCaptureValidationFlowSettings`. There is **no** `setPlaceholderTextForLabelDefinition` in 8.1 — that method was added in v8.2.
+
+```typescript
+import {
+  LabelCaptureValidationFlowOverlay,
+  LabelCaptureValidationFlowSettings,
+  type LabelCaptureValidationFlowListener,
+  type LabelField,
+} from "@scandit/web-datacapture-label";
+
+const overlay = await LabelCaptureValidationFlowOverlay.withLabelCaptureForView(mode, view);
+
+const validationFlowSettings = await LabelCaptureValidationFlowSettings.create();
+await validationFlowSettings.setRequiredFieldErrorText("This field is required");
+await validationFlowSettings.setMissingFieldsHintText("Please fill the missing fields");
+await validationFlowSettings.setManualInputButtonText("Enter manually");
+await overlay.applySettings(validationFlowSettings);
+
+overlay.listener = {
+  onValidationFlowLabelCaptured: (fields: LabelField[]) => {
+    for (const field of fields) {
+      console.log(field.name, "=", field.barcode?.data ?? field.text);
+    }
+  },
+} satisfies LabelCaptureValidationFlowListener;
+```
+
+If the user plans to upgrade to v8.2+, route them to the migration guide (`migration.md` §2) for the listener change (`onManualInput` becomes required) and the optional switch to `setPlaceholderTextForLabelDefinition`.
 
 ## Where to Go Next
 
