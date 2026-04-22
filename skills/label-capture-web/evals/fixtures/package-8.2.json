@@ -1,0 +1,9 @@
+{
+  "name": "my-label-capture-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "@scandit/web-datacapture-core": "8.2.0",
+    "@scandit/web-datacapture-barcode": "8.2.0",
+    "@scandit/web-datacapture-label": "8.2.0"
+  }
+}
