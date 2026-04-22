@@ -56,3 +56,28 @@ Two ways the skill is invoked:
   ```
 
 - **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
+
+### SparkScan iOS implementation
+
+- "How do I add SparkScan to my iOS app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### SparkScan Web implementation
+
+- "How do I add SparkScan to my web app?"
+- "How do I add SparkScan to my react web app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### Label Capture Web implementation
+
+- "How do I add Label Capture to my web app?"
+- "Scan a perishable-product label with a barcode and an expiry date"
+- "How do I enable the Validation Flow?"
+- "Migrate my Label Capture integration from SDK 8.1 to 8.2"
+- "Upgrade my Label Capture to the latest SDK version"
