@@ -45,11 +45,96 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 ## Minimal Integration (Web)
 
-<!-- Filled in by Task 2.3 -->
+Once the user has answered Questions A, B, and C, generate the integration code using the class-builder API. This form works across all shipped 8.x versions. Substitute the placeholders `[LABEL_NAME]`, `[FIELD_NAME]`, and the correct field builders based on the user's answers. Fields marked optional should call `.setIsOptional(true)`; required fields can omit the call (required is the default) or call `.setIsOptional(false)` explicitly for clarity.
+
+```typescript
+import { Symbology } from "@scandit/web-datacapture-barcode";
+import { Camera, DataCaptureContext, DataCaptureView, FrameSourceState } from "@scandit/web-datacapture-core";
+import {
+  CustomBarcodeBuilder,
+  ExpiryDateTextBuilder,
+  LabelCapture,
+  LabelCaptureBasicOverlay,
+  LabelCaptureSettingsBuilder,
+  LabelDefinitionBuilder,
+  labelCaptureLoader,
+  type LabelCaptureSession,
+  type LabelField,
+} from "@scandit/web-datacapture-label";
+
+async function run() {
+  const view = new DataCaptureView();
+  view.connectToElement(document.getElementById("data-capture-view")!);
+
+  const context = await DataCaptureContext.forLicenseKey(
+    "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
+    {
+      libraryLocation: new URL("self-hosted-scandit-sdc-lib", document.baseURI).toString(),
+      moduleLoaders: [labelCaptureLoader()],
+    }
+  );
+  await view.setContext(context);
+
+  const camera = Camera.pickBestGuess();
+  await context.setFrameSource(camera);
+  await camera.applySettings(LabelCapture.createRecommendedCameraSettings());
+  await camera.switchToDesiredState(FrameSourceState.On);
+
+  const settings = await new LabelCaptureSettingsBuilder()
+    .addLabel(
+      await new LabelDefinitionBuilder()
+        .addCustomBarcode(
+          await new CustomBarcodeBuilder()
+            .setSymbologies([Symbology.EAN13UPCA, Symbology.Code128])
+            .setIsOptional(false)
+            .build("Barcode")
+        )
+        .addExpiryDateText(
+          await new ExpiryDateTextBuilder()
+            .setIsOptional(false)
+            .build("Expiry Date")
+        )
+        .build("Perishable Product")
+    )
+    .build();
+
+  const mode = await LabelCapture.forContext(context, settings);
+
+  await LabelCaptureBasicOverlay.withLabelCaptureForView(mode, view);
+
+  mode.addListener({
+    didUpdateSession: (_labelCapture, session: LabelCaptureSession, _frameData) => {
+      for (const capturedLabel of session.capturedLabels) {
+        for (const field of capturedLabel.fields as LabelField[]) {
+          console.log(field.name, "=", field.barcode?.data ?? field.text);
+        }
+      }
+    },
+  });
+}
+
+run();
+```
+
+Notes when generating this code:
+
+- Import ONLY the field builders the user actually selected (`CustomBarcodeBuilder`, `ExpiryDateTextBuilder`, etc.). Do not import unused ones.
+- The corresponding `addXxx` method on `LabelDefinitionBuilder` mirrors the field type: `addCustomBarcode`, `addExpiryDateText`, `addWeightText`, `addUnitPriceText`, `addTotalPriceText`, `addCustomText`, `addPackingDateText`, `addDateText`, `addImeiOneBarcode`, `addImeiTwoBarcode`, `addPartNumberBarcode`, `addSerialNumberBarcode`.
+- For `CustomBarcodeBuilder`, use `setSymbologies([...])` with the symbologies the user selected. For a single symbology, `setSymbology(Symbology.X)` is also valid.
+- For `CustomTextBuilder`, use `.setValueRegex(pattern)` (or `.setValueRegexes([patterns])` for multiple). Do not use `.setPattern` or `.setPatterns` — those names were renamed in v8.1 and no longer exist.
+- Do NOT use the factory-function sugar (`label(...)`, `customBarcode(...)`, `labelCaptureSettings()`) — that shorthand is only guaranteed from v8.5. The class-builder form above works on all 8.x versions.
 
 ## Setup Checklist
 
-<!-- Filled in by Task 2.3 -->
+After writing the integration code, show this checklist:
+
+1. Install the three npm packages with the user's package manager (npm, pnpm, or yarn):
+   - `@scandit/web-datacapture-core`
+   - `@scandit/web-datacapture-barcode`
+   - `@scandit/web-datacapture-label`
+2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your license key from <https://ssl.scandit.com>.
+3. Make sure `libraryLocation` points to a self-hosted copy of the SDK library (the path in `new URL(...)`). You can copy the `sdc-lib` directory from `node_modules/@scandit/web-datacapture-label/sdc-lib/`, or use the CDN instead: `libraryLocation: "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-label@8/sdc-lib/"`.
+4. Ensure a DOM element with id `data-capture-view` exists on the page before `run()` executes.
 
 ## Optional: Validation Flow
 
