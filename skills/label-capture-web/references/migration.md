@@ -132,3 +132,68 @@ overlay.listener = {
   },
 } satisfies LabelCaptureValidationFlowListener;
 ```
+
+## 4. v8.4 → v8.5 — ergonomic builder improvements (additive, non-breaking)
+
+Two purely additive changes. All existing code continues to work — upgrading is a stylistic preference.
+
+### Change A — inline builders, name in constructor, single outer `await`
+
+`LabelDefinitionBuilder.addXxx()` now accepts either a pre-built field or the corresponding field builder. `LabelCaptureSettingsBuilder.addLabel()` similarly accepts either a `LabelDefinition` or a `LabelDefinitionBuilder`. Pending builders are resolved inside the top-level `build()` call. Field-builder constructors also accept an optional name; `build(name?)` falls back to the constructor-set value if no name is passed.
+
+**Before (still valid in 8.5):**
+
+```typescript
+const settings = await new LabelCaptureSettingsBuilder()
+  .addLabel(
+    await new LabelDefinitionBuilder()
+      .addCustomBarcode(
+        await new CustomBarcodeBuilder()
+          .setSymbology(Symbology.EAN13UPCA)
+          .build("Barcode")
+      )
+      .addExpiryDateText(await new ExpiryDateTextBuilder().build("Expiry Date"))
+      .build("Perishable Product")
+  )
+  .build();
+```
+
+**After (new in 8.5):**
+
+```typescript
+const settings = await new LabelCaptureSettingsBuilder()
+  .addLabel(
+    new LabelDefinitionBuilder("Perishable Product")
+      .addCustomBarcode(new CustomBarcodeBuilder("Barcode").setSymbology(Symbology.EAN13UPCA))
+      .addExpiryDateText(new ExpiryDateTextBuilder("Expiry Date"))
+  )
+  .build();
+```
+
+One `await` at the outermost `build()`, and each builder's name is co-located with its constructor.
+
+### Change B — factory-function helpers (optional sugar)
+
+Each `LabelDefinitionBuilder` and `LabelFieldDefinitionBuilder` now has a matching factory function whose name is the builder name with a lowercase first letter and no `Builder` suffix. Equivalent to the class constructors, but less noise at call sites.
+
+```typescript
+import {
+  customBarcode,
+  expiryDateText,
+  label,
+  labelCaptureSettings,
+  LabelCapture,
+} from "@scandit/web-datacapture-label";
+
+const settings = await labelCaptureSettings()
+  .addLabel(
+    label("Perishable Product")
+      .addCustomBarcode(customBarcode("Barcode").setSymbology(Symbology.EAN13UPCA))
+      .addExpiryDateText(expiryDateText("Expiry Date"))
+  )
+  .build();
+```
+
+### When to migrate
+
+Only if the user explicitly asks for the terser syntax. Both styles are fully supported. Do not rewrite working code just because a newer style exists.
