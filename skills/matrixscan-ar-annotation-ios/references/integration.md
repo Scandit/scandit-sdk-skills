@@ -82,3 +82,87 @@ If the project already assigns an `annotationProvider`, ask the user whether the
 - **`BarcodeArResponsiveAnnotation(barcode:closeUp:farAway:)`** — wraps a close-up and a far-away `BarcodeArInfoAnnotation`. Either may be `nil` to suppress display at that range. Useful when the same barcode needs different detail at different distances, or when you want an annotation only when the user is close / only when they are far.
 
 For any construction detail beyond what's shown here (exact property names, available anchors, trigger enum cases, sub-component types, colors), fetch the relevant API page rather than guessing — follow the pointers in `customization.md`.
+
+## Custom annotations (beyond the four built-in types)
+
+The four concrete types cover most needs, but the provider's return type is `(any UIView & BarcodeArAnnotation)?` — meaning **any `UIView` subclass can be an annotation** as long as it conforms to the `BarcodeArAnnotation` protocol. Reach for this when the user wants UI that the built-in types plus customization (`customization.md`) cannot express — for example: a bespoke layout mixing chart data with text, a branded visual that doesn't fit the info / popover / status-icon moulds, or a view driven by animations that aren't exposed as properties on the concrete types.
+
+The `BarcodeArAnnotation` protocol has **two required members**:
+
+```swift
+func update(with location: Quadrilateral, highlight: (any UIView & BarcodeArHighlight)?)
+var annotationTrigger: BarcodeArAnnotationTrigger { get set }
+```
+
+- `update(with:highlight:)` is called on every frame the barcode is tracked, on the main thread. It receives the barcode's `Quadrilateral` (four `CGPoint` corners — `topLeft`, `topRight`, `bottomLeft`, `bottomRight` — in the parent view's coordinate space) and the highlight view currently drawn over the barcode (or `nil` if no highlight provider is attached). Use it to position your annotation and, if needed, align relative to the highlight.
+- `annotationTrigger` controls **when** the annotation appears. It is part of the protocol itself — not optional. See `customization.md` for the valid enum cases; typically you store a default in a stored property.
+
+Unlike the built-in types, **the protocol has no `barcode` property**. If your annotation needs the barcode (for data lookup, analytics, tap routing), capture it at construction time and store it yourself.
+
+Minimal custom annotation (UIKit) — a price badge positioned above the barcode:
+
+```swift
+import ScanditBarcodeCapture
+import UIKit
+
+class PriceBadgeAnnotation: UIView, BarcodeArAnnotation {
+    var annotationTrigger: BarcodeArAnnotationTrigger = .highlightTapAndBarcodeScan
+
+    private let barcode: Barcode
+    private let label = UILabel()
+
+    init(barcode: Barcode, price: String) {
+        self.barcode = barcode
+        super.init(frame: .zero)
+        backgroundColor = UIColor.systemBlue
+        layer.cornerRadius = 8
+        label.text = price
+        label.textColor = .white
+        label.font = .boldSystemFont(ofSize: 14)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            label.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4),
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func update(with location: Quadrilateral, highlight: (any UIView & BarcodeArHighlight)?) {
+        // Position the badge centred horizontally above the barcode.
+        let topMidX = (location.topLeft.x + location.topRight.x) / 2
+        let topY = min(location.topLeft.y, location.topRight.y)
+        let size = systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+        bounds = CGRect(origin: .zero, size: size)
+        center = CGPoint(x: topMidX, y: topY - size.height / 2 - 8)
+        // The `highlight` parameter is available if you want to anchor against the drawn highlight
+        // rather than the raw barcode quad (e.g. to sit just above a circle highlight's top edge).
+    }
+}
+```
+
+Return an instance of the custom class from the provider exactly the same way you'd return a built-in annotation — the return type already accepts it:
+
+```swift
+extension ViewController: BarcodeArAnnotationProvider {
+    func annotation(
+        for barcode: Barcode,
+        completionHandler: @escaping ((any UIView & BarcodeArAnnotation)?) -> Void
+    ) {
+        // Look up the price for this barcode in your data source, then construct the annotation.
+        let price = priceLookup[barcode.data ?? ""] ?? "—"
+        completionHandler(PriceBadgeAnnotation(barcode: barcode, price: price))
+    }
+}
+```
+
+A few practical notes:
+- Do not call `update(with:highlight:)` yourself — the SDK drives it.
+- The `Quadrilateral` coordinates are in the parent view's coordinate space, so they go directly into UIKit positioning APIs (`center`, `frame`). When drawing a shape inside the view's own `bounds`, translate corners by the view's origin.
+- Set `annotationTrigger` as a stored property with the default that fits the use case (e.g. `.highlightTapAndBarcodeScan` for "show on scan, let the user dismiss via tap").
+- For interaction (taps), custom annotations do **not** get the built-in `BarcodeArInfoAnnotationDelegate` / `BarcodeArPopoverAnnotationDelegate` callbacks. Use a `UITapGestureRecognizer` on the custom view if the user needs tap handling.
+- If the user wants a simple barcode *outline* (coloured shape over the barcode, no text/UI), that is highlight territory (`matrixscan-ar-highlight-ios` skill) — annotations are for information *about* barcodes, highlights are for shapes *on* them.

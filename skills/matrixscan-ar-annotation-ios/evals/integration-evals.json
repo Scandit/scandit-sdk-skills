@@ -168,6 +168,29 @@
         {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
         {"text": "No files are written or edited"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want a custom price-badge annotation on each barcode in my MatrixScan AR app — a rounded blue pill with a price label positioned above the barcode. The four built-in annotation types don't fit my design. Assume a `priceLookup: [String: String]` is already available on the view controller. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill declares a new UIView subclass that conforms to BarcodeArAnnotation, implements update(with location: Quadrilateral, highlight: (any UIView & BarcodeArHighlight)?) to position the badge above the barcode using the quadrilateral's top corners, provides the required annotationTrigger stored property, stores the barcode at init (since the protocol has no barcode property), adds a BarcodeArAnnotationProvider conformance that returns the custom class with the price from priceLookup, and assigns annotationProvider on the existing barcodeArView. Does NOT fall back to any built-in annotation type. Existing integration code is preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A new UIView subclass (distinct from BarcodeArStatusIconAnnotation, BarcodeArInfoAnnotation, BarcodeArPopoverAnnotation, and BarcodeArResponsiveAnnotation) is declared in the file"},
+        {"text": "That new class conforms to BarcodeArAnnotation (the conformance appears on its declaration, e.g. `class FooAnnotation: UIView, BarcodeArAnnotation`)"},
+        {"text": "The class implements func update(with location: Quadrilateral, highlight: (any UIView & BarcodeArHighlight)?) with that exact two-parameter signature (not the one-parameter highlight variant, not update(_:), not update(quadrilateral:))"},
+        {"text": "The class declares a stored var annotationTrigger: BarcodeArAnnotationTrigger property (required by the protocol — it is NOT optional and cannot be omitted)"},
+        {"text": "The update(with:highlight:) implementation references at least one of the Quadrilateral corner properties (topLeft, topRight, bottomLeft, bottomRight) to compute the badge's position — proving it knows the struct's actual shape"},
+        {"text": "The class stores the Barcode at construction time (e.g. via an `init(barcode: Barcode, ...)` that assigns it to a stored property) — because BarcodeArAnnotation has no barcode property, the class must capture it explicitly if the annotation needs it later"},
+        {"text": "BarcodeArAnnotationProvider conformance is present on the view controller"},
+        {"text": "annotation(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "The provider returns an instance of the custom UIView subclass (NOT BarcodeArStatusIconAnnotation, NOT BarcodeArInfoAnnotation, NOT BarcodeArPopoverAnnotation, NOT BarcodeArResponsiveAnnotation — those are wrong answers for a bespoke badge design)"},
+        {"text": "The provider references priceLookup (or equivalent lookup on the view controller) to get the price string for the barcode before constructing the annotation"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "No manual `update(with:highlight:)` call is present in the view-controller code — the SDK drives that callback"},
+        {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, barcodeArView initialization, and start()/stop() lifecycle are all preserved"}
+      ]
     }
   ]
 }
