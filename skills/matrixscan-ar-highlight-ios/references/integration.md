@@ -87,3 +87,79 @@ Both highlight types expose customization properties (e.g. brush, icon, and — 
 | `ScanditIcon` and `ScanditIconBuilder` (icon overlays) | https://docs.scandit.com/data-capture-sdk/ios/core/api/ui/scandit-icon.html |
 
 Apply customizations on the highlight instance inside the provider before passing it to the completion handler (or returning it, in the async variant). If a property or initializer needed for the user's request isn't on the page you fetched, follow the URL guessing policy in `SKILL.md` — check for direct links first, otherwise consult the API index.
+
+## Custom highlights (beyond rectangle and circle)
+
+`BarcodeArRectangleHighlight` and `BarcodeArCircleHighlight` cover most needs, but the provider's return type is `(any UIView & BarcodeArHighlight)?` — meaning **any `UIView` subclass can be a highlight** as long as it conforms to the `BarcodeArHighlight` protocol. Reach for this when the user wants something the built-in types plus brush/icon customization cannot express — non-rectangular/non-circular shapes (triangle, star, arrow), custom animations, or branded UI beyond what a `ScanditIcon` overlay can produce.
+
+The `BarcodeArHighlight` protocol has exactly **one required method**:
+
+```swift
+func update(with location: Quadrilateral)
+```
+
+`Quadrilateral` is a `struct` with four `CGPoint` corners: `topLeft`, `topRight`, `bottomLeft`, `bottomRight`. The coordinates are in the parent view's (the `BarcodeArView`'s) coordinate space, which means they plug directly into standard UIKit positioning APIs — in particular, setting `self.center` to the quad's center places the view on the barcode. The SDK calls `update(with:)` on every frame the barcode is tracked, on the main thread — it is the **only** callback the SDK gives you, so the highlight view has to do two things inside it: position itself, and draw its shape. One highlight instance is created per tracked barcode, so each one must place itself independently.
+
+Minimal custom highlight (UIKit):
+
+```swift
+import ScanditBarcodeCapture
+import UIKit
+
+class TriangleHighlightView: UIView, BarcodeArHighlight {
+    private let shapeLayer = CAShapeLayer()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        shapeLayer.fillColor = UIColor.systemBlue.withAlphaComponent(0.4).cgColor
+        shapeLayer.strokeColor = UIColor.systemBlue.cgColor
+        shapeLayer.lineWidth = 2
+        layer.addSublayer(shapeLayer)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func update(with location: Quadrilateral) {
+        // Position: the quad is in the parent view's coordinate space, so `center` takes it directly.
+        let centerX = (location.topLeft.x + location.topRight.x + location.bottomLeft.x + location.bottomRight.x) / 4
+        let centerY = (location.topLeft.y + location.topRight.y + location.bottomLeft.y + location.bottomRight.y) / 4
+        let xs = [location.topLeft.x, location.topRight.x, location.bottomLeft.x, location.bottomRight.x]
+        let ys = [location.topLeft.y, location.topRight.y, location.bottomLeft.y, location.bottomRight.y]
+        guard let minX = xs.min(), let maxX = xs.max(), let minY = ys.min(), let maxY = ys.max() else { return }
+        bounds = CGRect(x: 0, y: 0, width: maxX - minX, height: maxY - minY)
+        center = CGPoint(x: centerX, y: centerY)
+
+        // Draw: translate quad corners into the view's local coordinate space.
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: location.topLeft.x - minX, y: location.topLeft.y - minY))
+        path.addLine(to: CGPoint(x: location.topRight.x - minX, y: location.topRight.y - minY))
+        path.addLine(to: CGPoint(
+            x: (location.bottomLeft.x + location.bottomRight.x) / 2 - minX,
+            y: (location.bottomLeft.y + location.bottomRight.y) / 2 - minY
+        ))
+        path.close()
+        shapeLayer.frame = bounds
+        shapeLayer.path = path.cgPath
+    }
+}
+```
+
+Return an instance of the custom class from the provider exactly the same way you'd return a built-in highlight — the return type already accepts it:
+
+```swift
+extension ViewController: BarcodeArHighlightProvider {
+    func highlight(
+        for barcode: Barcode,
+        completionHandler: @escaping ((any UIView & BarcodeArHighlight)?) -> Void
+    ) {
+        completionHandler(TriangleHighlightView())
+    }
+}
+```
+
+A few practical notes:
+- Do not call `update(with:)` yourself — the SDK drives it.
+- The `Quadrilateral` coordinates are in the parent view's coordinate space, so they go directly into UIKit positioning APIs (`center`, `frame`, etc.). For drawing the shape inside the view's own `bounds`, translate the corners by the view's origin.
+- Build the drawing with `CAShapeLayer`, `UIBezierPath`, or any UIKit drawing API — the SDK does not constrain how you render, only that you conform to the protocol.
+- If the user wants a *photo* or a rich info card rather than a shape, that is annotation territory (`matrixscan-ar-annotation-ios` skill) — a custom highlight is still a barcode *outline*, just with a non-standard shape or behavior.

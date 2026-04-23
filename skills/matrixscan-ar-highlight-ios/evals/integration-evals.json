@@ -170,6 +170,26 @@
         {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
         {"text": "No files are written or edited"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want a triangle-shaped highlight over each barcode in my MatrixScan AR app. Neither the rectangle nor the circle fits — I need a custom shape. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill declares a new UIView subclass that conforms to BarcodeArHighlight, implements update(with location: Quadrilateral) to draw a triangle using the quadrilateral's four corners, adds a BarcodeArHighlightProvider conformance that returns an instance of the custom class, and assigns highlightProvider on the existing barcodeArView. It does NOT try to fake a triangle out of BarcodeArRectangleHighlight or BarcodeArCircleHighlight (those cannot produce a triangle). Existing integration code is preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A new UIView subclass (distinct from BarcodeArRectangleHighlight and BarcodeArCircleHighlight) is declared in the file"},
+        {"text": "That new class conforms to BarcodeArHighlight (the conformance appears on its declaration, e.g. `class FooHighlight: UIView, BarcodeArHighlight`)"},
+        {"text": "The class implements func update(with location: Quadrilateral) with that exact signature (not update(_:), not update(quadrilateral:), not update(with rect: CGRect))"},
+        {"text": "The update(with:) implementation references at least two of the Quadrilateral corner properties (topLeft, topRight, bottomLeft, bottomRight) to compute the triangle geometry — proving it knows the struct's actual shape rather than guessing at a rect-style API"},
+        {"text": "BarcodeArHighlightProvider conformance is present on the view controller"},
+        {"text": "highlight(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "The provider returns an instance of the custom UIView subclass (NOT BarcodeArRectangleHighlight and NOT BarcodeArCircleHighlight — both are wrong answers for a triangle)"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "No manual `update(with:)` call is present in the view-controller code — the SDK drives that callback"},
+        {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, barcodeArView initialization, and start()/stop() lifecycle are all preserved"}
+      ]
     }
   ]
 }
