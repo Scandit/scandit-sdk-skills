@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.example.sparkscanapp" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>My SparkScan Cordova App</name>
+    <description>A sample Cordova app using Scandit SparkScan.</description>
+    <author email="dev@example.com">Example Author</author>
+    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+
+    <preference name="deployment-target" value="15.0" />
+    <preference name="android-minSdkVersion" value="24" />
+
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+    </platform>
+
+    <platform name="android">
+        <allow-intent href="market:*" />
+    </platform>
+
+    <plugin name="cordova-plugin-add-swift-support" spec="^2.0.2" />
+    <plugin name="scandit-cordova-datacapture-core" spec="6.28.1" />
+    <plugin name="scandit-cordova-datacapture-barcode" spec="6.28.1" />
+
+    <engine name="ios" spec="^7.0.0" />
+    <engine name="android" spec="^12.0.0" />
+</widget>

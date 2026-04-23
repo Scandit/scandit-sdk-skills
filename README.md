@@ -28,6 +28,10 @@ npx skills add Scandit/scandit-sdk-skills
 | `data-capture-sdk` | Expert guide for the Scandit Data Capture SDK — product selection, docs, and sample apps |
 | `sparkscan-ios` | SparkScan integration and migration guide for iOS |
 | `sparkscan-web` | SparkScan integration and migration guide for Web |
+| `sparkscan-capacitor` | SparkScan integration and migration guide for Capacitor |
+| `sparkscan-cordova` | SparkScan integration and migration guide for Cordova |
+| `sparkscan-flutter` | SparkScan integration and migration guide for Flutter |
+| `sparkscan-rn` | SparkScan integration and migration guide for React Native |
 
 ## Usage
 
@@ -52,6 +56,38 @@ After installing, ask your AI coding assistant:
 
 - "How do I add SparkScan to my web app?"
 - "How do I add SparkScan to my react web app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### SparkScan Capacitor implementation
+
+- "How do I add SparkScan to my Capacitor app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### SparkScan Cordova implementation
+
+- "How do I add SparkScan to my Cordova app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### SparkScan Flutter implementation
+
+- "How do I add SparkScan to my Flutter app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### SparkScan React Native implementation
+
+- "How do I add SparkScan to my React Native app?"
 - "How do I enable symbologies in SparkScan?"
 - "How do I handle scan results in SparkScan?"
 - "Migrate my SparkScan integration from SDK v6 to v7"

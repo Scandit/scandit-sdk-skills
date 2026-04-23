@@ -1,0 +1,147 @@
+{
+  "skill_name": "sparkscan-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my React Native app. Here's my screen file: EmptyApp.tsx. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyApp.tsx as a function component with hooks, and shows the setup checklist (packages to install, npx pod-install, camera permission entries).",
+      "files": [
+        "fixtures/EmptyApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (PermissionsAndroid) or notes Android auto-links"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
+        {"text": "new SparkScan(settings) is present (v8 constructor used, not SparkScan.forSettings)"},
+        {"text": "SparkScan.forSettings( is NOT present"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
+        {"text": "<SparkScanView is rendered as JSX with context, sparkScan, and sparkScanViewSettings props"},
+        {"text": "The component is written as a function component (no extends React.Component / class syntax)"},
+        {"text": "useRef is used to hold the SparkScan mode reference across renders"},
+        {"text": "useEffect cleanup calls dataCaptureContext.removeMode(...) on unmount"},
+        {"text": "addListener is called on the SparkScan mode to register a listener with a didScan callback"},
+        {"text": "Imports come from scandit-react-native-datacapture-core (DataCaptureContext) and scandit-react-native-datacapture-barcode (SparkScan, SparkScanView, SparkScanSettings, SparkScanViewSettings, Symbology, SparkScanSession)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan barcode scanning to ProductListApp.tsx. When a barcode is scanned, append it to the scannedProducts state and re-render the product list. Keep the existing clear button and list rendering.",
+      "expected_output": "The skill adds SparkScan to ProductListApp.tsx. The existing scannedProducts state, render logic, and clear button are preserved. Scanned barcodes are appended via setScannedProducts.",
+      "files": [
+        "fixtures/ProductListApp.tsx"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new SparkScan(settings) is present"},
+        {"text": "<SparkScanView is rendered in the component's JSX"},
+        {"text": "sparkScan.addListener( is called with a didScan callback"},
+        {"text": "didScan callback pushes / appends to scannedProducts via setScannedProducts (or equivalent state setter)"},
+        {"text": "Existing scannedProducts state and setScannedProducts setter are preserved"},
+        {"text": "Existing list rendering (FlatList / ScrollView / map) is preserved"},
+        {"text": "Existing clear button / onClearTapped handler is preserved"},
+        {"text": "useEffect cleanup calls dataCaptureContext.removeMode(...)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my React Native app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
+      "expected_output": "The skill adds a feedbackDelegate built with useMemo containing feedbackForBarcode that returns SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones. The delegate is assigned on the SparkScanView via the ref callback.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "The feedbackDelegate is assigned through the <SparkScanView> ref callback (view.feedbackDelegate = ...)"},
+        {"text": "feedbackForBarcode is a method on the feedback delegate object"},
+        {"text": "new SparkScanBarcodeErrorFeedback( is returned for rejected barcodes"},
+        {"text": "resumeCapturingDelay of 30 is passed to the error feedback (in seconds)"},
+        {"text": "new SparkScanBarcodeSuccessFeedback() or SparkScanBarcodeSuccessFeedback.fromVisualFeedbackColor is returned for valid barcodes"},
+        {"text": "The rejection condition checks barcode.data === '123456789' or equivalent"},
+        {"text": "Existing integration code (context, sparkScan mode, SparkScanView JSX, listener) is preserved"},
+        {"text": "Imports for SparkScanBarcodeErrorFeedback and SparkScanBarcodeSuccessFeedback are added"},
+        {"text": "The feedback delegate is memoised (useMemo / useCallback / module-level constant) rather than recreated on every render"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom React Native Pressable in my app's UI. When the custom button is pressed, scanning should start. When pressed again while scanning, it should pause.",
+      "expected_output": "The skill hides the standard trigger button (triggerButtonVisible = false), renders a custom Pressable/TouchableOpacity inside the SparkScanView children, and implements handlers that call sparkScanViewRef.current.startScanning() / pauseScanning().",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.triggerButtonVisible = false is set via the <SparkScanView> ref callback"},
+        {"text": "A custom Pressable, TouchableOpacity, or Button is rendered inside the SparkScanView children"},
+        {"text": "onPress handler calls sparkScanViewRef.current.startScanning() or equivalent"},
+        {"text": "sparkScanViewRef.current.pauseScanning() is called in the pause branch"},
+        {"text": "useRef<SparkScanView | null>(null) is used to hold the view reference"},
+        {"text": "Existing integration code (context, sparkScan mode, SparkScanView JSX, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to change the SparkScan UI look for my React Native app. Hide the camera switch, hide the zoom switch, and set the trigger button tint color to white.",
+      "expected_output": "The skill sets the appropriate visibility and color properties on the view via the ref callback, using v8 property names.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.cameraSwitchButtonVisible = false is set via the ref callback"},
+        {"text": "view.zoomSwitchControlVisible = false is set via the ref callback"},
+        {"text": "view.triggerButtonTintColor is assigned a Color value (Color.fromHex('#FFFFFF') or equivalent)"},
+        {"text": "Color is imported from scandit-react-native-datacapture-core"},
+        {"text": "Existing integration code (context, sparkScan mode, SparkScanView JSX, listener) is preserved"},
+        {"text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need custom behavior when the user taps the barcode count button in the SparkScan toolbar — I want to navigate to a summary screen using React Navigation. Wire this up.",
+      "expected_output": "The skill installs a uiListener via the ref callback on the SparkScanView and implements didTapBarcodeCountButton to trigger navigation.navigate(...).",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.uiListener is assigned an object via the <SparkScanView> ref callback"},
+        {"text": "The uiListener object has a didTapBarcodeCountButton method"},
+        {"text": "navigation.navigate(...) or equivalent router call is invoked inside the handler"},
+        {"text": "useNavigation() or props.navigation is used to obtain the navigator"},
+        {"text": "Existing integration code (context, sparkScan mode, SparkScanView JSX, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to clean up properly when my React Native scan screen unmounts — unbind the SparkScan mode from the context so its camera and native resources are released.",
+      "expected_output": "The skill wires dataCaptureContext.removeMode(sparkScanMode.current) into the useEffect cleanup function so it runs on unmount.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "useEffect cleanup (returned function from useEffect) calls dataCaptureContext.removeMode(...)"},
+        {"text": "The SparkScan mode passed to removeMode is the one held in the useRef"},
+        {"text": "dataCaptureContext.dispose() is NOT called (singleton context must not be disposed)"},
+        {"text": "Existing integration code (context, sparkScan mode, SparkScanView JSX, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to filter scans so duplicates within 500 milliseconds are ignored. Update my SparkScan settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the SparkScanSettings instance before constructing the SparkScan mode.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter = 500 is set (or equivalent in the API units)"},
+        {"text": "codeDuplicateFilter is set BEFORE new SparkScan(settings) is called"},
+        {"text": "Existing integration code (context, sparkScan mode, SparkScanView JSX, listener) is preserved"}
+      ]
+    }
+  ]
+}
