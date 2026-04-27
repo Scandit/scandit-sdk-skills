@@ -1,0 +1,71 @@
+{
+  "skill_name": "matrixscan-ar-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this MatrixScan code from BarcodeBatch to BarcodeAr. The visual feedback should be rectangle highlights on each tracked barcode (matching the existing Frame overlay style). File: MigrationSimpleSampleScreen.dart",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces DataCaptureView with BarcodeArView created in initState() and stored as a field, wires a BarcodeArRectangleHighlight provider, removes the setMode call, preserves the scanResults list and camera lifecycle, and replaces _barcodeBatch.isEnabled assignments with _barcodeArView?.start()/_barcodeArView?.stop().",
+      "files": [
+        "fixtures/MigrationSimpleSampleScreen.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeBatchSession is NOT present in the output file"},
+        {"text": "scandit_flutter_datacapture_barcode_batch is NOT present in the output file"},
+        {"text": "BarcodeAr is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "BarcodeArRectangleHighlight is present in the output file"},
+        {"text": "BarcodeArSettings is present in the output file"},
+        {"text": "scandit_flutter_datacapture_barcode_ar is present in the output file"},
+        {"text": "DataCaptureView is NOT present in the output file"},
+        {"text": "addOverlay( is NOT present in the output file"},
+        {"text": "setMode( is NOT present in the output file"},
+        {"text": "isEnabled is NOT present in the output file"},
+        {"text": "BarcodeArView is created in initState() and stored as a field, not constructed inside build() (semantic)"},
+        {"text": "highlightForBarcode is present in the output file"},
+        {"text": "The scanResults list and the logic that appends to it are preserved (semantic)"},
+        {"text": "_camera!.switchToDesiredState( is preserved in the output — camera lifecycle is unchanged (semantic)"},
+        {"text": "_barcodeArView?.stop() or _barcodeArView!.stop() replaces _barcodeBatch.isEnabled = false (semantic)"},
+        {"text": "The import from scandit_flutter_datacapture_barcode_barcode_batch is gone and scandit_flutter_datacapture_barcode_ar is added (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate this MatrixScan code from BarcodeBatch to BarcodeAr. The bubbles above each barcode should become BarcodeAr annotations. Files: MigrationBubblesSampleScreen.dart and MigrationBubblesSampleProductBubble.dart",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces DataCaptureView with BarcodeArView created in initState(), wires a BarcodeArAnnotationProvider that uses either BarcodeArCustomAnnotation (wrapping the ProductBubble widget) or BarcodeArInfoAnnotation, removes the manual viewQuadrilateralForFrameQuadrilateral distance heuristic and _updateView helper, removes the BarcodeBatchAdvancedOverlay setup and all setWidgetForTrackedBarcode calls, migrates the lifecycle to _barcodeArView?.start()/_barcodeArView?.stop(), and converts ProductBubble from BarcodeBatchAdvancedOverlayWidget to a plain StatefulWidget.",
+      "files": [
+        "fixtures/MigrationBubblesSampleScreen.dart",
+        "fixtures/MigrationBubblesSampleProductBubble.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlayWidget is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlayWidgetState is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlayContainer is NOT present in the output file"},
+        {"text": "scandit_flutter_datacapture_barcode_batch is NOT present in the output file"},
+        {"text": "BarcodeArAnnotationProvider is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "scandit_flutter_datacapture_barcode_ar is present in the output file"},
+        {"text": "at least one of BarcodeArCustomAnnotation or BarcodeArInfoAnnotation or BarcodeArResponsiveAnnotation is present in the output file (semantic)"},
+        {"text": "DataCaptureView is NOT present in the output file"},
+        {"text": "addOverlay( is NOT present in the output file"},
+        {"text": "setMode( is NOT present in the output file"},
+        {"text": "setWidgetForTrackedBarcode is NOT present in the output file"},
+        {"text": "viewQuadrilateralForFrameQuadrilateral is NOT present in the output file"},
+        {"text": "_updateView is NOT present in the output file"},
+        {"text": "anchorForTrackedBarcode is NOT present in the output file"},
+        {"text": "offsetForTrackedBarcode is NOT present in the output file"},
+        {"text": "isEnabled is NOT present in the output file"},
+        {"text": "ProductBubble extends StatefulWidget in the migrated ProductBubble file — not BarcodeBatchAdvancedOverlayWidget (semantic)"},
+        {"text": "The bubble content (stock info and barcode data text) is preserved in the migrated ProductBubble or inside the annotation (semantic)"},
+        {"text": "_barcodeArView?.stop() or equivalent replaces _barcodeBatch.isEnabled = false in the freeze and cleanup paths (semantic)"},
+        {"text": "_camera?.switchToDesiredState( is preserved — camera lifecycle is unchanged (semantic)"}
+      ]
+    }
+  ]
+}

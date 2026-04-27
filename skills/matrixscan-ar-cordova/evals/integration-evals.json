@@ -1,0 +1,121 @@
+{
+  "skill_name": "matrixscan-ar-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my Cordova app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes and show a rectangle highlight on each detected barcode.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeAr integration code into EmptyApp.js, and shows the setup checklist (plugins to install, cordova prepare, camera permissions, CSP, minimum plugin version 8.2).",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"},
+        {"text": "Setup checklist mentions minimum plugin version 8.2 for BarcodeAr"},
+        {"text": "Setup checklist mentions cordova prepare after plugin install"},
+        {"text": "Setup checklist mentions CSP meta tag or that camera permissions are auto-configured by the plugins"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "Scandit.BarcodeAr.createRecommendedCameraSettings() is called"},
+        {"text": "Scandit.Camera.withSettings( is called"},
+        {"text": "context.setFrameSource( is called"},
+        {"text": "new Scandit.BarcodeArSettings() is present"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
+        {"text": "Scandit.Symbology.Code128 is enabled"},
+        {"text": "Only Scandit.Symbology.EAN13UPCA and Scandit.Symbology.Code128 are enabled in the primary BarcodeArSettings.enableSymbologies(...) call (semantic)"},
+        {"text": "new Scandit.BarcodeAr(settings) is present (Cordova constructor used)"},
+        {"text": "BarcodeAr.forContext( is NOT present"},
+        {"text": "new Scandit.BarcodeArViewSettings() is present"},
+        {"text": "new Scandit.BarcodeArView({ is present"},
+        {"text": "barcodeArView.connectToElement( is called"},
+        {"text": "new Scandit.BarcodeArRectangleHighlight( is returned from highlightProvider"},
+        {"text": "highlightProvider is assigned on barcodeArView"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to start the camera"},
+        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan AR to ProductListApp.js. Show a circle highlight (Dot preset) on each barcode. When the user taps a highlight, show an info annotation with the barcode data and add the barcode to the scannedProducts array.",
+      "expected_output": "The skill adds BarcodeAr integration to ProductListApp.js, wires a circle highlight provider, sets a uiListener for tap events, sets an annotation provider that shows info annotations, and pushes scanned barcodes to scannedProducts. All existing state and render logic is preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "document.addEventListener('deviceready' is present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present"},
+        {"text": "new Scandit.BarcodeArSettings() is present"},
+        {"text": "new Scandit.BarcodeAr(settings) is present"},
+        {"text": "new Scandit.BarcodeArView({ is present"},
+        {"text": "barcodeArView.connectToElement( is called"},
+        {"text": "BarcodeArCircleHighlight is used with BarcodeArCircleHighlightPreset.Dot"},
+        {"text": "highlightProvider is assigned on barcodeArView with a highlightForBarcode method"},
+        {"text": "annotationProvider is assigned on barcodeArView with an annotationForBarcode method"},
+        {"text": "BarcodeArInfoAnnotation is constructed in annotationForBarcode"},
+        {"text": "barcode.data is used as the text of a BarcodeArInfoAnnotationBodyComponent (semantic)"},
+        {"text": "uiListener is assigned OR barcodeAr.addListener is used to push items to scannedProducts"},
+        {"text": "Existing scannedProducts variable is referenced in the integrated code (semantic)"},
+        {"text": "Existing renderProductList function is defined (semantic)"},
+        {"text": "Existing onClearTapped / clear button handler is preserved"},
+        {"text": "camera.switchToDesiredState( is called to start the camera"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my Cordova MatrixScan AR app, I want a custom highlight provider that shows a green BarcodeArCircleHighlight with an Icon preset for barcodes whose data starts with '9', and a red BarcodeArRectangleHighlight for all other barcodes. Both should have the appropriate brush color applied.",
+      "expected_output": "The skill assigns a highlightProvider to barcodeArView with a highlightForBarcode method that branches on barcode.data, returning a green circle highlight or a red rectangle highlight with the correct brush in each case.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.highlightProvider is assigned"},
+        {"text": "barcodeArView.highlightProvider has a highlightForBarcode function (semantic)"},
+        {"text": "new Scandit.BarcodeArCircleHighlight(barcode, Scandit.BarcodeArCircleHighlightPreset.Icon) is returned for the matched condition"},
+        {"text": "new Scandit.BarcodeArRectangleHighlight(barcode) is returned for the other condition"},
+        {"text": "A Brush with a green hex color (e.g. '#0D853D' or '#0D853D66') is assigned for the circle highlight (semantic)"},
+        {"text": "A red Brush is assigned for the rectangle highlight (e.g. Scandit.Color.fromHex('#D92121') or similar red hex)"},
+        {"text": "barcode.data is inspected to determine which highlight to return"},
+        {"text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to show info annotations on my Cordova MatrixScan AR integration. Each annotation should display the barcode data as the body text, a header saying 'Product' with a cyan background, and a footer saying 'Tap to dismiss'. The annotation should appear immediately when the barcode is scanned.",
+      "expected_output": "The skill assigns an annotationProvider to barcodeArView that constructs a BarcodeArInfoAnnotation with a header, a body component containing barcode.data, a footer, and annotationTrigger set to HighlightTapAndBarcodeScan.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.annotationProvider is assigned"},
+        {"text": "barcodeArView.annotationProvider has an annotationForBarcode function (semantic)"},
+        {"text": "new Scandit.BarcodeArInfoAnnotation(barcode) is constructed"},
+        {"text": "Scandit.BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan is present"},
+        {"text": "A BarcodeArInfoAnnotationHeader is created and assigned to annotation.header"},
+        {"text": "header.text is set to 'Product' or similar"},
+        {"text": "header.backgroundColor is set to a cyan or close color (e.g. #00FFFF or similar)"},
+        {"text": "A BarcodeArInfoAnnotationBodyComponent is created with text set to barcode.data"},
+        {"text": "annotation.body is assigned an array containing the body component"},
+        {"text": "A BarcodeArInfoAnnotationFooter is created with text 'Tap to dismiss' or similar"},
+        {"text": "annotation.footer is assigned"},
+        {"text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to clean up properly when the user leaves the scanning screen in my Cordova MatrixScan AR app. Stop the camera, detach the BarcodeArView from its element, and null out all SDK references so they can be re-created cleanly next time.",
+      "expected_output": "The skill wires teardown code: camera.switchToDesiredState(FrameSourceState.Off), barcodeArView.detachFromElement(), and nulling camera, barcodeArView, barcodeAr, and context.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called in the teardown path"},
+        {"text": "barcodeArView.detachFromElement() is called"},
+        {"text": "The detachFromElement() call is awaited OR used as a promise (.then / .catch)"},
+        {"text": "camera is set to null after stopping"},
+        {"text": "barcodeArView is set to null after detaching"},
+        {"text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"}
+      ]
+    }
+  ]
+}

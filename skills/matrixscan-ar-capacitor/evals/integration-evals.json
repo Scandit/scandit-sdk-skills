@@ -1,0 +1,123 @@
+{
+  "skill_name": "matrixscan-ar-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my Capacitor app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes and show a circle highlight on each tracked barcode.",
+      "expected_output": "The skill reads integration.md, writes a complete BarcodeAr integration into EmptyApp.js including plugin init, context, camera setup, BarcodeArSettings, BarcodeAr mode, BarcodeArView connected to a DOM element, and a highlightProvider returning BarcodeArCircleHighlight. Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
+        {"text": "DataCaptureContext.initialize( is present (current API used)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeAr.createRecommendedCameraSettings() is called"},
+        {"text": "Camera.withSettings( is called"},
+        {"text": "context.setFrameSource(camera) is called"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called"},
+        {"text": "new BarcodeArSettings() is present"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Only Symbology.EAN13UPCA and Symbology.Code128 are enabled in the BarcodeArSettings (semantic)"},
+        {"text": "new BarcodeAr(settings) is present (context NOT passed to BarcodeAr constructor)"},
+        {"text": "new BarcodeArView({ is present"},
+        {"text": "BarcodeArView is constructed with context and barcodeAr in its options object (semantic)"},
+        {"text": "connectToElement( is called and awaited on barcodeArView"},
+        {"text": "barcodeArView.highlightProvider is assigned an object with highlightForBarcode"},
+        {"text": "new BarcodeArCircleHighlight(barcode, BarcodeArCircleHighlightPreset is returned from highlightForBarcode"},
+        {"text": "Import from 'scandit-capacitor-datacapture-core' is present"},
+        {"text": "Import from 'scandit-capacitor-datacapture-barcode' is present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan AR to ProductListApp.js. When a barcode is newly tracked, add it to the scannedProducts array and re-render the product list. Show a rectangle highlight on each tracked barcode.",
+      "expected_output": "The skill adds BarcodeAr to ProductListApp.js alongside the existing DOM rendering code. A BarcodeArListener is added to push newly tracked barcodes to scannedProducts and call renderProductList. All existing DOM hooks, state, and render functions are preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "BarcodeAr.createRecommendedCameraSettings() is called"},
+        {"text": "context.setFrameSource( is called"},
+        {"text": "new BarcodeArSettings() is present"},
+        {"text": "new BarcodeAr(settings) is present (context NOT passed to BarcodeAr constructor)"},
+        {"text": "barcodeAr.addListener( is called with a didUpdateSession callback"},
+        {"text": "session.addedTrackedBarcodes is accessed to get new barcodes"},
+        {"text": "scannedProducts.push( or equivalent is called with barcode data from session"},
+        {"text": "renderProductList() is called after pushing new barcodes"},
+        {"text": "new BarcodeArView({ is present"},
+        {"text": "BarcodeArView is constructed with context and barcodeAr in its options object (semantic)"},
+        {"text": "connectToElement( is called on barcodeArView"},
+        {"text": "barcodeArView.highlightProvider is assigned with a highlightForBarcode returning BarcodeArRectangleHighlight"},
+        {"text": "Existing scannedProducts variable is still referenced and used in the integrated code (semantic)"},
+        {"text": "Existing renderProductList function is preserved"},
+        {"text": "Existing updateTotal / totalLabel logic is preserved"},
+        {"text": "Existing clearButton / onClearTapped logic is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to show an info annotation on each tracked barcode in my Capacitor MatrixScan AR app. The annotation should show the barcode data as a body row and a header that says 'Scanned'. Use Medium width.",
+      "expected_output": "The skill sets barcodeArView.annotationProvider with annotationForBarcode returning a BarcodeArInfoAnnotation with a header (text='Scanned'), a body with one BarcodeArInfoAnnotationBodyComponent containing the barcode data, and width set to Medium.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.annotationProvider is assigned an object"},
+        {"text": "annotationForBarcode is a method on the annotation provider"},
+        {"text": "new BarcodeArInfoAnnotation(barcode) is constructed inside annotationForBarcode"},
+        {"text": "annotation.width is set to BarcodeArInfoAnnotationWidthPreset.Medium"},
+        {"text": "new BarcodeArInfoAnnotationHeader() is constructed and assigned to annotation.header"},
+        {"text": "header.text is set to 'Scanned' or equivalent"},
+        {"text": "new BarcodeArInfoAnnotationBodyComponent() is constructed"},
+        {"text": "component.text is set to barcode.data or equivalent"},
+        {"text": "annotation.body is set to an array containing the body component"},
+        {"text": "The annotationForBarcode method returns the annotation (async / Promise)"},
+        {"text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to show a popover annotation with two buttons — 'Accept' and 'Reject' — when a user taps a barcode highlight. When 'Accept' is tapped, log 'accepted' with the barcode data. When 'Reject' is tapped, log 'rejected'.",
+      "expected_output": "The skill sets barcodeArView.annotationProvider with annotationForBarcode returning a BarcodeArPopoverAnnotation with two BarcodeArPopoverAnnotationButton instances and a listener with didTapButton checking buttonIndex to log accept or reject.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.annotationProvider is assigned"},
+        {"text": "new BarcodeArPopoverAnnotation(barcode, [acceptButton, rejectButton]) or equivalent is constructed"},
+        {"text": "annotation.annotationTrigger = BarcodeArAnnotationTrigger.HighlightTap is set"},
+        {"text": "Two BarcodeArPopoverAnnotationButton instances are created"},
+        {"text": "annotation.listener is assigned with a didTapButton callback"},
+        {"text": "buttonIndex is used in the didTapButton callback to distinguish accept from reject"},
+        {"text": "console.log or equivalent is called with 'accepted' / 'rejected' and barcode data"},
+        {"text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to show a status icon on each tracked barcode. Barcodes where the data length is greater than 8 should show a warning icon (yellow exclamation) with the text 'Long code'. Others should show a checkmark icon (green) with the text 'OK'.",
+      "expected_output": "The skill sets barcodeArView.annotationProvider with annotationForBarcode returning a BarcodeArStatusIconAnnotation with icon and text set based on barcode.data.length > 8 condition.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.annotationProvider is assigned"},
+        {"text": "new BarcodeArStatusIconAnnotation(barcode) is constructed inside annotationForBarcode"},
+        {"text": "annotation.text is set to 'Long code' or equivalent when data length > 8"},
+        {"text": "annotation.text is set to 'OK' or equivalent otherwise"},
+        {"text": "annotation.icon is set using ScanditIconBuilder or a ScanditIcon for both branches"},
+        {"text": "A yellow/warning color (e.g. #FBC02C or similar) is used for the long code icon"},
+        {"text": "A green/checkmark color or icon is used for the OK case"},
+        {"text": "barcode.data.length > 8 is present"},
+        {"text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "skill_name": "matrixscan-ar-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my Flutter app. Here's my starter page: EmptyPage.dart. I need to scan EAN-13 and Code 128 barcodes and highlight each one with a rectangle overlay.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeAr integration code into EmptyPage.dart (BLoC + page widget with BarcodeArHighlightProvider), and shows the setup checklist (pub packages to add, flutter pub get, iOS Info.plist, Android runtime permission).",
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"},
+        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"},
+        {"text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"},
+        {"text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeAr( settings ) is used to construct the mode (Flutter constructor form, no context argument)"},
+        {"text": "Symbology.ean13Upca is enabled"},
+        {"text": "Symbology.code128 is enabled"},
+        {"text": "One of BarcodeArView.forMode(, BarcodeArView.forModeWithViewSettings(, or BarcodeArView.forModeWithViewSettingsAndCameraSettings( is used to construct the view (semantic)"},
+        {"text": "BarcodeArView is created inside initState() (semantic)"},
+        {"text": "BarcodeArView is stored as a class field (semantic)"},
+        {"text": "highlightProvider = this (or equivalent) is set on the BarcodeArView"},
+        {"text": "A class implements BarcodeArHighlightProvider and defines highlightForBarcode( (semantic)"},
+        {"text": "highlightForBarcode returns a Future<BarcodeArHighlight?> (async provider pattern)"},
+        {"text": "BarcodeArRectangleHighlight( barcode ) is returned from the provider"},
+        {"text": "barcodeAr.addListener( is called to register the session listener"},
+        {"text": "Import from scandit_flutter_datacapture_barcode_ar is present"},
+        {"text": "Import from scandit_flutter_datacapture_barcode is present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan AR barcode scanning to ProductListBloc.dart. When a new barcode is tracked, add it to the scannedItems list and emit through the existing stream. Show a rectangle highlight for each tracked barcode.",
+      "expected_output": "The skill adds BarcodeAr to ProductListBloc.dart alongside the existing stream/state code. The BLoC implements BarcodeArListener. The page State implements BarcodeArHighlightProvider. All existing stream controller, list, and clear logic are preserved.",
+      "files": [
+        "fixtures/ProductListBloc.dart"
+      ],
+      "assertions": [
+        {"text": "The BLoC implements BarcodeArListener"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "BarcodeAr( settings ) is used"},
+        {"text": "One of BarcodeArView.forMode(, BarcodeArView.forModeWithViewSettings(, or BarcodeArView.forModeWithViewSettingsAndCameraSettings( is used to construct the view (semantic)"},
+        {"text": "barcodeAr.addListener(this) is called"},
+        {"text": "didUpdateSession( is present"},
+        {"text": "session.addedTrackedBarcodes is accessed to get newly tracked barcodes"},
+        {"text": "Newly tracked barcodes are appended to the existing scannedItems list"},
+        {"text": "Existing scannedItems list is preserved"},
+        {"text": "Existing _scannedItemsController is preserved and emits on new scans"},
+        {"text": "Existing clear() method is preserved"},
+        {"text": "Import from scandit_flutter_datacapture_barcode_ar is present"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to add an info annotation to each tracked barcode in my Flutter MatrixScan AR app. The annotation should show the barcode's data in a medium-width tooltip that appears immediately when the barcode is scanned.",
+      "expected_output": "The skill adds BarcodeArAnnotationProvider to the page State and wires annotationForBarcode to return a BarcodeArInfoAnnotation with the barcode data in the body. The annotation trigger is set to HighlightTapAndBarcodeScan so it appears on scan.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A class implements BarcodeArAnnotationProvider"},
+        {"text": "annotationForBarcode( is present"},
+        {"text": "annotationForBarcode returns a Future<BarcodeArAnnotation?> (async)"},
+        {"text": "BarcodeArInfoAnnotation( barcode ) is constructed"},
+        {"text": "BarcodeArInfoAnnotationBodyComponent is created with the barcode data as text"},
+        {"text": "annotation.body = [...] is set"},
+        {"text": "annotationProvider = this (or equivalent) is set on the BarcodeArView"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, BarcodeArHighlightProvider, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Replace the default rectangle highlight in my MatrixScan AR Flutter app with a custom Flutter widget — a blue circle with the barcode data text inside it. Wire this up using BarcodeArCustomHighlight.",
+      "expected_output": "The skill returns a BarcodeArCustomHighlight from the highlightForBarcode provider, supplying a Flutter widget (e.g. a Container/CircleAvatar with the barcode text). The import from scandit_flutter_datacapture_barcode_ar is present. The snapshot limitation for animated widgets is noted.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeArCustomHighlight( is returned from highlightForBarcode"},
+        {"text": "barcode: barcode is passed to BarcodeArCustomHighlight"},
+        {"text": "child: ... is passed to BarcodeArCustomHighlight with a Flutter widget"},
+        {"text": "barcode.data is present in the widget child passed to BarcodeArCustomHighlight (semantic)"},
+        {"text": "A blue or circle-shaped widget is used as the child"},
+        {"text": "Existing integration code (BarcodeArView, listener, annotationProvider if present) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to add a responsive annotation to my MatrixScan AR Flutter app: when the barcode is close (large on screen), show a large info annotation with a header 'Product' and two body rows. When the barcode is far away, show only a small annotation with one body row.",
+      "expected_output": "The skill constructs two BarcodeArInfoAnnotation instances (one large with header and two body rows, one small with one body row), wraps them in BarcodeArResponsiveAnnotation, and returns it from annotationForBarcode.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "Two BarcodeArInfoAnnotation instances are created (closeup and faraway)"},
+        {"text": "BarcodeArInfoAnnotationWidthPreset.large is present"},
+        {"text": "BarcodeArInfoAnnotationHeader( is present"},
+        {"text": "The closeup annotation has two BarcodeArInfoAnnotationBodyComponent entries in its body list (semantic)"},
+        {"text": "One of BarcodeArInfoAnnotationWidthPreset.small or BarcodeArInfoAnnotationWidthPreset.medium is set on the faraway annotation (semantic)"},
+        {"text": "The faraway annotation has exactly one BarcodeArInfoAnnotationBodyComponent entry in its body list (semantic)"},
+        {"text": "BarcodeArResponsiveAnnotation( barcode, closeup, faraway ) is constructed"},
+        {"text": "annotationProvider = this is set on the BarcodeArView"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, highlight provider, listener) is preserved"}
+      ]
+    }
+  ]
+}
