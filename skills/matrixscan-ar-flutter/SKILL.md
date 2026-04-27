@@ -32,6 +32,8 @@ Based on the user's request, load the reference file before responding:
 
 - **Integrating BarcodeAr from scratch** (e.g. "add MatrixScan AR to my app", "set up barcode AR scanning", "how do I use BarcodeAr in Flutter", "how do I show highlights on tracked barcodes", "how do I show info annotations") → read `references/integration.md` and follow the instructions there.
 
+- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate from BarcodeBatch", "convert BarcodeBatch to BarcodeAr", "move from MatrixScan to MatrixScan AR", "replace BarcodeTracking with BarcodeAr", "upgrade my old MatrixScan code to AR") → read `references/migration.md` and follow the 10-step migration guide there.
+
 ## API Usage Policy
 
 Only use APIs that are explicitly documented in the Scandit references below. Do not invent or guess method signatures, parameters, property names, or imports. If unsure whether an API exists or how it is called — or if an analyzer / runtime error occurs — fetch the relevant reference page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
