@@ -1,0 +1,58 @@
+{
+  "skill_name": "matrixscan-ar-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this MatrixScan code from BarcodeBatch to BarcodeAr. The visual feedback should be circle highlights on each tracked barcode (matching the existing Dot overlay style). File: MigrationSimpleSample.tsx",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces DataCaptureView with BarcodeArView, wires a BarcodeArCircleHighlight provider with the Dot preset, switches dataCaptureContext.setMode to addMode, preserves the results state map and camera lifecycle, and calls view.start() in the BarcodeArView ref callback.",
+      "files": [
+        "fixtures/MigrationSimpleSample.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeBatchSession is NOT present in the output file"},
+        {"text": "BarcodeAr is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "BarcodeArCircleHighlight is present in the output file"},
+        {"text": "dataCaptureContext.addMode( is present in the output file"},
+        {"text": "dataCaptureContext.setMode( is NOT present in the output file"},
+        {"text": "DataCaptureView is NOT present in the output file"},
+        {"text": "view.addOverlay( is NOT present in the output file"},
+        {"text": "The results state and setResults setter are preserved (semantic)"},
+        {"text": "camera.switchToDesiredState( is preserved in the output (camera lifecycle unchanged) (semantic)"},
+        {"text": "view.start() is invoked inside the BarcodeArView ref callback (semantic)"},
+        {"text": "The import from scandit-react-native-datacapture-barcode does not include any BarcodeBatch symbols (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate this MatrixScan code from BarcodeBatch to BarcodeAr. The bubbles above each barcode should become BarcodeAr annotations. Files: MigrationBubblesSampleScanPage.tsx and MigrationBubblesSampleARView.tsx",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces DataCaptureView with BarcodeArView, wires a BarcodeArAnnotationProvider that uses either BarcodeArCustomAnnotation (wrapping the ARView component) or BarcodeArInfoAnnotation, removes the manual getQuadrilateralWidth distance heuristic, migrates the lifecycle to view.start()/view.stop(), and removes the advanced overlay setup.",
+      "files": [
+        "fixtures/MigrationBubblesSampleScanPage.tsx",
+        "fixtures/MigrationBubblesSampleARView.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeArAnnotationProvider is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "at least one of BarcodeArCustomAnnotation or BarcodeArInfoAnnotation is present in the output file (semantic)"},
+        {"text": "DataCaptureView is NOT present in the output file"},
+        {"text": "view.addOverlay( is NOT present in the output file"},
+        {"text": "dataCaptureContext.setMode( is NOT present in the output file"},
+        {"text": "dataCaptureContext.addMode( is present in the output file"},
+        {"text": "The ARView component is preserved or its content is rendered inside the annotation (semantic)"},
+        {"text": "Anchor.TopCenter import or usage from the old overlay listener is replaced — no standalone anchorForTrackedBarcode method remains (semantic)"},
+        {"text": "getQuadrilateralWidth is NOT present in the output file"},
+        {"text": "viewQuadrilateralForFrameQuadrilateral is NOT present in the output file"},
+        {"text": "view.start() is invoked in the BarcodeArView ref callback (semantic)"},
+        {"text": "view.stop() or viewRef.current?.stop() is used to stop scanning in place of barcodeBatch.isEnabled = false (semantic)"}
+      ]
+    }
+  ]
+}

@@ -29,11 +29,10 @@ React Native-specific gotchas worth flagging:
 
 ## Intent Routing
 
-Based on the user's request, read `references/integration.md` before responding. This skill covers only the integration flow — there is no migration reference.
+Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up Barcode AR", "how do I use BarcodeArView in React Native", "how do I show AR overlays on barcodes") → read `references/integration.md` and follow the instructions there.
-- **Adding or changing highlights or annotations** (e.g. "show a circle on each barcode", "display product info on tapped barcodes", "use a custom React component as a highlight") → read `references/integration.md` (Highlights and Annotations sections) before responding.
-- **Lifecycle, cleanup, or session handling** → read `references/integration.md` (Lifecycle / Cleanup and BarcodeArListener sections).
+- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up Barcode AR", "how do I use BarcodeArView in React Native", "how do I show AR overlays on barcodes", "adding or changing highlights or annotations", "lifecycle, cleanup, or session handling") → read `references/integration.md` and follow the instructions there.
+- **Migrating from BarcodeBatch to BarcodeAr** (e.g. "migrate from BarcodeBatch", "convert BarcodeBatch to BarcodeAr", "move from MatrixScan to MatrixScan AR", "replace BarcodeTracking with BarcodeAr", "upgrade my old MatrixScan code to AR") → read `references/migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
