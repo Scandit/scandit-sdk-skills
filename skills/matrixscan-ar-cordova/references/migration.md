@@ -428,6 +428,8 @@ await barcodeArView.start();
 
 `BarcodeAr` has no `isEnabled` property. Use `barcodeArView.start()` / `barcodeArView.stop()` / `barcodeArView.pause()` for scanning control. Camera state is still toggled via `camera.switchToDesiredState(Scandit.FrameSourceState.On/Off)` — that pattern is unchanged.
 
+> **`stop()` is reversible — `detachFromElement()` is not.** If the user is *leaving* the scan screen (back button, navigation away), do not stop here — go to Step 9 and call `detachFromElement` instead. Calling `stop()` without ever detaching leaks the native view.
+
 The Bubbles sample's `freeze()` / `unfreeze()` functions become:
 
 ```javascript
@@ -460,6 +462,19 @@ This pattern is unchanged from the BarcodeBatch integration.
 
 ## Step 9 — Cleanup / teardown
 
+### Find the teardown site
+
+`BarcodeBatch` had no formal teardown — the legacy code typically just toggled `isEnabled` and switched the camera off. `BarcodeArView` **must** be detached from its DOM element when the scan screen is left, otherwise the native AR layer leaks.
+
+Locate the teardown site in the legacy code. It is one of:
+- An explicit `teardown()` / `cleanup()` / `dispose()` function.
+- The function that runs when the user navigates away from the scan screen (e.g. a `stopScanning()` / `closeScanner()` / `onBack()` handler that is called by the back button or screen change — **not** the freeze/unfreeze handlers, which are temporary pauses).
+- A `pagebeforehide` / `cordova.exec` event handler if the project uses one.
+
+If no such function exists in the legacy code, **add one** — `BarcodeAr` makes teardown mandatory where `BarcodeBatch` made it optional. A scan screen that the user can leave needs a teardown.
+
+### Migrate the teardown
+
 **Before:**
 ```javascript
 // BarcodeBatch — no formal teardown, camera was just switched off
@@ -487,6 +502,8 @@ const teardown = async () => {
 ```
 
 `barcodeArView.detachFromElement()` is **required** — it releases the native AR layer. Forgetting this call leaks native resources. There are no overlay objects to clean up — the `BarcodeBatchBasicOverlay` and `BarcodeBatchAdvancedOverlay` refs are gone entirely.
+
+> **Do not confuse freeze with teardown.** A `freeze` / `pause` function (Step 8) calls `barcodeArView.stop()` and `camera.switchToDesiredState(Off)` — it does *not* call `detachFromElement`. The view is still attached and can be resumed. Teardown is one-way: after `detachFromElement`, the view cannot be restarted; a new `BarcodeArView` must be created.
 
 ---
 
