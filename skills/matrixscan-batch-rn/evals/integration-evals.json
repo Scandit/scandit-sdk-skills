@@ -1,0 +1,126 @@
+{
+  "skill_name": "matrixscan-batch-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my React Native app to simultaneously track multiple barcodes. Here's my screen file: EmptyApp.tsx. I need to scan EAN-13 and Code 128 barcodes and show highlight frames around each one.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeBatch* integration code into EmptyApp.tsx as a function component with hooks, renders a DataCaptureView, wires the camera lifecycle with BarcodeBatch.createRecommendedCameraSettings, calls dataCaptureContext.setMode, and shows the setup checklist (packages, npx pod-install, camera permission, license key placeholder).",
+      "files": [
+        "fixtures/EmptyApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "DataCaptureContext.sharedInstance is present (semantic)"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "new BarcodeBatch(settings) is present (constructor pattern, not forDataCaptureContext factory)"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "<DataCaptureView is rendered in the JSX tree"},
+        {"text": "DataCaptureView has a context prop (semantic)"},
+        {"text": "dataCaptureContext.setMode( is called with the BarcodeBatch instance"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "The component is written as a function component (no class syntax)"},
+        {"text": "useRef is used to hold the BarcodeBatch mode reference"},
+        {"text": "dataCaptureContext.removeMode( is called in the useEffect cleanup"},
+        {"text": "Import from 'scandit-react-native-datacapture-core' is present"},
+        {"text": "Import from 'scandit-react-native-datacapture-barcode' is present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Batch app I need to react to the barcodes being tracked. Show me how to receive addedTrackedBarcodes, updatedTrackedBarcodes, and removedTrackedBarcodes from each frame, and also how to iterate all currently tracked barcodes. File: EmptyApp.tsx.",
+      "expected_output": "The skill implements a BarcodeBatchListener with didUpdateSession, accesses session.addedTrackedBarcodes, session.updatedTrackedBarcodes, session.removedTrackedBarcodes, and iterates Object.values(session.trackedBarcodes). It warns not to hold references to session arrays outside the callback.",
+      "files": [
+        "fixtures/EmptyApp.tsx"
+      ],
+      "assertions": [
+        {"text": "didUpdateSession is implemented in the BarcodeBatchListener"},
+        {"text": "session.addedTrackedBarcodes is accessed (semantic)"},
+        {"text": "session.updatedTrackedBarcodes is accessed (semantic)"},
+        {"text": "session.removedTrackedBarcodes is accessed (semantic)"},
+        {"text": "session.trackedBarcodes is accessed and iterated (semantic)"},
+        {"text": "A note or comment warns not to hold references to session arrays outside the callback (semantic)"},
+        {"text": "barcodeBatch.addListener( is called with the listener"},
+        {"text": "dataCaptureContext.setMode( is called"},
+        {"text": "<DataCaptureView is rendered in the JSX tree"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "DataCaptureContext.initialize( is present"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to color the barcode highlights differently based on the barcode's symbology: EAN-13 barcodes should be green, Code 128 should be blue, and any other symbology should be hidden (transparent). Use the brushForTrackedBarcode callback. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets overlay.listener with a brushForTrackedBarcode callback that returns a green Brush for EAN13UPCA, a blue Brush for Code128, and a transparent Brush (or null) for everything else. A note about the MatrixScan AR add-on requirement is included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "overlay.listener is set with brushForTrackedBarcode implemented"},
+        {"text": "A green Brush is returned for Symbology.EAN13UPCA (semantic)"},
+        {"text": "A blue Brush is returned for Symbology.Code128 (semantic)"},
+        {"text": "A transparent Brush or null is returned for other symbologies to hide them (semantic)"},
+        {"text": "Color.fromHex( or Color.fromRGBA( is used for color construction"},
+        {"text": "new Brush( is present"},
+        {"text": "A note or comment about the MatrixScan AR add-on requirement is present (semantic)"},
+        {"text": "Existing BarcodeBatch mode, DataCaptureView, and camera lifecycle are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add AR bubble annotations to each tracked barcode in my MatrixScan app. Each bubble should show the barcode's data value and be positioned above the barcode. File: IntegratedApp.tsx.",
+      "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay, defines a BarcodeBatchAdvancedOverlayView subclass for the bubble UI, registers it with AppRegistry using the moduleName property, sets up the listener with anchorForTrackedBarcode returning Anchor.TopCenter and offsetForTrackedBarcode shifting up, and calls setViewForTrackedBarcode in didUpdateSession. Notes about the AR add-on and New Architecture AppDelegate requirement are included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "new BarcodeBatchAdvancedOverlay( is present"},
+        {"text": "A class extending BarcodeBatchAdvancedOverlayView is defined"},
+        {"text": "AppRegistry.registerComponent( is called with the view's moduleName property (semantic)"},
+        {"text": "overlay.listener is set with anchorForTrackedBarcode returning Anchor.TopCenter or similar anchor (semantic)"},
+        {"text": "offsetForTrackedBarcode is implemented with a PointWithUnit and MeasureUnit (semantic)"},
+        {"text": "setViewForTrackedBarcode( is called with a BarcodeBatchAdvancedOverlayView instance"},
+        {"text": "view.addOverlay( is called for the advanced overlay in the DataCaptureView ref callback (semantic)"},
+        {"text": "A note about the MatrixScan AR add-on requirement is present (semantic)"},
+        {"text": "A note about the New Architecture AppDelegate / ScanditReactNativeFactoryContainer requirement is present (semantic)"},
+        {"text": "Existing BarcodeBatch mode, camera lifecycle, and basic overlay are preserved or adapted (semantic)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "How do I pause and resume MatrixScan Batch scanning — for example when the user navigates away and returns? Show me how to disable/enable the mode and the camera. File: IntegratedApp.tsx.",
+      "expected_output": "The skill shows how to set barcodeBatch.isEnabled = false and camera.switchToDesiredState(FrameSourceState.Off) to pause, and barcodeBatch.isEnabled = true and camera.switchToDesiredState(FrameSourceState.On) to resume. It integrates with AppState or navigation focus events.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "barcodeBatchRef.current.isEnabled = false is present for pause (semantic)"},
+        {"text": "barcodeBatchRef.current.isEnabled = true is present for resume (semantic)"},
+        {"text": "switchToDesiredState(FrameSourceState.Off) is present"},
+        {"text": "switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "AppState.addEventListener or useFocusEffect or navigation event is used to detect focus changes (semantic)"},
+        {"text": "dataCaptureContext.removeMode( is called in the cleanup function (semantic)"},
+        {"text": "Existing BarcodeBatch integration is preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Set up MatrixScan Batch with the Dot overlay style instead of Frame, and use a single global blue brush for all tracked barcodes (without a per-barcode listener). File: IntegratedApp.tsx.",
+      "expected_output": "The skill changes the BarcodeBatchBasicOverlay to use BarcodeBatchBasicOverlayStyle.Dot and sets the overlay.brush property to a blue Brush. No brushForTrackedBarcode listener is needed for a global brush.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayStyle.Dot is used when constructing the overlay"},
+        {"text": "overlay.brush is assigned a Brush with a blue color (semantic)"},
+        {"text": "Color.fromHex( or Color.fromRGBA( is used"},
+        {"text": "new Brush( is present"},
+        {"text": "brushForTrackedBarcode listener is NOT set (global brush approach, not per-barcode) (semantic)"},
+        {"text": "Existing BarcodeBatch mode, DataCaptureView, and camera lifecycle are preserved (semantic)"}
+      ]
+    }
+  ]
+}
