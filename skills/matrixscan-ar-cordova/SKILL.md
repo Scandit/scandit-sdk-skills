@@ -31,6 +31,8 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up AR barcode overlays", "how do I use BarcodeAr in Cordova", "how do I show info annotations", "how do I customize highlights") → read `references/integration.md` and follow the instructions there.
 
+- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate my MatrixScan code", "update from BarcodeBatch to BarcodeAr", "I'm using BarcodeBatchBasicOverlay / BarcodeBatchAdvancedOverlay", "convert my old MatrixScan integration", "we have BarcodeTracking and need to upgrade") → read `references/migration.md` and follow the 10-step migration guide there. Key Cordova-specific caveat: `BarcodeArCustomAnnotation` is **NOT available on Cordova** — freeform HTML overlays from `BarcodeBatchAdvancedOverlay` must be replaced with built-in annotation types (`BarcodeArInfoAnnotation`, `BarcodeArPopoverAnnotation`, `BarcodeArStatusIconAnnotation`, or `BarcodeArResponsiveAnnotation`).
+
 ## API Usage Policy
 
 Only use APIs that are explicitly documented in the Scandit references below. Do not invent or guess method signatures, parameters, property names, or imports. If unsure whether an API exists or how it is called — or if a runtime error occurs — fetch the relevant reference page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.

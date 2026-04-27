@@ -1,0 +1,73 @@
+{
+  "skill_name": "matrixscan-ar-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this MatrixScan Cordova code from BarcodeBatch to BarcodeAr. Keep the visual feedback as a rectangle highlight on each tracked barcode (matching the existing Frame overlay style), and preserve the results map and 'done' / 'scan again' screen flow. File: MigrationSimpleSample.js",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces Scandit.DataCaptureView.forContext with new Scandit.BarcodeArView({...}), wires a BarcodeArRectangleHighlight provider, switches context.setMode to removing the separate addMode/setMode call entirely (BarcodeAr is bound via the view constructor), preserves the results map and camera lifecycle, and calls await barcodeArView.connectToElement(el).",
+      "files": [
+        "fixtures/MigrationSimpleSample.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlayStyle is NOT present in the output file"},
+        {"text": "Scandit.DataCaptureView is NOT present in the output file"},
+        {"text": "view.addOverlay( is NOT present in the output file"},
+        {"text": "context.setMode( is NOT present in the output file"},
+        {"text": "barcodeBatch.isEnabled is NOT present in the output file"},
+        {"text": "BarcodeAr is present in the output file"},
+        {"text": "BarcodeArSettings is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "BarcodeArRectangleHighlight is present in the output file"},
+        {"text": "highlightProvider is present in the output file"},
+        {"text": "connectToElement( is present in the output file"},
+        {"text": "Scandit.BarcodeAr.createRecommendedCameraSettings() is present in the output file"},
+        {"text": "camera.switchToDesiredState( is preserved in the output (camera lifecycle unchanged) (semantic)"},
+        {"text": "The results map (window.results) and updateResults / done / scanAgain functions are preserved (semantic)"},
+        {"text": "The highlightProvider.highlightForBarcode callback is async or returns a Promise (semantic)"},
+        {"text": "detachFromElement is present or teardown releases the barcodeArView (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate this MatrixScan Bubbles Cordova code from BarcodeBatch + BarcodeBatchAdvancedOverlay to BarcodeAr. The existing HTML bubble overlays (TrackedBarcodeView.withHTMLElement) must become BarcodeAr annotations. Also replace the manual quadrilateral-width distance heuristic with BarcodeArResponsiveAnnotation. File: MigrationBubblesSample.js",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces Scandit.DataCaptureView.forContext with new Scandit.BarcodeArView({...}), wires a BarcodeArAnnotationProvider using BarcodeArResponsiveAnnotation (with BarcodeArInfoAnnotation for close-up and far-away states), removes the manual Quadrilateral.prototype.width extension and viewQuadrilateralForFrameQuadrilateral calls, migrates freeze/unfreeze to use barcodeArView.stop()/start() instead of barcodeBatch.isEnabled, and calls await barcodeArView.detachFromElement() in teardown. The output explicitly does NOT use BarcodeArCustomAnnotation.",
+      "files": [
+        "fixtures/MigrationBubblesSample.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlay is NOT present in the output file"},
+        {"text": "TrackedBarcodeView is NOT present in the output file"},
+        {"text": "setViewForTrackedBarcode is NOT present in the output file"},
+        {"text": "setAnchorForTrackedBarcode is NOT present in the output file"},
+        {"text": "setOffsetForTrackedBarcode is NOT present in the output file"},
+        {"text": "viewQuadrilateralForFrameQuadrilateral is NOT present in the output file"},
+        {"text": "Quadrilateral.prototype.width is NOT present in the output file"},
+        {"text": "PointWithUnit is NOT present in the output file"},
+        {"text": "NumberWithUnit is NOT present in the output file"},
+        {"text": "MeasureUnit is NOT present in the output file"},
+        {"text": "barcodeBatch.isEnabled is NOT present in the output file"},
+        {"text": "context.setMode( is NOT present in the output file"},
+        {"text": "view.addOverlay( is NOT present in the output file"},
+        {"text": "Scandit.DataCaptureView is NOT present in the output file"},
+        {"text": "BarcodeArCustomAnnotation is NOT present in the output file — it is not available on Cordova (semantic)"},
+        {"text": "BarcodeAr is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "annotationProvider is present in the output file"},
+        {"text": "BarcodeArInfoAnnotation is present in the output file"},
+        {"text": "BarcodeArResponsiveAnnotation is present in the output file"},
+        {"text": "connectToElement( is present in the output file"},
+        {"text": "detachFromElement is present in the output file"},
+        {"text": "The freeze/unfreeze functions use barcodeArView.stop() and barcodeArView.start() (or equivalent) instead of barcodeBatch.isEnabled (semantic)"},
+        {"text": "The annotationProvider.annotationForBarcode callback is async or returns a Promise (semantic)"},
+        {"text": "The close-up BarcodeArInfoAnnotation includes a header or body row with stock count text (semantic)"},
+        {"text": "BarcodeArResponsiveAnnotation.threshold is set to approximately 0.1 (matching the old screen.width * 0.1 heuristic) (semantic)"}
+      ]
+    }
+  ]
+}
