@@ -1,6 +1,15 @@
 # Scandit SDK Skills
 
-AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
+AI agent skills that turn your coding assistant into a Scandit integration expert.
+
+This plugin gives Claude Code, Cursor, and other compatible AI coding assistants up-to-date, grounded knowledge of the [Scandit Data Capture SDK](https://docs.scandit.com) — covering product selection, supported symbologies, platform requirements, API usage, and version migrations. Instead of relying on the model's training data (which can be stale or wrong about Scandit APIs), the assistant follows authoritative skills that point to the correct documentation and sample apps for your platform.
+
+Use it to:
+
+- **Pick the right product** for your use case — SparkScan, Barcode Capture, MatrixScan, Smart Label Capture, ID Capture, and more.
+- **Implement scanning features** with platform-specific guidance.
+- **Migrate between SDK versions** safely, with skills that know which APIs were renamed, removed, or restructured.
+- **Get answers grounded in current Scandit docs** rather than the model's general (and often outdated) recollection.
 
 ## Install
 
