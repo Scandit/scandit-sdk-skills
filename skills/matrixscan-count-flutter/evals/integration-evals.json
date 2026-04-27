@@ -1,0 +1,143 @@
+{
+  "skill_name": "matrixscan-count-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Count to my Flutter app. Here's my starter page: EmptyPage.dart. I need to scan EAN-13 and Code 128 barcodes and show the count screen.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCount integration code into EmptyPage.dart (BLoC implementing BarcodeCountListener, BarcodeCountViewListener, BarcodeCountViewUiListener + page widget with BarcodeCountView), and shows the setup checklist (pub packages, flutter pub get, iOS Info.plist, Android runtime permission).",
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"},
+        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"},
+        {"text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"},
+        {"text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeCount( settings ) is used to construct the mode (context-free Flutter ≥7.6 form)"},
+        {"text": "dataCaptureContext.setMode( is called to register the mode"},
+        {"text": "Symbology.ean13Upca is enabled"},
+        {"text": "Symbology.code128 is enabled"},
+        {"text": "BarcodeCountView.forContextWithMode or BarcodeCountView.forContextWithModeAndStyle is used to construct the view"},
+        {"text": "uiListener = is set on the BarcodeCountView"},
+        {"text": "listener = is set on the BarcodeCountView"},
+        {"text": "A class implements BarcodeCountListener and defines didScan("},
+        {"text": "Import from scandit_flutter_datacapture_barcode_count is present"},
+        {"text": "Import from scandit_flutter_datacapture_barcode is present"},
+        {"text": "Camera lifecycle is handled (didChangeAppLifecycleState or didResume/didPause)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan Count barcode scanning to ProductListBloc.dart. When a scan phase completes, append all recognized barcodes to the existing scannedItems list and emit through the existing stream.",
+      "expected_output": "The skill adds BarcodeCount to ProductListBloc.dart alongside the existing stream/state code. The BLoC implements BarcodeCountListener. All existing stream controller, list, and clear logic are preserved. Scanned barcodes from session.recognizedBarcodes are appended.",
+      "files": [
+        "fixtures/ProductListBloc.dart"
+      ],
+      "assertions": [
+        {"text": "The BLoC implements BarcodeCountListener"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "BarcodeCount( settings ) is used"},
+        {"text": "dataCaptureContext.setMode( is present"},
+        {"text": "barcodeCount.addListener(this) is called"},
+        {"text": "didScan( is present"},
+        {"text": "session.recognizedBarcodes is accessed to get scanned barcodes"},
+        {"text": "Scanned barcodes are appended to the existing scannedItems list"},
+        {"text": "Existing scannedItems list is preserved"},
+        {"text": "Existing _scannedItemsController is preserved and emits on new scans"},
+        {"text": "Existing clear() method is preserved"},
+        {"text": "Import from scandit_flutter_datacapture_barcode_count is present"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to scan against a fixed list of barcodes in my MatrixScan Count Flutter app. The list contains two barcodes: '123456789012' (quantity 3) and '987654321098' (quantity 1). Barcodes not in the list should use a red dot highlight.",
+      "expected_output": "The skill creates a BarcodeCountCaptureList with two TargetBarcode instances and attaches it via setBarcodeCountCaptureList. The view is created with dot style and notInListBrush is set to a red brush. The BarcodeCountCaptureListListener.didUpdateSession is implemented.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "TargetBarcode.create('123456789012', 3) is present (or equivalent data and quantity)"},
+        {"text": "TargetBarcode.create('987654321098', 1) is present (or equivalent)"},
+        {"text": "BarcodeCountCaptureList.create( is used to construct the capture list"},
+        {"text": "barcodeCount.setBarcodeCountCaptureList( is called to attach the list"},
+        {"text": "notInListBrush is set on the view to a red-toned brush (semantic)"},
+        {"text": "BarcodeCountViewStyle.dot is used (dot style required for brush properties)"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Hide the toolbar and exit button in my MatrixScan Count Flutter app, and show the floating shutter button instead.",
+      "expected_output": "The skill sets shouldShowToolbar = false, shouldShowExitButton = false, and shouldShowFloatingShutterButton = true on the BarcodeCountView. The existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "shouldShowToolbar = false is set on the view"},
+        {"text": "shouldShowExitButton = false is set on the view"},
+        {"text": "shouldShowFloatingShutterButton = true is set on the view"},
+        {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Localize all the hint texts in my MatrixScan Count Flutter app to French: change the shutter hint to 'Appuyez pour scanner', the scanning hint to 'Scan en cours…', the move-closer hint to 'Rapprochez-vous et rescannez', the move-further hint to 'Éloignez-vous et rescannez', and the tap-to-uncount hint to 'Appuyez pour supprimer'.",
+      "expected_output": "The skill sets textForTapShutterToScanHint, textForScanningHint, textForMoveCloserAndRescanHint, textForMoveFurtherAndRescanHint, and textForTapToUncountHint on the BarcodeCountView to the French strings. tapToUncountEnabled = true is also set since the tap-to-uncount hint only appears when that feature is enabled.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "textForTapShutterToScanHint is set to the French shutter hint string"},
+        {"text": "textForScanningHint is set to the French scanning hint string"},
+        {"text": "textForMoveCloserAndRescanHint is set to the French move-closer hint string"},
+        {"text": "textForMoveFurtherAndRescanHint is set to the French move-further hint string"},
+        {"text": "textForTapToUncountHint is set to the French tap-to-uncount hint string"},
+        {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a status overlay to my MatrixScan Count Flutter app. When the user activates status mode, all scanned barcodes that start with '4' should be shown as accepted, and all others as rejected.",
+      "expected_output": "The skill implements BarcodeCountStatusProvider, calls onStatusRequested with a list of BarcodeCountStatusItems (accepted or rejected based on barcode data prefix), attaches it to the view via setStatusProvider, and enables shouldShowStatusModeButton.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A class or object implements BarcodeCountStatusProvider"},
+        {"text": "onStatusRequested( is present"},
+        {"text": "providerCallback.onStatusReady( or equivalent callback invocation is present"},
+        {"text": "The status items are determined based on barcode data (semantic: barcodes starting with '4' accepted, others rejected)"},
+        {"text": "view.setStatusProvider( is called"},
+        {"text": "shouldShowStatusModeButton = true is set on the view (semantic)"},
+        {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Enable tap-to-uncount in my MatrixScan Count Flutter app so users can deselect a barcode by tapping its highlight.",
+      "expected_output": "The skill sets tapToUncountEnabled = true on the BarcodeCountView. Optionally sets textForTapToUncountHint. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "tapToUncountEnabled = true is set on the view"},
+        {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Enable a hardware trigger in my MatrixScan Count Flutter app for a Zebra enterprise scanner. Use the default key code.",
+      "expected_output": "The skill calls view.enableHardwareTrigger(null) to enable the hardware trigger with the default key. Optionally checks BarcodeCountView.hardwareTriggerSupported before calling. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "enableHardwareTrigger(null) or enableHardwareTrigger with null key code is called on the view (semantic)"},
+        {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
+      ]
+    }
+  ]
+}
