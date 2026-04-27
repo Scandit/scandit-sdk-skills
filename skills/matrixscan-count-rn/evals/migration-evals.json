@@ -1,0 +1,65 @@
+{
+  "skill_name": "matrixscan-count-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this MatrixScan Count code from the old BarcodeCount.forDataCaptureContext factory to the new constructor pattern. File: LegacyCountApp.tsx.",
+      "expected_output": "The skill reads migration.md, replaces BarcodeCount.forDataCaptureContext(dataCaptureContext, settings) with new BarcodeCount(settings) followed by dataCaptureContext.addMode(barcodeCount), replaces DataCaptureContext.forLicenseKey with DataCaptureContext.initialize, updates camera setup to use BarcodeCount.createRecommendedCameraSettings(), updates the session listener to use session.recognizedBarcodes (array API), and preserves the rest of the integration.",
+      "files": [
+        "fixtures/LegacyCountApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output file"},
+        {"text": "new BarcodeCount(settings) is present in the output file"},
+        {"text": "dataCaptureContext.addMode( is present in the output file"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "DataCaptureContext.initialize( is present in the output file"},
+        {"text": "BarcodeCount.createRecommendedCameraSettings() is used for camera setup (semantic)"},
+        {"text": "Camera.default is NOT used as the primary camera source (semantic)"},
+        {"text": "session.recognizedBarcodes is present in the didScan callback (semantic)"},
+        {"text": "BarcodeCountView JSX is preserved with barcodeCount and context props (semantic)"},
+        {"text": "view.listener and view.uiListener are set in the ref callback (semantic)"},
+        {"text": "camera.switchToDesiredState( is preserved for camera lifecycle (semantic)"},
+        {"text": "dataCaptureContext.setFrameSource(null) is preserved in cleanup (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add a status overlay to my existing BarcodeCount integration so that after each scan, each barcode shows a stock status icon. Barcodes with data starting with 'EXP' should be marked Expired, others as None. File: IntegratedApp.tsx.",
+      "expected_output": "The skill adds a BarcodeCountStatusProvider implementation with onStatusRequested, calls BarcodeCountStatusItem.create for each tracked barcode with the appropriate BarcodeCountStatus value, returns the result via BarcodeCountStatusResultSuccess.create passed to callback.onStatusReady, wires it via view.setStatusProvider and view.shouldShowStatusIconsOnScan = true in the ref callback. A note about RN 8.3+ is included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCountStatusProvider is present with onStatusRequested implemented"},
+        {"text": "BarcodeCountStatusItem.create( is present"},
+        {"text": "BarcodeCountStatus.Expired is used for barcodes matching the 'EXP' prefix logic (semantic)"},
+        {"text": "BarcodeCountStatus.None is used for other barcodes (semantic)"},
+        {"text": "BarcodeCountStatusResultSuccess.create( is present"},
+        {"text": "callback.onStatusReady( is called (not awaited) (semantic)"},
+        {"text": "view.setStatusProvider( is called in the BarcodeCountView ref callback"},
+        {"text": "view.shouldShowStatusIconsOnScan = true or view.shouldShowStatusModeButton = true is present"},
+        {"text": "A note about RN 8.3+ minimum version requirement is present (semantic)"},
+        {"text": "Existing BarcodeCount mode, BarcodeCountView JSX, and camera lifecycle are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My existing BarcodeCount app scans against a list. I want to add not-in-list action settings so the user can accept or reject unexpected barcodes via a popup. File: IntegratedApp.tsx.",
+      "expected_output": "The skill adds not-in-list action settings by setting view.barcodeNotInListActionSettings.enabled = true plus button texts in the ref callback, adds didTapAcceptedBarcode and didTapRejectedBarcode callbacks to the viewListener, and optionally wires acceptedBrush and rejectedBrush. A note about RN 7.1+ is included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.barcodeNotInListActionSettings is accessed inside the BarcodeCountView ref callback"},
+        {"text": "notInListSettings.enabled = true is present (or equivalent property access)"},
+        {"text": "notInListSettings.acceptButtonText is set to a non-empty string"},
+        {"text": "notInListSettings.rejectButtonText is set to a non-empty string"},
+        {"text": "didTapAcceptedBarcode callback is added to the view listener (semantic)"},
+        {"text": "didTapRejectedBarcode callback is added to the view listener (semantic)"},
+        {"text": "A note about RN 7.1+ minimum version requirement is present (semantic)"},
+        {"text": "Existing BarcodeCount mode, BarcodeCountView JSX, and camera lifecycle are preserved (semantic)"}
+      ]
+    }
+  ]
+}
