@@ -295,7 +295,23 @@ window.barcodeCountView.listener = {
 
 ## Step 8 — Scanning Against a List (CaptureList)
 
-Use `BarcodeCountCaptureList` to scan against a predefined set of expected barcodes. The view will highlight found vs. not-found barcodes differently and fire `didCompleteCaptureList` when all items are found.
+> **Critical — read before writing any list-matching code**: The ONLY correct way to validate scanned barcodes against an expected list is `BarcodeCountCaptureList` + `TargetBarcode`. Do NOT compare `session.recognizedBarcodes` against a plain JavaScript array or a `Set`. A plain array gives you no matched/not-in-list breakdown, no `missingBarcodes`, and no `didCompleteCaptureList` callback. The CaptureList API is the only path that produces all three session states described below.
+
+### 8.1 — Model the target list from a packing slip or backend API
+
+Your backend typically returns an array of items like this:
+
+```javascript
+// JSON from a packing slip or warehouse API
+const packingSlip = [
+  { symbology: 'ean13UPCA', data: '9781234567897', quantity: 2 },
+  { symbology: 'ean13UPCA', data: '4012345678901', quantity: 1 },
+  { symbology: 'code128',   data: 'WH-A491-BOX',  quantity: 3 },
+  { symbology: 'qr',        data: 'SERIAL-00042',  quantity: 1 },
+];
+```
+
+Convert each item to a `TargetBarcode` and bundle into a `BarcodeCountCaptureList`:
 
 ```javascript
 import {
@@ -303,37 +319,241 @@ import {
   TargetBarcode,
 } from 'scandit-capacitor-datacapture-barcode';
 
-// Build the list of target barcodes
-const targetBarcodes = [
-  TargetBarcode.create('9781234567897', 2), // data, quantity
-  TargetBarcode.create('4012345678901', 1),
-  TargetBarcode.create('5901234123457', 3),
-];
-
-// Create the capture list with a listener
-const captureList = BarcodeCountCaptureList.create(
-  {
-    didUpdateSession: (captureList, session) => {
-      // Called when capture list session updates
-    },
-    didCompleteCaptureList: (captureList) => {
-      console.log('All list items scanned!');
-    },
-  },
-  targetBarcodes,
+// 1. Convert packing-slip rows to TargetBarcode objects.
+//    quantity must be ≥ 1.
+const targetBarcodes = packingSlip.map(item =>
+  TargetBarcode.create(item.data, item.quantity)
 );
 
-// Attach to BarcodeCount
+// 2. Define the capture-list listener (wired below).
+const captureListListener = {
+  // Called after every frame in which the list state changes.
+  didUpdateSession: (captureList, session) => {
+    // session.correctBarcodes  — TrackedBarcode[] matched to a target
+    // session.wrongBarcodes    — TrackedBarcode[] scanned but not in the list
+    // session.missingBarcodes  — TargetBarcode[]  targets not yet scanned
+    const matched  = session.correctBarcodes.length;
+    const extra    = session.wrongBarcodes.length;
+    const missing  = session.missingBarcodes.length;
+    const total    = targetBarcodes.length;
+
+    console.log(`${matched}/${total} matched, ${extra} extra, ${missing} still missing`);
+
+    // Surface progress in the app UI:
+    updateProgressUI(matched, total, extra);
+  },
+
+  // Called (Cap ≥8.3) when every target barcode has been scanned.
+  didCompleteCaptureList: (captureList, session) => {
+    console.log('All list items scanned — packing slip complete!');
+    showResultsScreen(session);
+  },
+};
+
+// 3. Create the capture list (listener first, then targets).
+const captureList = BarcodeCountCaptureList.create(
+  captureListListener,
+  targetBarcodes,
+);
+```
+
+### 8.2 — Wire the capture list to BarcodeCount
+
+```javascript
+// Must be called after BarcodeCount is constructed and before scanning starts.
+// Without this call, no list-matching occurs and the session properties
+// correctBarcodes / wrongBarcodes / missingBarcodes are never populated.
 window.barcodeCount.setBarcodeCountCaptureList(captureList);
 ```
 
+> **Important**: `setBarcodeCountCaptureList` must be called before the scanning phase begins. If you call it after `startScanningPhase()` the first frame may be processed without the list attached.
+
+### 8.3 — Brushes for the three visual states (Dot style only)
+
+When using `BarcodeCountViewStyle.Dot`, you can assign distinct brushes to each matching state so operators immediately understand scan status:
+
+```javascript
+import { Brush, Color } from 'scandit-capacitor-datacapture-core';
+import { BarcodeCountViewStyle } from 'scandit-capacitor-datacapture-barcode';
+
+// Must be created with Dot style to use brush customization:
+window.barcodeCountView = new BarcodeCountView({
+  context,
+  barcodeCount: window.barcodeCount,
+  style: BarcodeCountViewStyle.Dot,
+});
+
+// Green  — barcode matched a target in the list.
+// Available: Cap ≥6.18
+window.barcodeCountView.recognizedBrush = new Brush(
+  Color.fromHex('#00CC0066'),  // semi-transparent green fill
+  Color.fromHex('#00CC00'),    // solid green stroke
+  2.0,
+);
+
+// Orange — barcode was accepted by the operator via the not-in-list action
+//          (requires BarcodeCountNotInListActionSettings.enabled = true).
+// Available: Cap ≥7.1
+window.barcodeCountView.acceptedBrush = new Brush(
+  Color.fromHex('#FF880066'),
+  Color.fromHex('#FF8800'),
+  2.0,
+);
+
+// Red    — barcode scanned but not present in the capture list.
+// Available: Cap ≥6.18
+window.barcodeCountView.notInListBrush = new Brush(
+  Color.fromHex('#FF000066'),
+  Color.fromHex('#FF0000'),
+  2.0,
+);
+```
+
+### 8.4 — Wire `BarcodeCountCaptureListListener.didUpdateSession`
+
+The `didUpdateSession` callback (shown in full above) is the place to read matching results. Key session properties:
+
+| Property | Type | Available | Description |
+|----------|------|-----------|-------------|
+| `session.correctBarcodes` | `TrackedBarcode[]` | Cap ≥6.18 | Barcodes that matched a target in the list. |
+| `session.wrongBarcodes` | `TrackedBarcode[]` | Cap ≥6.18 | Barcodes scanned but not in the target list. |
+| `session.missingBarcodes` | `TargetBarcode[]` | Cap ≥6.18 | Targets that have not yet been scanned. |
+| `session.acceptedBarcodes` | `TrackedBarcode[]` | Cap ≥7.1 | Barcodes the operator explicitly accepted. |
+| `session.rejectedBarcodes` | `TrackedBarcode[]` | Cap ≥7.1 | Barcodes the operator explicitly rejected. |
+
+> **Note**: This listener fires alongside (not instead of) `BarcodeCountListener.didScan`. Both are active at the same time; `didScan` fires at the end of the scanning phase, `didUpdateSession` fires on every frame that changes list state.
+
+### 8.5 — Progress UI
+
+```javascript
+// Enable the built-in progress bar (requires a capture list to be set).
+// Available: Cap ≥6.25
+window.barcodeCountView.shouldShowListProgressBar = true;
+
+// Update a custom progress banner from didUpdateSession:
+function updateProgressUI(matched, total, extra) {
+  const pct = total > 0 ? Math.round((matched / total) * 100) : 0;
+  document.getElementById('progress-label').textContent =
+    `${matched} of ${total} items scanned (${pct}%)` +
+    (extra > 0 ? ` — ${extra} extra item(s) found` : '');
+}
+```
+
+### 8.6 — Results screen
+
+When the operator taps the list button (or after `didCompleteCaptureList` fires), show a results screen with three sections derived from the final session:
+
+```javascript
+function showResultsScreen(session) {
+  // 1. Matched — targets found on the packing slip
+  const matched = session.correctBarcodes.map(tb => ({
+    data: tb.barcode.data,
+    symbology: tb.barcode.symbology,
+    status: 'found',
+  }));
+
+  // 2. Missing — targets that were never scanned
+  const missing = session.missingBarcodes.map(tb => ({
+    data: tb.data,
+    quantity: tb.quantity,
+    status: 'missing',
+  }));
+
+  // 3. Unexpected — scanned barcodes not in the list
+  const unexpected = session.wrongBarcodes.map(tb => ({
+    data: tb.barcode.data,
+    symbology: tb.barcode.symbology,
+    status: 'unexpected',
+  }));
+
+  renderResults({ matched, missing, unexpected });
+}
+
+// Wire to the UI button:
+window.barcodeCountView.uiListener = {
+  didTapListButton: (view) => {
+    // Read the latest session from the BarcodeCountCaptureListListener
+    // (store it in a module-level variable from didUpdateSession)
+    showResultsScreen(window.latestCaptureListSession);
+  },
+};
+```
+
+Store the latest session in `didUpdateSession` so it is available when the list button is tapped:
+
+```javascript
+let latestCaptureListSession = null;
+
+const captureListListener = {
+  didUpdateSession: (captureList, session) => {
+    window.latestCaptureListSession = session; // persist for results screen
+    // ... progress update code ...
+  },
+};
+```
+
+### 8.7 — Exit and re-entry / swapping lists
+
+The capture list persists across `prepareScanning` calls. To start a new packing slip without reconstructing the entire stack:
+
+```javascript
+// Swap in a new list (e.g. next packing slip):
+async function swapList(newPackingSlip) {
+  const newTargetBarcodes = newPackingSlip.map(item =>
+    TargetBarcode.create(item.data, item.quantity)
+  );
+  const newCaptureList = BarcodeCountCaptureList.create(
+    captureListListener,
+    newTargetBarcodes,
+  );
+
+  window.barcodeCount.setBarcodeCountCaptureList(newCaptureList);
+
+  // Clear visual highlights left over from the previous list.
+  await window.barcodeCountView.clearHighlights();
+
+  // Reset the BarcodeCount session so scanned-barcode counts start fresh.
+  await window.barcodeCount.reset();
+}
+```
+
+### 8.8 — Common pitfalls
+
+> **Do NOT use a plain JS array for list matching.** A pattern like this is wrong:
+> ```javascript
+> // WRONG — do not do this
+> const expected = new Set(['9781234567897', '4012345678901']);
+> barcodeCount.addListener({
+>   didScan: (bc, session) => {
+>     for (const b of session.recognizedBarcodes) {
+>       if (expected.has(b.data)) { /* ... */ }
+>     }
+>   }
+> });
+> ```
+> This produces no `correctBarcodes`/`wrongBarcodes`/`missingBarcodes` breakdown, no per-barcode highlight differentiation, and no `didCompleteCaptureList` notification. `BarcodeCountCaptureList` is the ONLY correct approach.
+
+Additional pitfalls:
+
+- **`TargetBarcode.create(data, quantity)` — quantity must be ≥ 1.** Passing 0 or a negative number is invalid.
+- **Symbology must be enabled.** Items in the target list are matched by data value only; ensure every symbology that appears in the list is enabled in `BarcodeCountSettings` via `enableSymbology` or `enableSymbologies`. A barcode that cannot be decoded will never match.
+- **`didCompleteCaptureList` is Cap ≥8.3.** On earlier SDK versions use `didUpdateSession` with `session.missingBarcodes.length === 0` to detect completion.
+- **The list listener fires alongside `BarcodeCountListener.didScan`.** Both are active simultaneously. `didScan` fires once at the end of the scanning phase; `didUpdateSession` fires on every frame that changes list state.
+
 ### TargetBarcode
 
-| API | Description |
-|-----|-------------|
-| `TargetBarcode.create(data, quantity)` | Static factory. `data`: barcode string value. `quantity`: expected scan count. |
-| `.data` | The barcode data string. |
-| `.quantity` | Expected number of occurrences. |
+| API | Available | Description |
+|-----|-----------|-------------|
+| `TargetBarcode.create(data, quantity)` | Cap ≥6.18 | Static factory. `data`: barcode string. `quantity`: expected scan count (≥1). |
+| `.data` | Cap ≥6.18 | The barcode data string. |
+| `.quantity` | Cap ≥6.18 | Expected number of occurrences. |
+
+### BarcodeCountCaptureList
+
+| API | Available | Description |
+|-----|-----------|-------------|
+| `BarcodeCountCaptureList.create(listener, targetBarcodes)` | Cap ≥6.18 | Static factory. `listener`: object implementing `didUpdateSession`. `targetBarcodes`: `TargetBarcode[]`. |
+| `setBarcodeDataTransformer(transformer)` | Cap ≥8.3 | Transform barcode data before list matching (e.g. strip check digits). |
 
 ## Step 9 — BarcodeCountView Customization
 
@@ -433,36 +653,84 @@ All hint text properties are available on Capacitor ≥6.18 unless noted:
 | `textForTapToUncountHint` | Cap ≥7.0 | Hint when user uncounts an item |
 | `textForClusteringGestureHint` | Cap ≥8.3 | Hint for clustering gesture |
 
-Example — localize hints to French:
+### Localizing All Customer-Facing Text
+
+> **Important**: When localizing the scanning UI, you must touch ALL of the following property groups — not just the hint strings. Missing any group leaves untranslated text visible to end users or screen-reader users.
+
+**Group 1 — Button labels** (text visible on the buttons themselves):
+
+| Property | Available | Description |
+|----------|-----------|-------------|
+| `exitButtonText` | Cap ≥6.18 | Label on the exit button. |
+| `clearHighlightsButtonText` | Cap ≥6.18 | Label on the clear-highlights button. |
+
+**Group 2 — Hint strings** (instructional overlays, listed above in the table).
+
+**Group 3 — iOS VoiceOver accessibility labels and hints** (announced to screen-reader users; must be translated):
+
+| Property | Available |
+|----------|-----------|
+| `listButtonAccessibilityLabel` / `listButtonAccessibilityHint` | Cap ≥6.18 |
+| `exitButtonAccessibilityLabel` / `exitButtonAccessibilityHint` | Cap ≥6.18 |
+| `shutterButtonAccessibilityLabel` / `shutterButtonAccessibilityHint` | Cap ≥6.18 |
+| `floatingShutterButtonAccessibilityLabel` / `floatingShutterButtonAccessibilityHint` | Cap ≥6.18 |
+| `singleScanButtonAccessibilityLabel` / `singleScanButtonAccessibilityHint` | Cap ≥6.18 |
+| `clearHighlightsButtonAccessibilityLabel` / `clearHighlightsButtonAccessibilityHint` | Cap ≥6.18 |
+| `statusModeButtonAccessibilityLabel` / `statusModeButtonAccessibilityHint` | Cap ≥8.3 |
+
+**Group 4 — Android TalkBack content descriptions** (equivalent to VoiceOver labels for Android):
+
+| Property | Available |
+|----------|-----------|
+| `listButtonContentDescription` | Cap ≥6.18 |
+| `exitButtonContentDescription` | Cap ≥6.18 |
+| `shutterButtonContentDescription` | Cap ≥6.18 |
+| `floatingShutterButtonContentDescription` | Cap ≥6.18 |
+| `singleScanButtonContentDescription` | Cap ≥6.18 |
+| `clearHighlightsButtonContentDescription` | Cap ≥6.18 |
+| `statusModeButtonContentDescription` | Cap ≥8.3 |
+
+**Complete French-localization example** — all four groups:
+
 ```javascript
-view.textForTapShutterToScanHint = 'Appuyez pour scanner';
-view.textForScanningHint = 'Scan en cours…';
-view.textForMoveCloserAndRescanHint = 'Rapprochez-vous et re-scannez';
-view.textForMoveFurtherAndRescanHint = 'Éloignez-vous et re-scannez';
-view.textForTapToUncountHint = 'Appuyez pour désélectionner';
+const view = window.barcodeCountView;
+
+// Group 1 — Button labels
+view.exitButtonText             = 'Quitter';
+view.clearHighlightsButtonText  = 'Effacer les mises en évidence';
+
+// Group 2 — Hint strings
+view.textForTapShutterToScanHint        = 'Appuyez pour scanner';
+view.textForScanningHint                = 'Scan en cours…';
+view.textForMoveCloserAndRescanHint     = 'Rapprochez-vous et re-scannez';
+view.textForMoveFurtherAndRescanHint    = 'Éloignez-vous et re-scannez';
+view.textForTapToUncountHint            = 'Appuyez pour désélectionner';
+view.textForBarcodesNotInListDetectedHint = 'Code-barres non listé détecté'; // Cap ≥8.3
+view.textForScreenCleanedUpHint         = 'Écran nettoyé';                   // Cap ≥8.3
+view.textForClusteringGestureHint       = 'Geste de regroupement';           // Cap ≥8.3
+
+// Group 3 — iOS VoiceOver
+view.listButtonAccessibilityLabel              = 'Liste des articles';
+view.listButtonAccessibilityHint               = 'Affiche la liste des articles scannés';
+view.exitButtonAccessibilityLabel              = 'Quitter';
+view.exitButtonAccessibilityHint               = 'Termine la session de scan';
+view.shutterButtonAccessibilityLabel           = 'Déclencheur';
+view.shutterButtonAccessibilityHint            = 'Lance le scan';
+view.floatingShutterButtonAccessibilityLabel   = 'Déclencheur flottant';
+view.floatingShutterButtonAccessibilityHint    = 'Lance le scan (flottant)';
+view.singleScanButtonAccessibilityLabel        = 'Scan individuel';
+view.singleScanButtonAccessibilityHint         = 'Scanne un seul article';
+view.clearHighlightsButtonAccessibilityLabel   = 'Effacer';
+view.clearHighlightsButtonAccessibilityHint    = 'Efface toutes les mises en évidence';
+
+// Group 4 — Android TalkBack
+view.listButtonContentDescription              = 'Liste des articles';
+view.exitButtonContentDescription              = 'Quitter';
+view.shutterButtonContentDescription           = 'Déclencheur';
+view.floatingShutterButtonContentDescription   = 'Déclencheur flottant';
+view.singleScanButtonContentDescription        = 'Scan individuel';
+view.clearHighlightsButtonContentDescription   = 'Effacer les mises en évidence';
 ```
-
-### Accessibility Properties
-
-Accessibility labels and hints for UI buttons. Label/hint pairs affect iOS VoiceOver (`*AccessibilityLabel`, `*AccessibilityHint`). Content descriptions affect Android TalkBack (`*ContentDescription`).
-
-**iOS accessibility labels (Cap ≥6.18):**
-- `listButtonAccessibilityLabel`, `listButtonAccessibilityHint`
-- `exitButtonAccessibilityLabel`, `exitButtonAccessibilityHint`
-- `shutterButtonAccessibilityLabel`, `shutterButtonAccessibilityHint`
-- `floatingShutterButtonAccessibilityLabel`, `floatingShutterButtonAccessibilityHint`
-- `singleScanButtonAccessibilityLabel`, `singleScanButtonAccessibilityHint`
-- `clearHighlightsButtonAccessibilityLabel`, `clearHighlightsButtonAccessibilityHint`
-- `statusModeButtonAccessibilityLabel`, `statusModeButtonAccessibilityHint` (Cap ≥8.3)
-
-**Android content descriptions (Cap ≥6.18):**
-- `listButtonContentDescription`
-- `exitButtonContentDescription`
-- `shutterButtonContentDescription`
-- `floatingShutterButtonContentDescription`
-- `singleScanButtonContentDescription`
-- `clearHighlightsButtonContentDescription`
-- `statusModeButtonContentDescription` (Cap ≥8.3)
 
 ### Hardware Trigger (Android, Cap ≥7.1)
 
@@ -775,3 +1043,5 @@ window.addEventListener('load', async () => {
 13. **Prevent garbage collection** — Store `barcodeCount` and `barcodeCountView` on `window` or at module scope.
 14. **Camera permissions** — iOS requires `NSCameraUsageDescription` in `Info.plist`. Android handles it automatically.
 15. **Native only** — BarcodeCount does not run in the browser. Guard with `Capacitor.isNativePlatform()` if needed.
+16. **List scanning requires CaptureList** — Never compare `session.recognizedBarcodes` against a plain JS array or `Set` to validate a packing list. Use `BarcodeCountCaptureList.create(listener, targetBarcodes)` + `barcodeCount.setBarcodeCountCaptureList(captureList)`. Only then do `session.correctBarcodes`, `session.wrongBarcodes`, and `session.missingBarcodes` populate in `didUpdateSession`.
+17. **Localize all text groups** — When localizing, set button labels (`exitButtonText`, `clearHighlightsButtonText`), all `textForXxxHint` properties, all `*AccessibilityLabel` / `*AccessibilityHint` pairs (iOS VoiceOver), and all `*ContentDescription` properties (Android TalkBack). Missing any group leaves untranslated text for end users or screen-reader users.

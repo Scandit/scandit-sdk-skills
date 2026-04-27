@@ -570,24 +570,517 @@ view.uiListener = {
 
 ## Step 10 — Scanning against a list (BarcodeCountCaptureList)
 
-When you want to verify that specific barcodes have been scanned, attach a `BarcodeCountCaptureList`:
+This is the most common MatrixScan Count workflow: the user has a packing slip or backend list of expected items, scans a physical location, and the app tells them what matched, what's missing, and what's unexpected. `BarcodeCountCaptureList` is the **only** supported way to get per-scan matched/not-in-list session data — do not try to replicate this with a plain JS array or a `Set`.
+
+### Step 10a — Model the target list
+
+Your input is typically a JSON array from a backend or packing-slip scan. Convert each entry to a `Scandit.TargetBarcode` and bundle them into a `Scandit.BarcodeCountCaptureList`.
 
 ```javascript
-const captureList = Scandit.BarcodeCountCaptureList.create(
+// --- 1. Raw data from packing slip / backend ---
+var packingSlip = [
+  { symbology: 'ean13upca', data: '5901234123457', quantity: 3 },
+  { symbology: 'code128',   data: 'ITEM-00847',    quantity: 1 },
+  { symbology: 'datamatrix',data: 'DM-99021',      quantity: 2 },
+];
+
+// --- 2. Convert to TargetBarcode instances ---
+// TargetBarcode.create(data, quantity) — quantity must be ≥ 1.
+// TargetBarcode is symbology-agnostic: the data string is matched
+// against any enabled symbology. Make sure every item's symbology
+// is enabled in BarcodeCountSettings (see Step 4).
+var targetBarcodes = packingSlip.map(function(item) {
+  return Scandit.TargetBarcode.create(item.data, item.quantity);
+});
+```
+
+> **Important**: `TargetBarcode` matches on **data only**, not symbology. If two items share the same data string but differ in symbology (rare but possible), enable both symbologies in settings — the SDK will count whichever it scans first toward the target quantity.
+
+### Step 10b — Create the capture list with a listener
+
+```javascript
+var captureList = Scandit.BarcodeCountCaptureList.create(
   {
-    didUpdateSession: (captureList, session) => {
-      if (session.acceptedBarcodes.length > 0) {
-        console.log('Accepted:', session.acceptedBarcodes);
-      }
+    // didUpdateSession fires alongside BarcodeCountListener.didScan —
+    // both listeners can co-exist. This callback is your primary hook
+    // for tracking list progress.
+    didUpdateSession: function(barcodeCountCaptureList, session) {
+      // session.correctBarcodes  — TrackedBarcode[] matched to the target list
+      // session.wrongBarcodes    — TrackedBarcode[] scanned but NOT in the list
+      // session.missingBarcodes  — TargetBarcode[]  targets not yet scanned
+      // session.acceptedBarcodes — TrackedBarcode[] accepted via not-in-list action (≥Cordova 7.1)
+      // session.rejectedBarcodes — TrackedBarcode[] rejected via not-in-list action (≥Cordova 7.1)
+
+      var matched = session.correctBarcodes.length;
+      var extras  = session.wrongBarcodes.length;
+      var missing = session.missingBarcodes.length;
+      var total   = packingSlip.reduce(function(sum, i) { return sum + i.quantity; }, 0);
+
+      updateProgressUI(matched, total, extras);
+
+      // Log what's still missing
+      session.missingBarcodes.forEach(function(target) {
+        console.log('Still missing:', target.data, '×', target.quantity);
+      });
+    },
+
+    // didCompleteCaptureList fires when every target quantity is fulfilled (≥Cordova 8.3).
+    // Wire auto-completion here or in BarcodeCountViewListener.didCompleteCaptureList.
+    didCompleteCaptureList: function(barcodeCountCaptureList, session) {
+      console.log('All target barcodes scanned — list complete.');
+      showResultsPage(session);
     },
   },
-  [
-    Scandit.TargetBarcode.create('12345670', 1),  // data, quantity
-    Scandit.TargetBarcode.create('98765432', 2),
-  ]
+  targetBarcodes
+);
+```
+
+### Step 10c — Wire the list to the mode
+
+Call `setBarcodeCountCaptureList` **before** you start the scanning phase. Without it, every scanned barcode lands only in `BarcodeCountSession.recognizedBarcodes` with no matched/not-in-list distinction.
+
+```javascript
+// Must be called after constructing barcodeCount (Step 5) and before
+// camera.switchToDesiredState(Scandit.FrameSourceState.On).
+barcodeCount.setBarcodeCountCaptureList(captureList);
+```
+
+> **Callout**: If you forget `setBarcodeCountCaptureList`, `session.correctBarcodes`, `session.wrongBarcodes`, and `session.missingBarcodes` will all be empty arrays every frame, even if barcodes are being scanned.
+
+### Step 10d — Brushes for three visual states
+
+When a capture list is active the view renders three distinct highlight states. Set global brushes right after constructing the view (Step 7):
+
+```javascript
+// Green  — barcode found in the target list (correct scan)
+// Available from Cordova 6.24
+view.recognizedBrush = new Scandit.Brush(
+  Scandit.Color.fromHex('#00CC4466'),  // semi-transparent green fill
+  Scandit.Color.fromHex('#00CC44'),    // solid green stroke
+  2.0
 );
 
-barcodeCount.setBarcodeCountCaptureList(captureList);
+// Red    — barcode scanned but NOT in the target list
+// Available from Cordova 6.24
+view.notInListBrush = new Scandit.Brush(
+  Scandit.Color.fromHex('#FF330066'),  // semi-transparent red fill
+  Scandit.Color.fromHex('#FF3300'),    // solid red stroke
+  2.0
+);
+
+// Blue   — barcode accepted via the not-in-list action popup (≥Cordova 7.1)
+// Available: cordova=7.1
+view.acceptedBrush = new Scandit.Brush(
+  Scandit.Color.fromHex('#0066FF66'),  // semi-transparent blue fill
+  Scandit.Color.fromHex('#0066FF'),    // solid blue stroke
+  2.0
+);
+```
+
+These global brushes apply to every barcode in that category. To override a single barcode's brush, use the per-barcode methods `view.setBrushForRecognizedBarcode`, `view.setBrushForRecognizedBarcodeNotInList`, or `view.setBrushForAcceptedBarcode` (all ≥Cordova 7.1, return `Promise<void>`).
+
+### Step 10e — Enable the progress bar
+
+`view.shouldShowListProgressBar` is `true` by default when a capture list is attached and shows "X / Y" progress in the pre-built UI. To show it explicitly (or confirm it's on):
+
+```javascript
+view.shouldShowListProgressBar = true;
+```
+
+### Step 10f — Surface progress in your own DOM
+
+In addition to the native progress bar, you can update a custom DOM element from `didUpdateSession`:
+
+```javascript
+function updateProgressUI(matched, total, extras) {
+  var progressEl = document.getElementById('scan-progress');
+  if (!progressEl) return;
+  progressEl.textContent =
+    matched + ' of ' + total + ' items scanned' +
+    (extras > 0 ? ' · ' + extras + ' extra(s)' : '');
+}
+```
+
+Corresponding HTML — place above or below the scanner container:
+
+```html
+<div id="scan-progress" style="
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+  background: #f5f5f5;
+  text-align: center;
+">0 of 0 items scanned</div>
+
+<div id="barcode-count-view" class="prebuilt-view-container"></div>
+```
+
+### Step 10g — Results page / DOM section
+
+When the user taps the **List** button, present a results view that separates matched, missing, and unexpected items. Wire this from `view.uiListener.didTapListButton`:
+
+```javascript
+view.uiListener = {
+  didTapListButton: async function(view) {
+    // Push the native view under WebView content so the results overlay can sit on top.
+    var el = document.getElementById('barcode-count-view');
+    var r  = el.getBoundingClientRect();
+    await view.setFrame(
+      new Scandit.Rect(
+        new Scandit.Point(r.left, r.top),
+        new Scandit.Size(r.width, r.height)
+      ),
+      true  // isUnderContent = true
+    );
+    showResultsOverlay();
+  },
+  didTapExitButton: function(view) {
+    teardown();
+  },
+};
+
+function showResultsOverlay() {
+  // Use the most-recent session values captured in didUpdateSession.
+  var overlay = document.getElementById('results-overlay');
+  var matchedEl  = document.getElementById('results-matched');
+  var missingEl  = document.getElementById('results-missing');
+  var extrasEl   = document.getElementById('results-extras');
+
+  matchedEl.textContent  = currentMatched.map(function(tb) {
+    return tb.barcode.data;
+  }).join(', ') || 'None';
+
+  missingEl.textContent  = currentMissing.map(function(t) {
+    return t.data + ' ×' + t.quantity;
+  }).join(', ') || 'None';
+
+  extrasEl.textContent   = currentExtras.map(function(tb) {
+    return tb.barcode.data;
+  }).join(', ') || 'None';
+
+  overlay.style.display = 'flex';
+}
+```
+
+Corresponding HTML for the results overlay (lives alongside the scanner page):
+
+```html
+<div id="results-overlay" style="
+  display: none; position: fixed; inset: 0;
+  flex-direction: column; background: #fff; z-index: 9999;
+  padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom));
+">
+  <h2 style="margin-top: 0">Scan Results</h2>
+
+  <h3>Matched</h3>
+  <p id="results-matched"></p>
+
+  <h3>Missing</h3>
+  <p id="results-missing"></p>
+
+  <h3>Unexpected</h3>
+  <p id="results-extras"></p>
+
+  <button id="btn-resume" style="margin-top: auto">Resume Scanning</button>
+  <button id="btn-clear">Clear &amp; Start Over</button>
+</div>
+```
+
+Wire the buttons:
+
+```javascript
+document.getElementById('btn-resume').addEventListener('click', async function() {
+  document.getElementById('results-overlay').style.display = 'none';
+  // Bring native view back to front
+  var el = document.getElementById('barcode-count-view');
+  var r  = el.getBoundingClientRect();
+  await barcodeCountView.setFrame(
+    new Scandit.Rect(
+      new Scandit.Point(r.left, r.top),
+      new Scandit.Size(r.width, r.height)
+    ),
+    false  // isUnderContent = false (bring to front)
+  );
+});
+
+document.getElementById('btn-clear').addEventListener('click', async function() {
+  document.getElementById('results-overlay').style.display = 'none';
+  // Reset mode and swap in a fresh capture list
+  await barcodeCount.reset();
+  currentMatched = [];
+  currentMissing = targetBarcodes.slice(); // reset to full target list
+  currentExtras  = [];
+  updateProgressUI(0, totalQuantity, 0);
+  // Bring native view back to front
+  var el = document.getElementById('barcode-count-view');
+  var r  = el.getBoundingClientRect();
+  await barcodeCountView.setFrame(
+    new Scandit.Rect(
+      new Scandit.Point(r.left, r.top),
+      new Scandit.Size(r.width, r.height)
+    ),
+    false
+  );
+});
+```
+
+### Step 10h — Exit / re-entry and swapping lists
+
+The capture list persists across `prepareScanning` calls. To start a new order, swap the list with a new one and clear highlights:
+
+```javascript
+// Called when the user navigates back to the scanner with a different order
+async function loadNewOrder(newPackingSlip) {
+  var newTargetBarcodes = newPackingSlip.map(function(item) {
+    return Scandit.TargetBarcode.create(item.data, item.quantity);
+  });
+
+  var newCaptureList = Scandit.BarcodeCountCaptureList.create(
+    captureListListener,  // same listener object, or a new one
+    newTargetBarcodes
+  );
+
+  // Swap the list on the mode
+  barcodeCount.setBarcodeCountCaptureList(newCaptureList);
+
+  // Clear all visible highlights so stale barcodes from the old order disappear
+  await barcodeCountView.clearHighlights();
+
+  // Reset the mode session (tracked barcode counts)
+  await barcodeCount.reset();
+}
+```
+
+> **Re-entry pattern**: if the user leaves the scanner page without completing the order (e.g. navigates to a different tab) and comes back, re-call `barcodeCount.setBarcodeCountCaptureList(captureList)` with the original list. The list itself is stateless — tracked progress lives in the `BarcodeCountSession`, which persists until `barcodeCount.reset()` is called.
+
+### Step 10i — Common pitfalls
+
+> **Do NOT compare scanned data against a plain JS array.** Code like `expectedItems.includes(barcode.data)` is fragile (no quantity tracking, no frame-level lifecycle) and will diverge from what the SDK reports. `Scandit.BarcodeCountCaptureList` is the **only** mechanism that produces `session.correctBarcodes`, `session.wrongBarcodes`, and `session.missingBarcodes`.
+
+1. **`TargetBarcode.create(data, quantity)` — quantity must be ≥ 1.** Passing `0` will cause the target to be silently ignored.
+2. **Items are symbology-agnostic — enable each item's symbology in settings.** If a barcode's symbology is not enabled in `BarcodeCountSettings`, it will never be scanned, so it will remain in `session.missingBarcodes` forever.
+3. **`didUpdateSession` fires alongside `BarcodeCountListener.didScan`.** Both listeners can co-exist and both receive data from the same scan event. There is no need to choose one over the other.
+4. **`didCompleteCaptureList` is available from Cordova 8.3.** On earlier plugin versions, detect completion manually by checking `session.missingBarcodes.length === 0` inside `didUpdateSession`.
+5. **Call `setBarcodeCountCaptureList` before starting the camera**, or at least before the first scanning phase. Setting it mid-session is supported (the SDK picks it up on the next frame) but setting it before avoids a frame where barcodes have no list context.
+
+### Step 10j — Full "scanning against a list" wiring example
+
+The snippet below is a self-contained plain-JS Cordova page that puts all the above pieces together.
+
+```javascript
+// @ts-check
+// Scanning-against-a-list example for MatrixScan Count (Cordova).
+// All Scandit APIs are accessed via the global Scandit.* namespace.
+
+var context         = null;
+var camera          = null;
+var barcodeCount    = null;
+var barcodeCountView = null;
+
+// Mutable state updated by didUpdateSession
+var currentMatched = [];
+var currentMissing = [];
+var currentExtras  = [];
+
+// --- Packing slip from backend ---
+var packingSlip = [
+  { data: '5901234123457', quantity: 3 },
+  { data: 'ITEM-00847',    quantity: 1 },
+  { data: 'DM-99021',      quantity: 2 },
+];
+var totalQuantity = packingSlip.reduce(function(s, i) { return s + i.quantity; }, 0);
+
+// --- Capture list listener (defined once, reused on re-entry) ---
+var captureListListener = {
+  didUpdateSession: function(captureListInstance, session) {
+    currentMatched = session.correctBarcodes;
+    currentExtras  = session.wrongBarcodes;
+    currentMissing = session.missingBarcodes;
+
+    var matched = currentMatched.length;
+    var extras  = currentExtras.length;
+    updateProgressUI(matched, totalQuantity, extras);
+  },
+  didCompleteCaptureList: function(captureListInstance, session) {
+    // ≥Cordova 8.3: all target quantities fulfilled
+    console.log('List complete!');
+    showResultsOverlay();
+  },
+};
+
+function buildCaptureList() {
+  var targetBarcodes = packingSlip.map(function(item) {
+    return Scandit.TargetBarcode.create(item.data, item.quantity);
+  });
+  return Scandit.BarcodeCountCaptureList.create(captureListListener, targetBarcodes);
+}
+
+async function initializeSDK() {
+  if (context) return;
+
+  context = Scandit.DataCaptureContext.initialize('-- ENTER YOUR SCANDIT LICENSE KEY HERE --');
+
+  var cameraSettings = Scandit.BarcodeCount.createRecommendedCameraSettings();
+  camera = Scandit.Camera.withSettings(cameraSettings);
+  await context.setFrameSource(camera);
+
+  var settings = new Scandit.BarcodeCountSettings();
+  // Enable every symbology that appears in your packing slips:
+  settings.enableSymbologies([
+    Scandit.Symbology.EAN13UPCA,
+    Scandit.Symbology.Code128,
+    Scandit.Symbology.DataMatrix,
+  ]);
+
+  barcodeCount = new Scandit.BarcodeCount(settings);
+  context.addMode(barcodeCount);
+  barcodeCount.isEnabled = true;
+
+  // --- Wire the capture list BEFORE starting the camera ---
+  barcodeCount.setBarcodeCountCaptureList(buildCaptureList());
+
+  // Optional: BarcodeCountListener can co-exist with the capture list listener
+  barcodeCount.addListener({
+    didScan: function(mode, session) {
+      // session.recognizedBarcodes contains all currently tracked barcodes.
+      // Use it for generic per-scan logic; use captureListListener for list logic.
+    },
+  });
+
+  barcodeCountView = Scandit.BarcodeCountView.forContextWithModeAndStyle(
+    context,
+    barcodeCount,
+    Scandit.BarcodeCountViewStyle.Icon
+  );
+
+  // --- Three visually distinct brush states ---
+  barcodeCountView.recognizedBrush = new Scandit.Brush(
+    Scandit.Color.fromHex('#00CC4466'),
+    Scandit.Color.fromHex('#00CC44'),
+    2.0
+  );
+  barcodeCountView.notInListBrush = new Scandit.Brush(
+    Scandit.Color.fromHex('#FF330066'),
+    Scandit.Color.fromHex('#FF3300'),
+    2.0
+  );
+  barcodeCountView.acceptedBrush = new Scandit.Brush( // ≥Cordova 7.1
+    Scandit.Color.fromHex('#0066FF66'),
+    Scandit.Color.fromHex('#0066FF'),
+    2.0
+  );
+
+  // Show the built-in list progress bar
+  barcodeCountView.shouldShowListProgressBar = true;
+
+  barcodeCountView.uiListener = {
+    didTapListButton: async function() {
+      // Push native view under WebView so the results overlay can sit on top
+      var el = document.getElementById('barcode-count-view');
+      var r  = el.getBoundingClientRect();
+      await barcodeCountView.setFrame(
+        new Scandit.Rect(
+          new Scandit.Point(r.left, r.top),
+          new Scandit.Size(r.width, r.height)
+        ),
+        true
+      );
+      showResultsOverlay();
+    },
+    didTapExitButton: function() {
+      teardown();
+    },
+  };
+
+  var containerEl = document.getElementById('barcode-count-view');
+  barcodeCountView.connectToElement(containerEl);
+
+  await camera.switchToDesiredState(Scandit.FrameSourceState.On);
+}
+
+function updateProgressUI(matched, total, extras) {
+  var el = document.getElementById('scan-progress');
+  if (!el) return;
+  el.textContent = matched + ' of ' + total + ' items' +
+    (extras > 0 ? ' · ' + extras + ' extra(s)' : '');
+}
+
+function showResultsOverlay() {
+  document.getElementById('results-matched').textContent =
+    currentMatched.length > 0
+      ? currentMatched.map(function(tb) { return tb.barcode.data; }).join(', ')
+      : 'None';
+
+  document.getElementById('results-missing').textContent =
+    currentMissing.length > 0
+      ? currentMissing.map(function(t) { return t.data + ' ×' + t.quantity; }).join(', ')
+      : 'None';
+
+  document.getElementById('results-extras').textContent =
+    currentExtras.length > 0
+      ? currentExtras.map(function(tb) { return tb.barcode.data; }).join(', ')
+      : 'None';
+
+  document.getElementById('results-overlay').style.display = 'flex';
+}
+
+async function restoreNativeViewToFront() {
+  var el = document.getElementById('barcode-count-view');
+  var r  = el.getBoundingClientRect();
+  await barcodeCountView.setFrame(
+    new Scandit.Rect(
+      new Scandit.Point(r.left, r.top),
+      new Scandit.Size(r.width, r.height)
+    ),
+    false
+  );
+}
+
+document.getElementById('btn-resume').addEventListener('click', async function() {
+  document.getElementById('results-overlay').style.display = 'none';
+  await restoreNativeViewToFront();
+});
+
+document.getElementById('btn-clear').addEventListener('click', async function() {
+  document.getElementById('results-overlay').style.display = 'none';
+  await barcodeCount.reset();
+  await barcodeCountView.clearHighlights();
+  // Swap in a fresh capture list for a new order
+  barcodeCount.setBarcodeCountCaptureList(buildCaptureList());
+  currentMatched = [];
+  currentMissing = [];
+  currentExtras  = [];
+  updateProgressUI(0, totalQuantity, 0);
+  await restoreNativeViewToFront();
+});
+
+async function teardown() {
+  if (camera) {
+    await camera.switchToDesiredState(Scandit.FrameSourceState.Off);
+    camera = null;
+  }
+  if (barcodeCountView) {
+    barcodeCountView.detachFromElement();
+    barcodeCountView = null;
+  }
+  if (barcodeCount && context) {
+    barcodeCount.isEnabled = false;
+    context.removeMode(barcodeCount);
+  }
+  barcodeCount = null;
+  context = null;
+}
+
+document.addEventListener('deviceready', initializeSDK, false);
+
+document.addEventListener('pause', async function() {
+  if (camera) await camera.switchToDesiredState(Scandit.FrameSourceState.Off);
+}, false);
+
+document.addEventListener('resume', async function() {
+  if (camera) await camera.switchToDesiredState(Scandit.FrameSourceState.On);
+}, false);
 ```
 
 When a capture list is active, `view.shouldShowListProgressBar` shows scan progress (default `true`).

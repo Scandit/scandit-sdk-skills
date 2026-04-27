@@ -555,43 +555,502 @@ view.filterSettings = myFilterHighlightSettings;
 | `view.listener` | `BarcodeCountViewListener?` | Brush and tap callbacks per tracked barcode. |
 | `view.uiListener` | `BarcodeCountViewUiListener?` | Button tap callbacks (list, exit, single-scan). |
 
-## Step 10 — Scanning Against a Target List
+## Step 10 — Scanning Against a Target List (End-to-End Recipe)
 
-`BarcodeCountCaptureList` enables scanning against a fixed set of expected barcodes (quantity-aware). The view automatically shows a progress bar and highlights not-in-list barcodes differently.
+> **Critical**: Do **not** compare scanned data against a plain `List<String>` or `Set<String>`. `BarcodeCountCaptureList` is the only correct way to obtain `session.correctBarcodes`, `session.wrongBarcodes`, and `session.missingBarcodes`. Without it, the SDK has no knowledge of expected quantities, and those session properties will be empty.
+
+`BarcodeCountCaptureList` enables scanning against a fixed set of expected barcodes (quantity-aware). The view automatically shows a progress bar and highlights barcodes not in the list differently from matched ones.
+
+### 10.1 — Modeling the Target List
+
+Target barcodes typically come from a JSON API or a local repository as a list of pick-list entries. Model each entry as a simple data class:
+
+```dart
+/// A single line from a pick-list / purchase order.
+class PicklistItem {
+  final String data;       // barcode content (e.g. "3614274083034")
+  final Symbology symbology; // must match an enabled symbology in BarcodeCountSettings
+  final int quantity;      // expected scan count — must be >= 1
+
+  const PicklistItem({
+    required this.data,
+    required this.symbology,
+    required this.quantity,
+  });
+
+  /// Parse from JSON returned by a warehouse/ERP API.
+  factory PicklistItem.fromJson(Map<String, dynamic> json) {
+    return PicklistItem(
+      data: json['barcode'] as String,
+      // JSON uses 'code128'; Dart enum is lowerCamelCase: Symbology.code128
+      symbology: _symbologyFromString(json['symbology'] as String),
+      quantity: (json['quantity'] as num).toInt(),
+    );
+  }
+}
+
+// Example helper — extend as needed for your symbology set.
+Symbology _symbologyFromString(String s) {
+  switch (s) {
+    case 'ean13Upca': return Symbology.ean13Upca;
+    case 'code128':   return Symbology.code128;
+    case 'code39':    return Symbology.code39;
+    case 'upce':      return Symbology.upce;
+    case 'ean8':      return Symbology.ean8;
+    default: throw ArgumentError('Unknown symbology: $s');
+  }
+}
+```
+
+Convert `PicklistItem` objects into `TargetBarcode` instances and bundle them into a `BarcodeCountCaptureList`:
 
 ```dart
 import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_count.dart';
 
-// Define the target barcodes (data + expected quantity):
-final targetBarcodes = [
-  TargetBarcode.create('123456789012', 2),
-  TargetBarcode.create('987654321098', 1),
-];
+/// Converts a list of PicklistItems to a BarcodeCountCaptureList wired to [listener].
+BarcodeCountCaptureList buildCaptureList(
+  List<PicklistItem> items,
+  BarcodeCountCaptureListListener listener,
+) {
+  // TargetBarcode.create(data, quantity) — quantity must be >= 1.
+  final targetBarcodes = items
+      .map((item) => TargetBarcode.create(item.data, item.quantity))
+      .toList();
 
-// Create the list with a listener (the BLoC or a dedicated class):
-final captureList = BarcodeCountCaptureList.create(this, targetBarcodes);
-
-// Attach the list to the mode:
-await barcodeCount.setBarcodeCountCaptureList(captureList);
+  // BarcodeCountCaptureList.create(listener, targetBarcodes)
+  return BarcodeCountCaptureList.create(listener, targetBarcodes);
+}
 ```
 
-`TargetBarcode.create(data, quantity)` — data is the barcode string content, quantity is the expected scan count.
+> **Note**: `TargetBarcode` matches barcodes by data string only — it is symbology-agnostic. Make sure every symbology present in the list is enabled in `BarcodeCountSettings` via `enableSymbology` or `enableSymbologies`. If a symbology is not enabled it will never be scanned, so those items will always appear in `missingBarcodes`.
 
-### BarcodeCountCaptureListListener Dart Callback
+### 10.2 — Wiring the List to the Mode
+
+Call `setBarcodeCountCaptureList` on `BarcodeCount` **after** constructing the mode and before the first scan. This is an async call; await it so the list is set before any frames are processed.
 
 ```dart
-class CountBloc implements BarcodeCountCaptureListListener {
+// In CountBloc constructor or an async initializer:
+
+BarcodeCountCaptureList? _captureList;
+
+Future<void> loadPicklist(List<PicklistItem> items) async {
+  _captureList = buildCaptureList(items, this); // 'this' implements the listener
+  // IMPORTANT: without this call, scans are never validated against the list
+  // and correctBarcodes / wrongBarcodes / missingBarcodes will be empty.
+  await barcodeCount.setBarcodeCountCaptureList(_captureList!);
+}
+```
+
+> **Callout**: `setBarcodeCountCaptureList` must be called before any scan. Calling it after the first `didScan` is possible (to swap lists mid-session) but the results screen will reflect only the new list from that point onward.
+
+### 10.3 — Brushes for Matched / Not-In-List / Accepted (Dot Style Only)
+
+> **Important**: Brush properties have effect **only in the dot style** (`BarcodeCountViewStyle.dot`). In icon style (`BarcodeCountViewStyle.icon`) the SDK draws its own icons and ignores all brush settings. If you use icon style, skip this section.
+
+Set instance brush properties on the `BarcodeCountView` to make the three scan states visually distinct:
+
+```dart
+// Inside build() using the cascade operator, or after construction in initState().
+// Use BarcodeCountViewStyle.dot for brush properties to take effect.
+BarcodeCountView.forContextWithModeAndStyle(
+  _bloc.dataCaptureContext,
+  _bloc.barcodeCount,
+  BarcodeCountViewStyle.dot,   // brushes have no effect in icon style
+)
+  ..uiListener = _bloc
+  ..listener = _bloc
+  // Green fill + stroke — barcode matched the target list (correctBarcodes).
+  ..recognizedBrush = Brush(
+      const Color(0x6600CC44), const Color(0xFF00CC44), 1.0)
+  // Red fill + stroke — barcode scanned but NOT in the list (wrongBarcodes).
+  ..notInListBrush = Brush(
+      const Color(0x66FF2D2D), const Color(0xFFFF2D2D), 1.0)
+  // White fill + stroke — recognized but not yet matched (default appearance).
+  ..recognizedBrush = Brush(
+      const Color(0x66FFFFFF), const Color(0xFFFFFFFF), 1.0)
+  // Show the built-in progress bar for list completion.
+  ..shouldShowListProgressBar = true;
+```
+
+Per-barcode brushes (from `BarcodeCountViewListener`) follow the same dot-style restriction:
+
+```dart
+@override
+Brush? brushForRecognizedBarcode(BarcodeCountView view, TrackedBarcode trackedBarcode) {
+  // Dot style only. Return null to fall back to view.recognizedBrush.
+  return null;
+}
+
+@override
+Brush? brushForRecognizedBarcodeNotInList(BarcodeCountView view, TrackedBarcode trackedBarcode) {
+  // Dot style only. Return null to fall back to view.notInListBrush.
+  return null;
+}
+```
+
+### 10.4 — Implementing BarcodeCountCaptureListListener
+
+Implement `BarcodeCountCaptureListListener` to receive list-level session updates. This fires **alongside** (not instead of) `BarcodeCountListener.didScan` — both listeners can coexist on the same BLoC.
+
+```dart
+import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_count.dart';
+
+class CountBloc
+    implements
+        BarcodeCountListener,
+        BarcodeCountViewListener,
+        BarcodeCountViewUiListener,
+        BarcodeCountCaptureListListener {
+
+  // --- BarcodeCountCaptureListListener ---
+
+  /// Called after each frame is processed and the list state is updated.
+  /// :available: flutter=6.17
   @override
   void didUpdateSession(
     BarcodeCountCaptureList barcodeCountCaptureList,
     BarcodeCountCaptureListSession session,
   ) {
-    // Called after each frame updates the list state.
+    // session.correctBarcodes  — List<TrackedBarcode> matched to the target list
+    // session.wrongBarcodes    — List<TrackedBarcode> scanned but NOT in the list
+    // session.missingBarcodes  — List<TargetBarcode> not yet scanned
+    final matched  = session.correctBarcodes.length;
+    final wrong    = session.wrongBarcodes.length;
+    final missing  = session.missingBarcodes.length;
+    final total    = matched + missing; // total expected unique target lines
+    debugPrint('$matched/$total matched, $wrong extras');
+
+    // Emit a BLoC event so the UI can react (see §10.5 for the full event/state pair).
+    _progressController.add(
+      ScanProgressState(
+        matched: matched,
+        total: total,
+        extras: wrong,
+        missingBarcodes: List.unmodifiable(session.missingBarcodes),
+      ),
+    );
   }
 }
 ```
 
-`IBarcodeCountCaptureListExtendedListener` (Flutter ≥8.3) adds `didCompleteCaptureList` for when all list items are scanned — **Flutter-only** extended interface.
+To also receive a callback when **all** list items are scanned, implement `BarcodeCountCaptureListExtendedListener` (Flutter ≥8.3) instead of the base listener:
+
+```dart
+/// Flutter ≥8.3 — extends BarcodeCountCaptureListListener.
+class CountBloc extends ... implements BarcodeCountCaptureListExtendedListener {
+
+  @override
+  void didUpdateSession(
+    BarcodeCountCaptureList barcodeCountCaptureList,
+    BarcodeCountCaptureListSession session,
+  ) {
+    // same as above
+  }
+
+  /// Called once every item in the target list has been correctly scanned.
+  /// :available: flutter=8.3
+  @override
+  void didCompleteCaptureList(
+    BarcodeCountCaptureList barcodeCountCaptureList,
+    BarcodeCountCaptureListSession session,
+  ) {
+    // Navigate to results automatically, or show a completion banner.
+    _progressController.add(ScanProgressState.completed());
+  }
+}
+```
+
+### BarcodeCountCaptureListSession Properties
+
+| Property | Type | Available | Description |
+|----------|------|-----------|-------------|
+| `correctBarcodes` | `List<TrackedBarcode>` | flutter=6.17 | Tracked barcodes matched to the target list. |
+| `wrongBarcodes` | `List<TrackedBarcode>` | flutter=6.17 | Scanned barcodes that are **not** in the list. |
+| `missingBarcodes` | `List<TargetBarcode>` | flutter=6.17 | Target barcodes not yet scanned. |
+| `additionalBarcodes` | `List<Barcode>` | flutter=6.17 | Barcodes injected via `setAdditionalBarcodes`. |
+| `acceptedBarcodes` | `List<TrackedBarcode>` | flutter=8.3 | Barcodes marked as accepted (not-in-list action). |
+| `rejectedBarcodes` | `List<TrackedBarcode>` | flutter=8.3 | Barcodes marked as rejected (not-in-list action). |
+
+### 10.5 — Progress UI with BLoC Events
+
+Define a `ScanProgressState` event/state to carry progress data to the scanning UI:
+
+```dart
+// --- BLoC event/state ---
+
+class ScanProgressState {
+  final int matched;      // count of correctly scanned target lines
+  final int total;        // total unique target lines in the list
+  final int extras;       // count of wrongBarcodes (not in list)
+  final List<TargetBarcode> missingBarcodes;
+  final bool completed;
+
+  const ScanProgressState({
+    required this.matched,
+    required this.total,
+    required this.extras,
+    required this.missingBarcodes,
+    this.completed = false,
+  });
+
+  const ScanProgressState.completed()
+      : matched = 0, total = 0, extras = 0,
+        missingBarcodes = const [], completed = true;
+
+  String get progressSummary =>
+      '$matched of $total items scanned'
+      '${extras > 0 ? ', $extras unexpected' : ''}';
+}
+```
+
+In the BLoC, expose a stream so widgets can rebuild on each update:
+
+```dart
+class CountBloc implements BarcodeCountCaptureListListener, ... {
+  final _progressController =
+      StreamController<ScanProgressState>.broadcast();
+
+  Stream<ScanProgressState> get progress => _progressController.stream;
+
+  // ...
+
+  @override
+  void didUpdateSession(
+    BarcodeCountCaptureList list,
+    BarcodeCountCaptureListSession session,
+  ) {
+    final matched = session.correctBarcodes.length;
+    final missing = session.missingBarcodes.length;
+    _progressController.add(ScanProgressState(
+      matched: matched,
+      total: matched + missing,
+      extras: session.wrongBarcodes.length,
+      missingBarcodes: List.unmodifiable(session.missingBarcodes),
+    ));
+  }
+
+  void dispose() {
+    _progressController.close();
+    // ...
+  }
+}
+```
+
+In the scanning screen, subscribe to the progress stream and overlay a banner above `BarcodeCountView`:
+
+```dart
+// count_screen.dart — add a progress overlay above the camera view.
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.black,
+    body: SafeArea(
+      bottom: false,
+      child: Stack(
+        children: [
+          // Full-screen camera + scanning view.
+          BarcodeCountView.forContextWithModeAndStyle(
+            _bloc.dataCaptureContext,
+            _bloc.barcodeCount,
+            BarcodeCountViewStyle.dot, // use dot for brush colours
+          )
+            ..uiListener = _bloc
+            ..listener = _bloc
+            ..recognizedBrush = Brush(const Color(0x6600CC44), const Color(0xFF00CC44), 1.0)
+            ..notInListBrush  = Brush(const Color(0x66FF2D2D), const Color(0xFFFF2D2D), 1.0)
+            ..shouldShowListProgressBar = true,
+
+          // Progress banner driven by the BLoC stream.
+          Positioned(
+            top: 8, left: 16, right: 16,
+            child: StreamBuilder<ScanProgressState>(
+              stream: _bloc.progress,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final state = snapshot.data!;
+                return Material(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Text(
+                      state.progressSummary,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+> `shouldShowListProgressBar = true` (default) activates the SDK's built-in progress bar inside `BarcodeCountView` — no extra code needed for that widget. The `StreamBuilder` overlay above adds a text summary on top for extra clarity.
+
+### 10.6 — Results Screen
+
+After scanning, navigate to a results screen that shows three sections: matched items, missing items (targets never scanned), and unexpected items (not in list).
+
+```dart
+// --- BLoC-driven results derivation ---
+
+class ScanResultArgs {
+  final List<TargetBarcode> targetList;        // the original pick-list items
+  final List<TrackedBarcode> correctBarcodes;  // session.correctBarcodes
+  final List<TrackedBarcode> wrongBarcodes;    // session.wrongBarcodes
+  final List<TargetBarcode> missingBarcodes;   // session.missingBarcodes
+
+  const ScanResultArgs({
+    required this.targetList,
+    required this.correctBarcodes,
+    required this.wrongBarcodes,
+    required this.missingBarcodes,
+  });
+}
+```
+
+Expose an accessor on the BLoC that packages the last known session state for navigation:
+
+```dart
+// In CountBloc — store the last session snapshot.
+BarcodeCountCaptureListSession? _lastListSession;
+
+@override
+void didUpdateSession(
+  BarcodeCountCaptureList list,
+  BarcodeCountCaptureListSession session,
+) {
+  _lastListSession = session;
+  // ... emit progress state as before
+}
+
+ScanResultArgs get resultArgs {
+  final s = _lastListSession;
+  return ScanResultArgs(
+    targetList: _currentPicklist.map((i) => TargetBarcode.create(i.data, i.quantity)).toList(),
+    correctBarcodes: s?.correctBarcodes ?? [],
+    wrongBarcodes:   s?.wrongBarcodes   ?? [],
+    missingBarcodes: s?.missingBarcodes ?? [],
+  );
+}
+```
+
+The results `StatefulWidget`:
+
+```dart
+class ResultsPage extends StatelessWidget {
+  final ScanResultArgs args;
+  const ResultsPage({super.key, required this.args});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan Results')),
+      body: ListView(
+        children: [
+          // --- Section 1: Matched (targets scanned correctly) ---
+          _sectionHeader(
+            context,
+            'Matched (${args.correctBarcodes.length})',
+            color: Colors.green,
+          ),
+          for (final tb in args.correctBarcodes)
+            ListTile(
+              leading: const Icon(Icons.check_circle, color: Colors.green),
+              title: Text(tb.barcode.data ?? ''),
+              subtitle: Text(tb.barcode.symbology.toString()),
+            ),
+
+          // --- Section 2: Missing (targets not yet scanned) ---
+          _sectionHeader(
+            context,
+            'Missing (${args.missingBarcodes.length})',
+            color: Colors.orange,
+          ),
+          for (final target in args.missingBarcodes)
+            ListTile(
+              leading: const Icon(Icons.radio_button_unchecked, color: Colors.orange),
+              title: Text(target.data),
+              subtitle: Text('Expected qty: ${target.quantity}'),
+            ),
+
+          // --- Section 3: Unexpected (scanned but not in list) ---
+          _sectionHeader(
+            context,
+            'Unexpected (${args.wrongBarcodes.length})',
+            color: Colors.red,
+          ),
+          for (final tb in args.wrongBarcodes)
+            ListTile(
+              leading: const Icon(Icons.warning_amber, color: Colors.red),
+              title: Text(tb.barcode.data ?? ''),
+              subtitle: Text(tb.barcode.symbology.toString()),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionHeader(BuildContext context, String title, {required Color color}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+```
+
+Navigate to it from the BLoC's `didTapListButton` or `didTapExitButton`:
+
+```dart
+@override
+void didTapListButton(BarcodeCountView view) {
+  barcodeCount.removeListener(this);
+  Navigator.of(_context).push(
+    MaterialPageRoute(builder: (_) => ResultsPage(args: resultArgs)),
+  );
+}
+```
+
+### 10.7 — Exit / Re-entry Behavior
+
+The capture list persists across `prepareScanning` calls and survives background/foreground transitions. To **swap** the list for a new order mid-session:
+
+```dart
+Future<void> switchToNewOrder(List<PicklistItem> newItems) async {
+  final newList = buildCaptureList(newItems, this);
+  // Swap the list — in-flight barcodes from the previous list are discarded.
+  await barcodeCount.setBarcodeCountCaptureList(newList);
+  // Clear visual highlights from the previous session.
+  // view.clearHighlights() must be called on the BarcodeCountView instance.
+  await _barcodeCountView?.clearHighlights();
+  // Reset the mode's internal barcode history.
+  await barcodeCount.clearAdditionalBarcodes();
+  await barcodeCount.reset();
+}
+```
+
+> If `clearHighlights()` is not called, old green/red dot overlays from the previous list remain on screen until the next frame is processed.
+
+### 10.8 — Common Pitfalls
+
+- **Do NOT compare scanned data against a `List<String>` or `Set<String>`.** `BarcodeCountCaptureList` is the only way to get `session.correctBarcodes`, `session.wrongBarcodes`, and `session.missingBarcodes`. A plain Dart collection cannot drive the SDK's validated matching or list-progress UI.
+- **`TargetBarcode.create(data, quantity)` — quantity must be ≥ 1.** A quantity of `0` causes undefined behavior; validate before constructing.
+- **List items are symbology-agnostic at the API level**, but the barcode must be enabled in `BarcodeCountSettings`. If a symbology is not enabled, those barcodes will never be scanned and will always appear in `missingBarcodes`.
+- **`BarcodeCountCaptureListListener.didUpdateSession` fires alongside `BarcodeCountListener.didScan`**, not instead of it. Both listeners can coexist on the same BLoC — `didScan` fires once per shutter press, `didUpdateSession` fires on every frame update.
+- **Symbology values in Dart are lowerCamelCase**: `Symbology.code128`, `Symbology.ean13Upca`, `Symbology.code39` — never `Symbology.Code128` or `Symbology.EAN13_UPCA`.
+- **Brushes are dot-style only**: `recognizedBrush`, `notInListBrush`, `brushForRecognizedBarcode`, and `brushForRecognizedBarcodeNotInList` have no visual effect in `BarcodeCountViewStyle.icon`.
 
 ## Step 11 — Status Provider (Flutter ≥7.0, beta)
 
