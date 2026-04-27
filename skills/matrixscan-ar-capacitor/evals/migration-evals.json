@@ -1,0 +1,69 @@
+{
+  "skill_name": "matrixscan-ar-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this MatrixScan code from BarcodeBatch to BarcodeAr. The visual feedback should be frame highlights on each tracked barcode (matching the existing Frame overlay style). File: MigrationSimpleSample.js",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces DataCaptureView.forContext with new BarcodeArView({...}), wires a highlightProvider returning BarcodeArRectangleHighlight, switches context.setMode to context.addMode, preserves the results map and camera lifecycle, replaces barcodeBatch.isEnabled with barcodeArView.start()/stop(), and calls connectToElement on the view.",
+      "files": [
+        "fixtures/MigrationSimpleSample.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlayStyle is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "BarcodeAr is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "BarcodeArSettings is present in the output file"},
+        {"text": "BarcodeArRectangleHighlight is present in the output file"},
+        {"text": "context.addMode( is present in the output file"},
+        {"text": "context.setMode( is NOT present in the output file"},
+        {"text": "DataCaptureView is NOT present in the output file"},
+        {"text": "view.addOverlay( is NOT present in the output file"},
+        {"text": "connectToElement( is called on the BarcodeArView instance"},
+        {"text": "barcodeArView.highlightProvider is assigned an object with highlightForBarcode"},
+        {"text": "The results map and its population from the session are preserved (semantic)"},
+        {"text": "camera.switchToDesiredState( is preserved in the output (camera lifecycle unchanged) (semantic)"},
+        {"text": "barcodeBatch.isEnabled is NOT present in the output file"},
+        {"text": "barcodeArView.start() or barcodeArView.stop() is used to replace barcodeBatch.isEnabled toggling (semantic)"},
+        {"text": "session.addedTrackedBarcodes is used instead of Object.values(session.trackedBarcodes) in the listener (semantic)"},
+        {"text": "Import from 'scandit-capacitor-datacapture-barcode' does not include any BarcodeBatch symbols (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate this MatrixScan code from BarcodeBatch to BarcodeAr. The bubbles above each barcode should become BarcodeAr annotations. File: MigrationBubblesSample.js",
+      "expected_output": "The skill reads migration.md, replaces all BarcodeBatch* symbols with BarcodeAr equivalents, replaces DataCaptureView.forContext with new BarcodeArView({...}), wires an annotationProvider using BarcodeArInfoAnnotation or BarcodeArResponsiveAnnotation (since BarcodeArCustomAnnotation is unavailable on Capacitor), removes the manual Quadrilateral width heuristic and viewQuadrilateralForFrameQuadrilateral calls, removes TrackedBarcodeView and createBubbleWithContent, migrates freeze/unfreeze to barcodeArView.stop()/start(), and replaces setViewForTrackedBarcode with the annotation provider pattern.",
+      "files": [
+        "fixtures/MigrationBubblesSample.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is NOT present in the output file"},
+        {"text": "BarcodeBatchAdvancedOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchBasicOverlay is NOT present in the output file"},
+        {"text": "BarcodeBatchSettings is NOT present in the output file"},
+        {"text": "TrackedBarcodeView is NOT present in the output file"},
+        {"text": "BarcodeArCustomAnnotation is NOT present in the output file"},
+        {"text": "BarcodeAr is present in the output file"},
+        {"text": "BarcodeArView is present in the output file"},
+        {"text": "barcodeArView.annotationProvider is assigned an object with annotationForBarcode"},
+        {"text": "BarcodeArInfoAnnotation or BarcodeArResponsiveAnnotation is used inside annotationForBarcode (semantic)"},
+        {"text": "The agent chose BarcodeArInfoAnnotation or BarcodeArResponsiveAnnotation as the annotation type because BarcodeArCustomAnnotation is not available on Capacitor (semantic)"},
+        {"text": "DataCaptureView is NOT present in the output file"},
+        {"text": "view.addOverlay( is NOT present in the output file"},
+        {"text": "context.setMode( is NOT present in the output file"},
+        {"text": "context.addMode( is present in the output file"},
+        {"text": "Quadrilateral is NOT present in the output file"},
+        {"text": "viewQuadrilateralForFrameQuadrilateral is NOT present in the output file"},
+        {"text": "createBubbleWithContent is NOT present in the output file"},
+        {"text": "setViewForTrackedBarcode is NOT present in the output file"},
+        {"text": "barcodeBatch.isEnabled is NOT present in the output file"},
+        {"text": "The freeze/unfreeze toggle is migrated to use barcodeArView.stop() and barcodeArView.start() (semantic)"},
+        {"text": "session.removedTrackedBarcodes is still handled to clean up state (semantic)"},
+        {"text": "connectToElement( is called and awaited on the BarcodeArView instance"},
+        {"text": "Import from 'scandit-capacitor-datacapture-barcode' does not include BarcodeBatch, BarcodeBatchAdvancedOverlay, TrackedBarcodeView, or BarcodeBatchBasicOverlay (semantic)"}
+      ]
+    }
+  ]
+}
