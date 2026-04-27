@@ -1,103 +1,56 @@
 # Scandit SDK Skills
 
-AI agent skills that turn your coding assistant into a Scandit integration expert.
+AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
 
-This plugin gives Claude Code, Cursor, and other compatible AI coding assistants up-to-date, grounded knowledge of the [Scandit Data Capture SDK](https://docs.scandit.com) — covering product selection, supported symbologies, platform requirements, API usage, and version migrations. Instead of relying on the model's training data (which can be stale or wrong about Scandit APIs), the assistant follows authoritative skills that point to the correct documentation and sample apps for your platform.
+Each skill teaches your coding assistant how to integrate a specific Scandit SDK correctly. Instead of pasting docs snippets into your AI editor, install a skill once and your agent follows Scandit's recommended patterns whenever you ask it to add a Scandit feature.
 
-Use it to:
+Skills are distributed using [`skills`](https://github.com/vercel-labs/skills), the open-source CLI from Vercel that has become the common standard for agent-skill packaging.
 
-- **Pick the right product** for your use case — SparkScan, Barcode Capture, MatrixScan, Smart Label Capture, ID Capture, and more.
-- **Implement scanning features** with platform-specific guidance.
-- **Migrate between SDK versions** safely, with skills that know which APIs were renamed, removed, or restructured.
-- **Get answers grounded in current Scandit docs** rather than the model's general (and often outdated) recollection.
+## What you get
 
-## Install
+Each skill bundles:
 
-### Claude Code
+- The recommended integration code for a specific SDK (e.g. SparkScan iOS)
+- Up-to-date setup, permissions, and license-key wiring
+- Common customization recipes (modes, callbacks, UI tweaks)
+- Links back to the relevant Scandit documentation
 
-```
-/plugin marketplace add Scandit/scandit-sdk-skills
-/plugin install scandit-sdk@scandit-plugins
-```
+A shared `data-capture-sdk` skill provides cross-cutting integration knowledge (license activation, framework boilerplate, troubleshooting). We recommend installing it alongside any product skill.
 
-### Cursor
+## Available skills
 
-Search for **Scandit SDK** in the Cursor plugin marketplace, or install from Settings > Plugins.
+| Skill | Description |
+| --- | --- |
+| `data-capture-sdk` | Shared baseline — product selection, license activation, framework boilerplate, troubleshooting. Recommended alongside any product skill. |
+| `sparkscan-{framework}` | [SparkScan](https://docs.scandit.com/sdks/ios/sparkscan/intro/) integration & migration. Available for `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
-### Skills CLI (40+ agents)
+## Installation
+
+### Skills CLI (45+ agents)
+
+The [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel installs skills into any supported agent (Claude Code, Codex, Cursor, Antigravity, GitHub Copilot, Cline, Continue, Windsurf, and 35+ others). Run it and follow the interactive prompts to pick agent and skills:
 
 ```bash
 npx skills add Scandit/scandit-sdk-skills
 ```
 
-## Available Skills
+### Claude Code plugin
 
-| Skill | Description |
-|---|---|
-| `data-capture-sdk` | Expert guide for the Scandit Data Capture SDK — product selection, docs, and sample apps |
-| `sparkscan-ios` | SparkScan integration and migration guide for iOS |
-| `sparkscan-web` | SparkScan integration and migration guide for Web |
-| `sparkscan-capacitor` | SparkScan integration and migration guide for Capacitor |
-| `sparkscan-cordova` | SparkScan integration and migration guide for Cordova |
-| `sparkscan-flutter` | SparkScan integration and migration guide for Flutter |
-| `sparkscan-rn` | SparkScan integration and migration guide for React Native |
+Claude Code can also install the skills as a plugin from the marketplace:
 
-## Usage
+```bash
+/plugin marketplace add Scandit/scandit-sdk-skills
+/plugin install scandit-sdk@scandit-plugins
+```
 
-After installing, ask your AI coding assistant:
+## Using a skill
 
-### Data Capture SDK
+Two ways the skill is invoked:
 
-- "Which Scandit product should I use for my warehouse app?"
-- "I need to scan barcodes and read expiry dates from labels"
-- "What's the difference between SparkScan and Barcode Capture?"
-- "I need to count inventory items and verify against a list"
+- **Slash command.** Call the skill explicitly:
 
-### SparkScan iOS implementation
+  ```
+  /sparkscan-ios use the skill to help me integrate the barcode scanner in my application
+  ```
 
-- "How do I add SparkScan to my iOS app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### SparkScan Web implementation
-
-- "How do I add SparkScan to my web app?"
-- "How do I add SparkScan to my react web app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### SparkScan Capacitor implementation
-
-- "How do I add SparkScan to my Capacitor app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### SparkScan Cordova implementation
-
-- "How do I add SparkScan to my Cordova app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### SparkScan Flutter implementation
-
-- "How do I add SparkScan to my Flutter app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### SparkScan React Native implementation
-
-- "How do I add SparkScan to my React Native app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
+- **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
