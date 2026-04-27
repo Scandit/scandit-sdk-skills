@@ -1,0 +1,142 @@
+{
+  "skill_name": "sparkscan-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my Flutter app. Here's my starter page: EmptyPage.dart. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyPage.dart (BLoC + page widget), and shows the setup checklist (pub packages to add, flutter pub get, iOS Info.plist, Android runtime permission).",
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"},
+        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"},
+        {"text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"},
+        {"text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"},
+        {"text": "DataCaptureContext.forLicenseKey( OR DataCaptureContext.initialize( is present"},
+        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
+        {"text": "SparkScan(settings: ...) is used (v8 constructor form, not SparkScan.withSettings or SparkScan.forSettings)"},
+        {"text": "Symbology.ean13Upca is enabled"},
+        {"text": "Symbology.code128 is enabled"},
+        {"text": "No symbologies except ean13Upca and code128 are enabled"},
+        {"text": "SparkScanView.forContext( is used to create the view"},
+        {"text": "sparkScan.addListener( is called to register the scan listener"},
+        {"text": "A class implements SparkScanListener with didScan and didUpdateSession overrides"},
+        {"text": "Imports come from scandit_flutter_datacapture_core (DataCaptureContext) and scandit_flutter_datacapture_barcode (SparkScan, SparkScanView, SparkScanSettings, Symbology)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan barcode scanning to ProductListBloc.dart. When a barcode is scanned, add it to the scannedItems list and emit through the existing stream.",
+      "expected_output": "The skill adds SparkScan to ProductListBloc.dart alongside the existing stream/state code. All existing stream controller, list, and clear logic are preserved.",
+      "files": [
+        "fixtures/ProductListBloc.dart"
+      ],
+      "assertions": [
+        {"text": "The BLoC implements SparkScanListener"},
+        {"text": "DataCaptureContext.forLicenseKey( OR DataCaptureContext.initialize( is present"},
+        {"text": "SparkScan(settings: ...) is used"},
+        {"text": "SparkScanView.forContext( or reference to it is present (the BLoC exposes sparkScan/context for the page to build the view)"},
+        {"text": "sparkScan.addListener(this) is called"},
+        {"text": "didScan override is present"},
+        {"text": "didScan appends to the existing scannedItems list"},
+        {"text": "Existing scannedItems list is preserved"},
+        {"text": "Existing stream controller (_scannedItemsController) or equivalent is preserved and emits on new scans"},
+        {"text": "Existing clear() method is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Flutter app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
+      "expected_output": "The skill makes the BLoC implement SparkScanFeedbackDelegate, overrides feedbackForBarcode to return SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, and assigns feedbackDelegate on the sparkScanView in the page.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "The BLoC implements SparkScanFeedbackDelegate"},
+        {"text": "feedbackForBarcode override is present"},
+        {"text": "SparkScanBarcodeErrorFeedback( or SparkScanBarcodeErrorFeedback.fromMessage( is returned for rejected barcodes"},
+        {"text": "Duration(seconds: 30) (or equivalent) is passed as the resumeCapturingDelay"},
+        {"text": "SparkScanBarcodeSuccessFeedback() is returned for valid barcodes"},
+        {"text": "The rejection condition checks barcode.data == '123456789' or equivalent"},
+        {"text": "sparkScanView.feedbackDelegate is assigned (either in the page build or on creation)"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom Flutter FloatingActionButton in my app's UI. When the custom button is tapped, scanning should start. When tapped again while scanning, it should pause.",
+      "expected_output": "The skill hides the standard trigger button (triggerButtonVisible = false), wires up a custom FAB, and its onPressed handler calls sparkScanView.startScanning() and sparkScanView.pauseScanning().",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "triggerButtonVisible = false is set on the SparkScanView (either via constructor named param or property assignment)"},
+        {"text": "A FloatingActionButton (or equivalent Flutter button) is added to the page"},
+        {"text": "onPressed handler is wired to the FAB"},
+        {"text": "sparkScanView.startScanning() is called inside the handler"},
+        {"text": "sparkScanView.pauseScanning() is called for the pause branch"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to change the SparkScan UI look for my Flutter app. Hide the camera switch, hide the zoom switch, and set the trigger button tint color to white.",
+      "expected_output": "The skill sets the appropriate visibility and color properties on the SparkScanView instance using v8 property names.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "cameraSwitchButtonVisible = false is set"},
+        {"text": "zoomSwitchControlVisible = false is set"},
+        {"text": "triggerButtonTintColor is assigned a Color value (Colors.white or Color(0xFFFFFFFF))"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
+        {"text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need custom behavior when the user taps the barcode count button in the SparkScan toolbar — I want to navigate to a summary screen. Wire this up.",
+      "expected_output": "The skill installs a SparkScanViewUiListener on the sparkScanView and implements didTapBarcodeCountButton to trigger the navigation.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A class implements SparkScanViewUiListener (may be the State class itself)"},
+        {"text": "didTapBarcodeCountButton is overridden"},
+        {"text": "Navigator.of(context).push / pushNamed (or equivalent Flutter navigation) is invoked inside the handler"},
+        {"text": "The listener is assigned to the view (sparkScanView.setListener(...) or .uiListener)"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to clean up properly when my Flutter page is disposed — remove the SparkScan listener and close the scan stream so resources are released.",
+      "expected_output": "The skill wires sparkScan.removeListener and StreamController.close() into the BLoC/state dispose() chain.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A dispose() method exists on the BLoC / controller"},
+        {"text": "sparkScan.removeListener(this) is called inside dispose()"},
+        {"text": "The StreamController (scan events) is closed inside dispose()"},
+        {"text": "The page State.dispose() invokes the BLoC's dispose()"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to filter scans so duplicates within 500 milliseconds are ignored. Update my SparkScan settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the SparkScanSettings instance (as a Duration) before constructing the SparkScan mode.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter is set to Duration(milliseconds: 500) (or equivalent in the API units)"},
+        {"text": "codeDuplicateFilter is set BEFORE SparkScan(settings: settings) is constructed"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    }
+  ]
+}

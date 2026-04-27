@@ -1,0 +1,143 @@
+{
+  "skill_name": "sparkscan-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my Capacitor app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyApp.js, and shows the setup checklist (packages to install, npx cap sync, camera permission entries).",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
+        {"text": "Setup checklist mentions Android runtime camera permission"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
+        {"text": "new SparkScan(settings) is present (v8 constructor used, not SparkScan.forSettings)"},
+        {"text": "SparkScan.forSettings( is NOT present"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
+        {"text": "SparkScanView.forContext( is present"},
+        {"text": "sparkScan.addListener( is called to register the scan listener"},
+        {"text": "Listener object has a didScan callback"},
+        {"text": "Imports come from scandit-capacitor-datacapture-core (DataCaptureContext, ScanditCaptureCorePlugin) and scandit-capacitor-datacapture-barcode (SparkScan, SparkScanView, SparkScanSettings, Symbology)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan barcode scanning to ProductListApp.js. When a barcode is scanned, add it to the scannedProducts array and re-render the product list.",
+      "expected_output": "The skill adds SparkScan to ProductListApp.js alongside the existing DOM rendering code. All existing DOM hooks, state, and render functions are preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new SparkScan(settings) is present"},
+        {"text": "SparkScanView.forContext( is present"},
+        {"text": "sparkScan.addListener( is present"},
+        {"text": "didScan callback is present"},
+        {"text": "didScan callback pushes / appends to scannedProducts"},
+        {"text": "Existing scannedProducts array is preserved"},
+        {"text": "Existing renderProductList function is preserved and called after each scan"},
+        {"text": "Existing totalLabel / total DOM update logic is preserved"},
+        {"text": "Existing clearButton click handler is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Capacitor app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
+      "expected_output": "The skill adds a feedbackDelegate object with feedbackForBarcode that returns SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, and assigns feedbackDelegate on sparkScanView.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.feedbackDelegate is assigned"},
+        {"text": "feedbackForBarcode is a method on the feedback delegate object"},
+        {"text": "new SparkScanBarcodeErrorFeedback( is returned for rejected barcodes"},
+        {"text": "resumeCapturingDelay of 30 is passed to the error feedback (in seconds or ms per the API)"},
+        {"text": "new SparkScanBarcodeSuccessFeedback() or SparkScanBarcodeSuccessFeedback.fromVisualFeedbackColor is returned for valid barcodes"},
+        {"text": "The rejection condition checks barcode.data === '123456789' or equivalent"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
+        {"text": "Imports for SparkScanBarcodeErrorFeedback and SparkScanBarcodeSuccessFeedback are added"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom HTML button in my app's UI. When the custom button is tapped, scanning should start. When tapped again while scanning, it should pause.",
+      "expected_output": "The skill hides the standard trigger button (triggerButtonVisible = false), wires up a custom HTML button, and implements click handlers that call sparkScanView.startScanning() and sparkScanView.pauseScanning().",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.triggerButtonVisible = false is set"},
+        {"text": "A custom HTML button is referenced (document.getElementById / document.querySelector)"},
+        {"text": "addEventListener('click', is used to connect the button to a handler"},
+        {"text": "sparkScanView.startScanning() is called in the click handler"},
+        {"text": "sparkScanView.pauseScanning() is called for the pause branch"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to change the SparkScan UI look for my Capacitor app. Hide the camera switch, hide the zoom switch, and set the trigger button tint color to white.",
+      "expected_output": "The skill sets the appropriate visibility and color properties on the sparkScanView instance using v8 property names.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.cameraSwitchButtonVisible = false OR sparkScanView.cameraSwitchControlVisible = false is set"},
+        {"text": "sparkScanView.zoomSwitchControlVisible = false is set"},
+        {"text": "sparkScanView.triggerButtonTintColor is assigned a Color value (Color.fromHex('#FFFFFF') or equivalent)"},
+        {"text": "Color is imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
+        {"text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need custom behavior when the user taps the barcode count button in the SparkScan toolbar — I want to navigate to a summary screen. Wire this up.",
+      "expected_output": "The skill installs a SparkScanViewUiListener on sparkScanView and implements didTapBarcodeCountButton (or the current method name) to trigger the navigation.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.uiListener is assigned an object"},
+        {"text": "The uiListener object has a didTapBarcodeCountButton method"},
+        {"text": "Navigation logic (e.g. location.hash change, router.push, or similar) is invoked inside the handler"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to clean up properly when my Capacitor view is destroyed — call dispose() on the SparkScan view so native resources are released.",
+      "expected_output": "The skill wires sparkScanView.dispose() into the appropriate teardown/cleanup code path, awaiting it since it is async in v8.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.dispose() is called"},
+        {"text": "The dispose() call is awaited (await sparkScanView.dispose()) OR used as a promise (.then / .catch)"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to filter scans so duplicates within 500 milliseconds are ignored. Update my SparkScan settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the SparkScanSettings instance before creating the SparkScan mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter = 500 is set (or equivalent in the API units)"},
+        {"text": "codeDuplicateFilter is set BEFORE new SparkScan(settings) is called"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    }
+  ]
+}

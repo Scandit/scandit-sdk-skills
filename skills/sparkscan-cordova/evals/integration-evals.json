@@ -1,0 +1,143 @@
+{
+  "skill_name": "sparkscan-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my Cordova app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyApp.js, and shows the setup checklist (plugins to install, cordova prepare, camera permissions, CSP).",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"},
+        {"text": "Setup checklist mentions cordova prepare after plugin install"},
+        {"text": "Setup checklist mentions CSP meta tag or that iOS/Android camera permissions are auto-configured by the plugins"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
+        {"text": "new Scandit.SparkScan( is present (v8 constructor used)"},
+        {"text": "Scandit.SparkScan.forSettings( is NOT present"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
+        {"text": "Scandit.Symbology.Code128 is enabled"},
+        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
+        {"text": "Scandit.SparkScanView.forContext( is present"},
+        {"text": "sparkScan.addListener( is called to register the scan listener"},
+        {"text": "Listener object has a didScan callback"},
+        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan barcode scanning to ProductListApp.js. When a barcode is scanned, add it to the scannedProducts array and re-render the product list.",
+      "expected_output": "The skill adds SparkScan to ProductListApp.js alongside the existing DOM rendering code. All existing DOM hooks, state, and render functions are preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "document.addEventListener('deviceready' is present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new Scandit.SparkScan( is present"},
+        {"text": "Scandit.SparkScanView.forContext( is present"},
+        {"text": "sparkScan.addListener( is present"},
+        {"text": "didScan callback is present"},
+        {"text": "didScan callback pushes / appends to scannedProducts"},
+        {"text": "Existing scannedProducts array is preserved"},
+        {"text": "Existing renderProductList function is preserved and called after each scan"},
+        {"text": "Existing total / totalLabel DOM update logic is preserved"},
+        {"text": "Existing clearButton click handler is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Cordova app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
+      "expected_output": "The skill adds a feedbackDelegate object with feedbackForBarcode that returns SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, and assigns feedbackDelegate on sparkScanView.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.feedbackDelegate is assigned"},
+        {"text": "feedbackForBarcode is a method on the feedback delegate object"},
+        {"text": "new Scandit.SparkScanBarcodeErrorFeedback( is returned for rejected barcodes"},
+        {"text": "resumeCapturingDelay of 30 is passed to the error feedback"},
+        {"text": "new Scandit.SparkScanBarcodeSuccessFeedback() or Scandit.SparkScanBarcodeSuccessFeedback.fromVisualFeedbackColor is returned for valid barcodes"},
+        {"text": "The rejection condition checks barcode.data === '123456789' or equivalent"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom HTML button in my app's UI. When the custom button is tapped, scanning should start. When tapped again while scanning, it should pause.",
+      "expected_output": "The skill hides the standard trigger button (triggerButtonVisible = false), wires up a custom HTML button, and implements click handlers that call sparkScanView.startScanning() and sparkScanView.pauseScanning().",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.triggerButtonVisible = false is set"},
+        {"text": "A custom HTML button is referenced (document.getElementById / document.querySelector)"},
+        {"text": "addEventListener('click', is used to connect the button to a handler"},
+        {"text": "sparkScanView.startScanning() is called in the click handler"},
+        {"text": "sparkScanView.pauseScanning() is called for the pause branch"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to change the SparkScan UI look for my Cordova app. Hide the camera switch, hide the zoom switch, and set the trigger button tint color to white.",
+      "expected_output": "The skill sets the appropriate visibility and color properties on the sparkScanView instance using v8 property names.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.cameraSwitchButtonVisible = false is set"},
+        {"text": "sparkScanView.zoomSwitchControlVisible = false is set"},
+        {"text": "sparkScanView.triggerButtonTintColor is assigned a Color value (Scandit.Color.fromHex('#FFFFFF') or equivalent)"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
+        {"text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need custom behavior when the user taps the barcode count button in the SparkScan toolbar — I want to navigate to a summary screen. Wire this up.",
+      "expected_output": "The skill installs a SparkScanViewUiListener on sparkScanView and implements didTapBarcodeCountButton to trigger the navigation.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.uiListener is assigned an object"},
+        {"text": "The uiListener object has a didTapBarcodeCountButton method"},
+        {"text": "Navigation logic (e.g. location.hash change, DOM class toggle, or a navigate()/showPage() call) is invoked inside the handler"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to clean up properly when the user leaves the scan page in my Cordova app — remove the mode from the context, hide the view, and dispose SparkScan so native resources are released.",
+      "expected_output": "The skill wires teardown code into the page-exit path: context.removeMode(sparkScan), sparkScanView.hide(), and await sparkScanView.dispose().",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "context.removeMode(sparkScan) is called in the teardown path"},
+        {"text": "sparkScanView.hide() is called"},
+        {"text": "sparkScanView.dispose() is called"},
+        {"text": "The dispose() call is awaited (await sparkScanView.dispose()) OR used as a promise (.then / .catch)"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to filter scans so duplicates within 500 milliseconds are ignored. Update my SparkScan settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the SparkScanSettings instance before creating the SparkScan mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter = 500 is set (or equivalent with the local variable name used)"},
+        {"text": "codeDuplicateFilter is set BEFORE new Scandit.SparkScan(settings) is called"},
+        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+      ]
+    }
+  ]
+}

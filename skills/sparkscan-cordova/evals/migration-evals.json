@@ -1,0 +1,82 @@
+{
+  "skill_name": "sparkscan-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my SparkScan Cordova integration to v7. Here's my scanner file: ScannerApp_v6.js",
+      "expected_output": "The skill reads migration.md, applies the 6→7 property renames and removes deprecated properties in ScannerApp_v6.js, and summarizes all changes made.",
+      "files": [
+        "fixtures/ScannerApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "torchControlVisible is present in the output file"},
+        {"text": "torchButtonVisible is NOT present in the output file"},
+        {"text": "triggerButtonTintColor is present in the output file"},
+        {"text": "captureButtonTintColor is NOT present in the output file"},
+        {"text": "captureButtonBackgroundColor is NOT present in the output file"},
+        {"text": "At least one of triggerButtonCollapsedColor, triggerButtonExpandedColor, triggerButtonAnimationColor is present if the input set a trigger background color"},
+        {"text": "barcodeFindButtonVisible is present in the output file"},
+        {"text": "fastFindButtonVisible is NOT present in the output file"},
+        {"text": "Removed v6 properties (handModeButtonVisible, soundModeButtonVisible, hapticModeButtonVisible, shouldShowScanAreaGuides, captureButtonActiveBackgroundColor, stopCapturingText, startCapturingText, resumeCapturingText, scanningCapturingText) are NOT present"},
+        {"text": "A summary.md file is present describing changes"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're upgrading our Cordova app from Scandit SDK 7 to 8. Here's our SparkScan code: ScannerApp_v7.js. Please apply any necessary changes.",
+      "expected_output": "The skill applies the v7→v8 renames (DataCaptureContext.forLicenseKey → DataCaptureContext.initialize, SparkScan.forSettings → new SparkScan) and summarizes the changes.",
+      "files": [
+        "fixtures/ScannerApp_v7.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.DataCaptureContext.initialize( is present in the output file"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "new Scandit.SparkScan( is present in the output file"},
+        {"text": "Scandit.SparkScan.forSettings( is NOT present in the output file"},
+        {"text": "A summary.md is present listing the two renames"},
+        {"text": "Summary mentions cordova prepare (or equivalent rebuild step) must be run after the plugin version bump"},
+        {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to upgrade our SparkScan integration from SDK 6 all the way to v8. Here's our current code: ScannerApp_v6.js",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
+      "files": [
+        "fixtures/ScannerApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "torchControlVisible is present (6→7 rename applied)"},
+        {"text": "torchButtonVisible is NOT present"},
+        {"text": "barcodeFindButtonVisible is present (6→7 rename applied)"},
+        {"text": "fastFindButtonVisible is NOT present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new Scandit.SparkScan( is present (7→8 rename applied)"},
+        {"text": "Scandit.SparkScan.forSettings( is NOT present"},
+        {"text": "Removed v6 properties (handModeButtonVisible, soundModeButtonVisible, hapticModeButtonVisible, captureButtonActiveBackgroundColor) are NOT present"},
+        {"text": "Summary covers both migration steps (references both 6→7 and 7→8)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to upgrade my SparkScan to the latest Scandit SDK version. Here's my code and config.xml.",
+      "expected_output": "The skill reads config.xml to detect v6.28.x, determines the target is v8, applies both migrations without asking the user for their version.",
+      "files": [
+        "fixtures/ScannerApp_v6.js",
+        "fixtures/config_v6.xml"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.x or v6)"},
+        {"text": "Summary mentions the config.xml plugin specs need to be bumped to ^8.0.0"},
+        {"text": "Summary mentions cordova prepare (or equivalent) must be run after the bump"},
+        {"text": "torchControlVisible is present (6→7 rename applied)"},
+        {"text": "torchButtonVisible is NOT present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "new Scandit.SparkScan( is present (7→8 rename applied)"},
+        {"text": "Removed v6 properties (handModeButtonVisible, soundModeButtonVisible, hapticModeButtonVisible, captureButtonActiveBackgroundColor) are NOT present"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"}
+      ]
+    }
+  ]
+}
