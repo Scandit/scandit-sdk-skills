@@ -1,0 +1,71 @@
+{
+  "skill_name": "label-capture-web",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add Scandit Label Capture to my web app. Here's my main file: empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (required) and a total price (optional).",
+      "expected_output": "The skill reads integration.md, walks through the interactive label-definition questions, writes complete Label Capture integration code into empty-app.ts, and shows the setup checklist.",
+      "files": [
+        "eval-fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        { "text": "Setup checklist is shown and mentions @scandit/web-datacapture-core, @scandit/web-datacapture-barcode, and @scandit/web-datacapture-label npm packages" },
+        { "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders" },
+        { "text": "labelCaptureLoader() is present in moduleLoaders" },
+        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
+        { "text": "new LabelCaptureSettingsBuilder() is used with .addLabel(...).build()" },
+        { "text": "new LabelDefinitionBuilder() is used and .build(\"Perishable Product\") or a similar label name is called" },
+        { "text": "new CustomBarcodeBuilder() is used, with setSymbology(Symbology.EAN13UPCA) or setSymbologies including EAN13UPCA, and .build(\"Barcode\") or a similar field name" },
+        { "text": "Symbology.EAN13UPCA is enabled" },
+        { "text": "new ExpiryDateTextBuilder() is used with .build(\"Expiry Date\") or similar field name" },
+        { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (isOptional(true))" },
+        { "text": "LabelCapture.forContext( is present" },
+        { "text": "LabelCaptureBasicOverlay.withLabelCaptureForView( is present" },
+        { "text": "addListener with didUpdateSession callback is present" },
+        { "text": "session.capturedLabels is accessed inside didUpdateSession" },
+        { "text": "Camera.pickBestGuess() is called" },
+        { "text": "camera.applySettings(LabelCapture.createRecommendedCameraSettings()) is called" },
+        { "text": "camera.switchToDesiredState(FrameSourceState.On) is called" },
+        { "text": "No renamed-away regex properties: pattern, patterns, dataTypePattern, dataTypePatterns are absent from the generated code" },
+        { "text": "No v8.5-only factory functions: labelCaptureSettings(, label(, customBarcode(, expiryDateText(, totalPriceText( are absent" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add Label Capture to my empty-app.ts with the redesigned Validation Flow. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My package.json pins @scandit/web-datacapture-label to 8.2.0.",
+      "expected_output": "The skill detects the SDK version from package.json and uses the redesigned Validation Flow API (no deprecated text properties, uses setPlaceholderTextForLabelDefinition).",
+      "files": [
+        "eval-fixtures/empty-app.ts",
+        "eval-fixtures/package-8.2.json"
+      ],
+      "assertions": [
+        { "text": "Minimal integration (context, view, camera, settings, mode) is present" },
+        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used instead of (or in addition to) LabelCaptureBasicOverlay" },
+        { "text": "LabelCaptureValidationFlowSettings.create() is called" },
+        { "text": "setPlaceholderTextForLabelDefinition is called on the validation-flow settings at least once" },
+        { "text": "overlay.listener is assigned with onValidationFlowLabelCaptured and onManualInput handlers" },
+        { "text": "Deprecated Validation Flow properties are absent: requiredFieldErrorText, missingFieldsHintText, manualInputButtonText do NOT appear in the generated code" },
+        { "text": "Symbology.EAN13UPCA is enabled" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add Label Capture with the Validation Flow to my empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My package.json pins @scandit/web-datacapture-label to 8.1.0.",
+      "expected_output": "The skill detects the v8.1 SDK version and uses the v8.1 Validation Flow API: async setter methods for text customisation and a listener with only onValidationFlowLabelCaptured (onManualInput was added in v8.2 and does not exist yet in v8.1).",
+      "files": [
+        "eval-fixtures/empty-app.ts",
+        "eval-fixtures/package-8.1.json"
+      ],
+      "assertions": [
+        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used" },
+        { "text": "LabelCaptureValidationFlowSettings.create() is called" },
+        { "text": "At least one of await validationFlowSettings.setRequiredFieldErrorText, setMissingFieldsHintText, or setManualInputButtonText is called (v8.1 async setter API)" },
+        { "text": "Text customisation is done via async method calls (setXxx(...)) not property assignments (xxx = ...)" },
+        { "text": "setPlaceholderTextForLabelDefinition is NOT called (not available in v8.1)" },
+        { "text": "overlay.listener is assigned with only onValidationFlowLabelCaptured — onManualInput is NOT in the listener object (it was added in v8.2)" },
+        { "text": "Symbology.EAN13UPCA is enabled" }
+      ]
+    }
+  ]
+}
