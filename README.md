@@ -24,6 +24,7 @@ A shared `data-capture-sdk` skill provides cross-cutting integration knowledge (
 | `data-capture-sdk` | Shared baseline — product selection, license activation, framework boilerplate, troubleshooting. Recommended alongside any product skill. |
 | `sparkscan-{framework}` | [SparkScan](https://docs.scandit.com/sdks/ios/sparkscan/intro/) integration & migration. Available for `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 | `matrixscan-ar-{framework}` | [MatrixScan AR](https://docs.scandit.com/sdks/ios/matrixscan-ar/intro/) (Barcode AR) integration & BarcodeBatch → BarcodeAr migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `matrixscan-count-{framework}` | [MatrixScan Count](https://docs.scandit.com/sdks/ios/matrixscan-count/intro/) (BarcodeCount) integration — counting against a list, status overlays, capture-list and not-in-list workflows, plus pre-7.6 → 7.6 constructor migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
 ## Installation
 

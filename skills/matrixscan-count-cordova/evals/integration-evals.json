@@ -1,0 +1,153 @@
+{
+  "skill_name": "matrixscan-count-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Count to my Cordova app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes and show the built-in counting UI.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCount integration code into EmptyApp.js, and shows the setup checklist (plugins to install, cordova prepare, camera permissions, CSP, minimum plugin version 7.6 for constructor pattern).",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"},
+        {"text": "Setup checklist mentions cordova prepare after plugin install"},
+        {"text": "Setup checklist mentions camera permissions are auto-configured by the plugins"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "Scandit.BarcodeCount.createRecommendedCameraSettings() is called"},
+        {"text": "Scandit.Camera.withSettings( is called"},
+        {"text": "context.setFrameSource( is called"},
+        {"text": "new Scandit.BarcodeCountSettings() is present"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
+        {"text": "Scandit.Symbology.Code128 is enabled"},
+        {"text": "new Scandit.BarcodeCount(settings) is present (context-free constructor used)"},
+        {"text": "BarcodeCount.forDataCaptureContext( is NOT present"},
+        {"text": "context.addMode(barcodeCount) is called after constructing BarcodeCount"},
+        {"text": "Scandit.BarcodeCountView.forContextWithMode( or forContextWithModeAndStyle( is called"},
+        {"text": "barcodeCountView.connectToElement( is called"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to start the camera"},
+        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan Count to ProductListApp.js. When the scan phase ends, push each recognized barcode into the scannedProducts array and call renderProductList. Use EAN-13, EAN-8, and Code 128.",
+      "expected_output": "The skill adds BarcodeCount integration to ProductListApp.js, wires a BarcodeCountListener.didScan callback that reads session.recognizedBarcodes and pushes each barcode into scannedProducts, and calls renderProductList. All existing state and render logic is preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "document.addEventListener('deviceready' is present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present"},
+        {"text": "new Scandit.BarcodeCountSettings() is present"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
+        {"text": "Scandit.Symbology.EAN8 is enabled"},
+        {"text": "Scandit.Symbology.Code128 is enabled"},
+        {"text": "new Scandit.BarcodeCount(settings) is present"},
+        {"text": "context.addMode( is called"},
+        {"text": "Scandit.BarcodeCountView.forContextWithMode( or forContextWithModeAndStyle( is called"},
+        {"text": "barcodeCountView.connectToElement( is called"},
+        {"text": "barcodeCount.addListener is called with a didScan callback"},
+        {"text": "session.recognizedBarcodes is accessed inside the didScan callback"},
+        {"text": "scannedProducts array is pushed into inside the didScan callback (semantic)"},
+        {"text": "renderProductList() is called after updating scannedProducts (semantic)"},
+        {"text": "Existing onClearTapped / clear button handler is preserved"},
+        {"text": "camera.switchToDesiredState( is called to start the camera"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my Cordova MatrixScan Count app (IntegratedApp.js), hide the toolbar and the exit button. Show a torch control button in the top-right corner.",
+      "expected_output": "The skill sets shouldShowToolbar = false, shouldShowExitButton = false, shouldShowTorchControl = true, and torchControlPosition = Scandit.Anchor.TopRight on the existing barcodeCountView.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.shouldShowToolbar = false is present"},
+        {"text": "barcodeCountView.shouldShowExitButton = false is present"},
+        {"text": "barcodeCountView.shouldShowTorchControl = true is present"},
+        {"text": "barcodeCountView.torchControlPosition = Scandit.Anchor.TopRight is present (or TopRight anchor equivalent)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Localize the scan hints in my Cordova MatrixScan Count app (IntegratedApp.js) to French: 'Appuyez pour scanner', 'Scan en cours…', 'Rapprochez-vous et rescannez', 'Éloignez-vous et rescannez'.",
+      "expected_output": "The skill sets the four hint text properties on barcodeCountView to the provided French strings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.textForTapShutterToScanHint is set to 'Appuyez pour scanner' or equivalent"},
+        {"text": "barcodeCountView.textForScanningHint is set to 'Scan en cours…' or equivalent"},
+        {"text": "barcodeCountView.textForMoveCloserAndRescanHint is set to 'Rapprochez-vous et rescannez' or equivalent"},
+        {"text": "barcodeCountView.textForMoveFurtherAndRescanHint is set to 'Éloignez-vous et rescannez' or equivalent"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to scan items against an expected list in my Cordova MatrixScan Count app (IntegratedApp.js). The expected items are: barcode '12345670' (qty 1) and '98765432' (qty 2). When a barcode not in the list is tapped, log it to the console. When the full list is completed, show an alert.",
+      "expected_output": "The skill creates a BarcodeCountCaptureList with TargetBarcode entries, calls barcodeCount.setBarcodeCountCaptureList, and wires view.listener with didTapRecognizedBarcodeNotInList and didCompleteCaptureList callbacks.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodeCountCaptureList.create( is called"},
+        {"text": "Scandit.TargetBarcode.create('12345670', 1) is present"},
+        {"text": "Scandit.TargetBarcode.create('98765432', 2) is present"},
+        {"text": "barcodeCount.setBarcodeCountCaptureList( is called"},
+        {"text": "view.listener or barcodeCountView.listener is assigned"},
+        {"text": "didTapRecognizedBarcodeNotInList callback is implemented and logs the barcode data (semantic)"},
+        {"text": "didCompleteCaptureList callback is implemented and shows an alert or completion message (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a stock-status overlay to my Cordova MatrixScan Count app (IntegratedApp.js). Show the status mode button. For each scanned barcode, call fetchStockStatus(barcode.data) (returns a Promise<'in_stock' | 'out_of_stock'>) and provide a BarcodeCountStatusProvider that reflects the result.",
+      "expected_output": "The skill sets shouldShowStatusModeButton = true, calls view.setStatusProvider with a statusForBarcodes async callback that calls fetchStockStatus for each barcode, and maps the results to BarcodeCountStatusItem objects. Marks status API as beta in a comment.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.shouldShowStatusModeButton = true is present"},
+        {"text": "barcodeCountView.setStatusProvider( is called"},
+        {"text": "The statusForBarcodes callback is async or returns a Promise (semantic)"},
+        {"text": "fetchStockStatus( is called inside the statusForBarcodes callback (semantic)"},
+        {"text": "A BarcodeCountStatusItem or status result is returned for each barcode (semantic)"},
+        {"text": "A comment notes that status mode is beta (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Enable tap-to-uncount in my Cordova MatrixScan Count app (IntegratedApp.js) so the user can deselect barcodes by tapping their highlight. Set the hint text to 'Tap to remove item'.",
+      "expected_output": "The skill sets tapToUncountEnabled = true and textForTapToUncountHint on barcodeCountView.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.tapToUncountEnabled = true is present"},
+        {"text": "barcodeCountView.textForTapToUncountHint is set to 'Tap to remove item' or similar"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Enable the hardware trigger in my Cordova MatrixScan Count app (IntegratedApp.js). The user wants to use the volume button to trigger scanning. Check that the hardware trigger is supported before enabling it, and use the default key code.",
+      "expected_output": "The skill checks Scandit.BarcodeCountView.hardwareTriggerSupported, and if true calls view.enableHardwareTrigger(null) to use the default key code. On iOS, sets hardwareTriggerEnabled = true (or notes it reacts to the volume button on iOS regardless).",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodeCountView.hardwareTriggerSupported is checked before enabling (semantic)"},
+        {"text": "barcodeCountView.enableHardwareTrigger(null) is called OR barcodeCountView.hardwareTriggerEnabled = true is set"},
+        {"text": "A comment or note explains Android API >=28 is required for hardware trigger (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    }
+  ]
+}

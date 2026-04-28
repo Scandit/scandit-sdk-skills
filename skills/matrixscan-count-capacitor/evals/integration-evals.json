@@ -1,0 +1,170 @@
+{
+  "skill_name": "matrixscan-count-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Count to my Capacitor app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes and show the scan result count after each shutter press.",
+      "expected_output": "The skill reads integration.md, writes a complete BarcodeCount integration into EmptyApp.js including plugin init, context creation, camera setup using BarcodeCount.recommendedCameraSettings, BarcodeCountSettings with EAN-13 and Code 128 enabled, new BarcodeCount(settings) + context.addMode, a didScan listener that logs or displays the recognized barcode count, BarcodeCountView connected to the DOM element, camera on, and barcodeCount.isEnabled = true. Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeCount.recommendedCameraSettings is used (static getter or createRecommendedCameraSettings)"},
+        {"text": "Camera.withSettings( is called"},
+        {"text": "context.setFrameSource(camera) is called"},
+        {"text": "new BarcodeCountSettings() is present"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Only Symbology.EAN13UPCA and Symbology.Code128 are enabled in the BarcodeCountSettings (semantic)"},
+        {"text": "new BarcodeCount(settings) is present (context NOT passed to BarcodeCount constructor)"},
+        {"text": "context.addMode( is called with barcodeCount"},
+        {"text": "barcodeCount.addListener( is called with a didScan callback"},
+        {"text": "session.recognizedBarcodes is accessed inside the didScan callback"},
+        {"text": "new BarcodeCountView( or BarcodeCountView.forContextWithMode( is present"},
+        {"text": "connectToElement( is called on the barcodeCountView"},
+        {"text": "barcodeCount.isEnabled = true is present"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called"},
+        {"text": "Import from 'scandit-capacitor-datacapture-core' is present"},
+        {"text": "Import from 'scandit-capacitor-datacapture-barcode' is present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Count items off a packing slip using MatrixScan Count. Here's ProductListApp.js. When the user presses the shutter, add all recognized barcodes to the packingList array and re-render the list. Highlight items not on the expected list with a different color (red dot vs green dot).",
+      "expected_output": "The skill adds BarcodeCount to ProductListApp.js. The didScan listener pushes recognized barcodes into packingList and calls renderPackingList. A BarcodeCountCaptureList is set up with sample target barcodes. The view uses BarcodeCountViewStyle.Dot, with recognizedBrush set to green and notInListBrush set to red. Existing DOM state and render functions are preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "BarcodeCount.recommendedCameraSettings is used"},
+        {"text": "new BarcodeCount(settings) is present"},
+        {"text": "context.addMode( is called with barcodeCount"},
+        {"text": "barcodeCount.addListener( is called with a didScan callback"},
+        {"text": "session.recognizedBarcodes is accessed in the didScan callback"},
+        {"text": "packingList or equivalent array is populated with recognized barcodes from the session"},
+        {"text": "renderPackingList() is called after adding barcodes"},
+        {"text": "BarcodeCountCaptureList.create( is used to define target barcodes"},
+        {"text": "TargetBarcode.create( is used to define at least one target barcode"},
+        {"text": "barcodeCount.setBarcodeCountCaptureList( is called"},
+        {"text": "BarcodeCountViewStyle.Dot is used (required for brush customization)"},
+        {"text": "recognizedBrush is set to a green-ish Brush"},
+        {"text": "notInListBrush is set to a red-ish Brush"},
+        {"text": "connectToElement( is called on barcodeCountView"},
+        {"text": "barcodeCount.isEnabled = true is set"},
+        {"text": "Existing packingList variable is still referenced and used in the integrated code (semantic)"},
+        {"text": "Existing renderPackingList function is preserved"},
+        {"text": "Existing updateTotal / totalLabel logic is preserved"},
+        {"text": "Existing clearButton / onClearTapped logic is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to use BarcodeCountView in a fixed-position div via connectToElement in my Capacitor app. The div has id 'scan-area'. After scanning is done, I need to detach the view.",
+      "expected_output": "The skill integrates BarcodeCount with BarcodeCountView.connectToElement pointing to document.getElementById('scan-area'), and teardown calls barcodeCountView.detachFromElement().",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "connectToElement(document.getElementById('scan-area')) or equivalent is called on barcodeCountView"},
+        {"text": "detachFromElement() is called on barcodeCountView in the teardown/cleanup function"},
+        {"text": "new BarcodeCountView( or BarcodeCountView.forContextWithMode( is present"},
+        {"text": "barcodeCount.isEnabled = true is set"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.Off) is present in teardown"},
+        {"text": "The view is connected to the 'scan-area' element (not 'data-capture-view') (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, camera) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to hide the toolbar and exit button to keep the MatrixScan Count UI minimal. Just show the shutter button and hints.",
+      "expected_output": "The skill sets shouldShowToolbar = false and shouldShowExitButton = false on the BarcodeCountView. Other UI elements remain at their defaults.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.shouldShowToolbar = false is set"},
+        {"text": "barcodeCountView.shouldShowExitButton = false is set"},
+        {"text": "shouldShowShutterButton is NOT set to false (shutter button should remain visible)"},
+        {"text": "shouldShowHints is NOT set to false (hints should remain visible)"},
+        {"text": "The explanation mentions these are BarcodeCountView properties (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Localize all on-screen hints in my MatrixScan Count app to French.",
+      "expected_output": "The skill sets all textFor*Hint properties on BarcodeCountView to French strings, including textForTapShutterToScanHint, textForScanningHint, textForMoveCloserAndRescanHint, textForMoveFurtherAndRescanHint, and textForTapToUncountHint. Also sets exitButtonText and clearHighlightsButtonText.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "view.textForTapShutterToScanHint is set to a French string"},
+        {"text": "view.textForScanningHint is set to a French string"},
+        {"text": "view.textForMoveCloserAndRescanHint is set to a French string"},
+        {"text": "view.textForMoveFurtherAndRescanHint is set to a French string"},
+        {"text": "At least 4 distinct textFor*Hint properties are set"},
+        {"text": "All assigned hint text strings appear to be in French (semantic)"},
+        {"text": "exitButtonText or clearHighlightsButtonText is also set to French (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Show a stock-status overlay on each scanned barcode using BarcodeCountStatusProvider. Barcodes starting with 'EXP' should show Expired status, 'LOW' should show LowStock, others should show None. Status icons should appear immediately after scanning without requiring the user to tap a button.",
+      "expected_output": "The skill sets shouldShowStatusIconsOnScan = true on the view, calls view.setStatusProvider with an object implementing onStatusRequested, maps barcode data to BarcodeCountStatus values (Expired, LowStock, None), builds BarcodeCountStatusItem.create for each barcode, and calls callback.onStatusReady(BarcodeCountStatusResultSuccess.create(...)).",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "view.shouldShowStatusIconsOnScan = true is set"},
+        {"text": "view.setStatusProvider( is called with an object"},
+        {"text": "onStatusRequested is a method on the provider object"},
+        {"text": "BarcodeCountStatusItem.create( is called for each barcode"},
+        {"text": "BarcodeCountStatus.Expired is used for barcodes starting with 'EXP'"},
+        {"text": "BarcodeCountStatus.LowStock is used for barcodes starting with 'LOW'"},
+        {"text": "BarcodeCountStatus.None is used as the default status"},
+        {"text": "BarcodeCountStatusResultSuccess.create( is called with the status items"},
+        {"text": "callback.onStatusReady( is called with the result"},
+        {"text": "A note or comment mentions this feature is beta (Cap ≥8.3) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Allow tap-to-uncount in my MatrixScan Count app so users can deselect items by tapping their highlight. Show a French hint when they do it.",
+      "expected_output": "The skill sets tapToUncountEnabled = true on the BarcodeCountView and sets textForTapToUncountHint to a French string.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "view.tapToUncountEnabled = true is set"},
+        {"text": "view.textForTapToUncountHint is set to a French string"},
+        {"text": "The French hint is a non-empty localized string (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add a hardware trigger control so users can scan by pressing the volume button (iOS) or XCover hardware button (Android) in my MatrixScan Count app.",
+      "expected_output": "The skill sets hardwareTriggerEnabled = true for iOS and calls enableHardwareTrigger(null) guarded by BarcodeCountView.hardwareTriggerSupported for Android, with a note that these are platform-specific.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "view.hardwareTriggerEnabled = true is set (iOS volume-button trigger)"},
+        {"text": "view.enableHardwareTrigger( is called (Android hardware trigger)"},
+        {"text": "BarcodeCountView.hardwareTriggerSupported is checked before calling enableHardwareTrigger (Android guard)"},
+        {"text": "A comment or note explains that hardwareTriggerEnabled is iOS-only and enableHardwareTrigger is Android-only (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ]
+    }
+  ]
+}

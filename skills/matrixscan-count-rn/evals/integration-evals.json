@@ -1,0 +1,172 @@
+{
+  "skill_name": "matrixscan-count-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Count to my React Native app. Here's my screen file: EmptyApp.tsx. I need to scan EAN-13 and Code 128 barcodes and show the built-in counting UI.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCount* integration code into EmptyApp.tsx as a function component with hooks, renders a BarcodeCountView with barcodeCount and context props, wires the camera lifecycle, and shows the setup checklist (packages, npx pod-install, camera permission, license key placeholder).",
+      "files": [
+        "fixtures/EmptyApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "DataCaptureContext.sharedInstance is present (semantic)"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "new BarcodeCount(settings) is present (constructor pattern, not forDataCaptureContext factory)"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "<BarcodeCountView is rendered in the JSX tree"},
+        {"text": "BarcodeCountView has a barcodeCount prop and a context prop (semantic)"},
+        {"text": "view.listener or view.uiListener is set inside the BarcodeCountView ref callback"},
+        {"text": "view.start() is NOT present (BarcodeCountView does not require explicit start)"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "The component is written as a function component (no class syntax)"},
+        {"text": "useRef is used to hold the BarcodeCount mode reference"},
+        {"text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)"},
+        {"text": "Import from 'scandit-react-native-datacapture-core' is present"},
+        {"text": "Import from 'scandit-react-native-datacapture-barcode' is present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to scan items into a list of expected barcodes and visually distinguish the ones that aren't in the list. My expected items are: EAN-13 '4006381333931' (qty 2) and Code 128 'ITEM-001' (qty 1). File: EmptyApp.tsx.",
+      "expected_output": "The skill integrates BarcodeCount with a BarcodeCountCaptureList containing the specified TargetBarcode entries, sets it on the mode with setBarcodeCountCaptureList, and uses BarcodeCountViewStyle.Dot with notInListBrush so unrecognized items appear differently. The integration includes a BarcodeCountViewListener with didCompleteCaptureList.",
+      "files": [
+        "fixtures/EmptyApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCountCaptureList.create( is present"},
+        {"text": "TargetBarcode.create( is present with '4006381333931' and quantity 2"},
+        {"text": "TargetBarcode.create( is present with 'ITEM-001' and quantity 1"},
+        {"text": "barcodeCount.setBarcodeCountCaptureList( is present"},
+        {"text": "notInListBrush is assigned on the view (semantic)"},
+        {"text": "<BarcodeCountView is rendered with barcodeCount and context props"},
+        {"text": "BarcodeCountViewStyle.Dot is used as the viewStyle (semantic — required for brushes to take effect)"},
+        {"text": "didCompleteCaptureList is implemented in the view listener (semantic)"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Hide the exit button and the toolbar from the BarcodeCount view so the screen stays minimal. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets shouldShowExitButton = false and shouldShowToolbar = false on the BarcodeCountView in the ref callback. The existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.shouldShowExitButton = false is present"},
+        {"text": "view.shouldShowToolbar = false is present"},
+        {"text": "Both properties are set inside the BarcodeCountView ref callback (semantic)"},
+        {"text": "Existing BarcodeCount mode, BarcodeCountView JSX, and camera lifecycle are preserved (semantic)"},
+        {"text": "view.listener is still set in the ref callback (semantic)"},
+        {"text": "view.uiListener is still set in the ref callback (semantic)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Translate all the on-screen hints in my MatrixScan Count screen to German. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets all available textFor*Hint properties on the BarcodeCountView in the ref callback using German strings. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.textForTapShutterToScanHint is set to a German string"},
+        {"text": "view.textForScanningHint is set to a German string"},
+        {"text": "view.textForMoveCloserAndRescanHint is set to a German string"},
+        {"text": "view.textForMoveFurtherAndRescanHint is set to a German string"},
+        {"text": "view.textForTapToUncountHint is set to a German string (semantic)"},
+        {"text": "All hint properties are set inside the BarcodeCountView ref callback (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a status overlay showing each scanned barcode's stock status after scanning. When status mode is activated, mark barcodes with low stock as LowStock and others as None. File: IntegratedApp.tsx.",
+      "expected_output": "The skill implements a BarcodeCountStatusProvider with onStatusRequested, wires it via view.setStatusProvider in the ref callback, enables shouldShowStatusModeButton, builds BarcodeCountStatusItem entries, and calls callback.onStatusReady with a BarcodeCountStatusResultSuccess. A note about RN 8.3+ requirement is included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCountStatusProvider is implemented with onStatusRequested"},
+        {"text": "BarcodeCountStatusItem.create( is present"},
+        {"text": "BarcodeCountStatus.LowStock or another BarcodeCountStatus value is used"},
+        {"text": "BarcodeCountStatusResultSuccess.create( is present"},
+        {"text": "callback.onStatusReady( is called (not awaited — callback pattern) (semantic)"},
+        {"text": "view.setStatusProvider( is called inside the BarcodeCountView ref callback"},
+        {"text": "view.shouldShowStatusModeButton = true or view.shouldShowStatusIconsOnScan = true is present"},
+        {"text": "A note or comment about RN 8.3+ requirement is included (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and view setup are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Let the user uncount a barcode by tapping on its highlight in the BarcodeCount view. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets tapToUncountEnabled = true on the BarcodeCountView in the ref callback, and optionally sets textForTapToUncountHint. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.tapToUncountEnabled = true is present"},
+        {"text": "tapToUncountEnabled is set inside the BarcodeCountView ref callback (semantic)"},
+        {"text": "textForTapToUncountHint is set or a comment explains the hint text option (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Customize the recognized-barcode dot highlight to green and the not-in-list highlight to red. Also apply a blue highlight for accepted barcodes and orange for rejected ones. File: IntegratedApp.tsx.",
+      "expected_output": "The skill switches viewStyle to BarcodeCountViewStyle.Dot (required for brushes to work), sets recognizedBrush to a green Brush, notInListBrush to a red Brush, acceptedBrush to a blue Brush, and rejectedBrush to an orange Brush in the ref callback using Color.fromHex.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCountViewStyle.Dot is used as viewStyle prop (semantic — brushes only work in Dot mode)"},
+        {"text": "view.recognizedBrush = new Brush( is present with a green color"},
+        {"text": "view.notInListBrush = new Brush( is present with a red color"},
+        {"text": "view.acceptedBrush = new Brush( is present with a blue color"},
+        {"text": "view.rejectedBrush = new Brush( is present with an orange color"},
+        {"text": "Color.fromHex( is used for color construction"},
+        {"text": "All brush assignments are inside the BarcodeCountView ref callback (semantic)"},
+        {"text": "Existing camera lifecycle and BarcodeCount mode setup are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Keep the counting session alive across the scan and results page transitions. When the user comes back to the scan page, resume counting where they left off. File: IntegratedApp.tsx.",
+      "expected_output": "The skill preserves the BarcodeCount mode in a useRef across navigations (does not reset on every mount), uses useFocusEffect or similar to restart the camera when the screen re-focuses, and only calls barcodeCount.reset() / clearAdditionalBarcodes() when an explicit reset is needed. The camera is turned off when navigating away.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCount mode is held in a useRef so it persists across renders and navigation (semantic)"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called when the screen is focused or mounted"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.Off) is called when navigating away or exiting (semantic)"},
+        {"text": "barcodeCount.reset() is only called conditionally (not on every mount) (semantic)"},
+        {"text": "useFocusEffect or useEffect with navigation focus guard is used to manage camera state (semantic)"},
+        {"text": "dataCaptureContext.setFrameSource(null) or equivalent cleanup is present"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Enable a hardware trigger key on my Zebra Android device for scanning with BarcodeCount. Use the default hardware key. File: IntegratedApp.tsx.",
+      "expected_output": "The skill calls view.enableHardwareTrigger(null) inside the BarcodeCountView ref callback after checking BarcodeCountView.hardwareTriggerSupported. A note about the Android API 28+ requirement is included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "view.enableHardwareTrigger(null) is called inside the BarcodeCountView ref callback"},
+        {"text": "BarcodeCountView.hardwareTriggerSupported is checked before enabling the trigger (semantic)"},
+        {"text": "A comment or note about Android API level 28+ requirement is present (semantic)"},
+        {"text": "A comment or note about RN 7.1+ requirement is present (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    }
+  ]
+}

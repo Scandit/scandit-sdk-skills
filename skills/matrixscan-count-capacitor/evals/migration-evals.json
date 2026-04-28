@@ -1,0 +1,61 @@
+{
+  "skill_name": "matrixscan-count-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate my BarcodeCount code from the old BarcodeCount.forDataCaptureContext constructor to the new SDK 7.6+ style. File: IntegratedApp.js",
+      "expected_output": "The skill reads migration.md and replaces BarcodeCount.forDataCaptureContext(context, settings) with new BarcodeCount(settings) followed by context.addMode(barcodeCount). All other existing code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output"},
+        {"text": "new BarcodeCount(settings) is present in the output"},
+        {"text": "context.addMode( is present and called with the barcodeCount instance"},
+        {"text": "context.setMode( is NOT present (addMode is the correct call)"},
+        {"text": "The BarcodeCount constructor does NOT receive context as an argument (semantic)"},
+        {"text": "Existing BarcodeCountView setup and other code is preserved (semantic)"},
+        {"text": "barcodeCount.isEnabled = true is still present"},
+        {"text": "camera lifecycle code is preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add not-in-list action support to my MatrixScan Count app. When users tap a barcode not on the packing list, they should see an action popup with Accept, Reject, and Cancel buttons. File: IntegratedApp.js",
+      "expected_output": "The skill reads migration.md and adds BarcodeCountNotInListActionSettings configuration on the BarcodeCountView with enabled=true, acceptButtonText, rejectButtonText, and cancelButtonText set. A BarcodeCountCaptureList is set on the barcodeCount. The view listener gains didTapAcceptedBarcode and didTapRejectedBarcode callbacks.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "view.barcodeNotInListActionSettings is accessed"},
+        {"text": "notInListSettings.enabled = true is set"},
+        {"text": "acceptButtonText is set to a non-empty string"},
+        {"text": "rejectButtonText is set to a non-empty string"},
+        {"text": "cancelButtonText is set to a non-empty string"},
+        {"text": "view.barcodeNotInListActionSettings = notInListSettings is reassigned after setting properties"},
+        {"text": "barcodeCount.setBarcodeCountCaptureList( is called (required for not-in-list to have effect)"},
+        {"text": "view.listener is set with didTapAcceptedBarcode and/or didTapRejectedBarcode callbacks"},
+        {"text": "A comment or note mentions this feature requires SDK ≥7.1 on Capacitor (semantic)"},
+        {"text": "Existing scan listener and camera code are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add the mapping flow to my MatrixScan Count Capacitor app. I want users to be able to see a spatial grid map of the scanned barcodes. File: IntegratedApp.js",
+      "expected_output": "The skill reads migration.md and updates the code to set settings.mappingEnabled = true, adds BarcodeCountMappingFlowSettings with customized text, and replaces the BarcodeCountView constructor with BarcodeCountView.forMapping(context, barcodeCount, style, mappingSettings). Includes a note that this is a beta API requiring SDK ≥8.3.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.mappingEnabled = true is set on BarcodeCountSettings"},
+        {"text": "new BarcodeCountMappingFlowSettings() is instantiated"},
+        {"text": "BarcodeCountView.forMapping( is called with context, barcodeCount, style, and mappingFlowSettings"},
+        {"text": "The standard BarcodeCountView constructor (new BarcodeCountView({...}) or forContextWithMode) is replaced by forMapping (semantic)"},
+        {"text": "connectToElement( is still called on the view"},
+        {"text": "barcodeCount.isEnabled = true is still present"},
+        {"text": "A comment or note mentions this is a beta API requiring SDK ≥8.3 (semantic)"},
+        {"text": "Existing scan listener, camera, and context setup are preserved (semantic)"}
+      ]
+    }
+  ]
+}
