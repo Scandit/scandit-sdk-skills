@@ -72,6 +72,7 @@ Phrase the handoff so it works whether or not the skill is already present, e.g.
 | Barcode Capture | Capacitor | `barcode-capture-capacitor` | "Ask me to integrate Barcode Capture into your Capacitor app" |
 | Barcode Capture | Cordova | `barcode-capture-cordova` | "Ask me to integrate Barcode Capture into your Cordova app" |
 | Smart Label Capture | Web | `label-capture-web` | "Ask me to integrate Label Capture into your web app" |
+| Smart Label Capture | Android | `label-capture-android` | "Ask me to integrate Label Capture into your Android app" |
 | Smart Label Capture | React Native | `label-capture-rn` | "Ask me to integrate Label Capture into your React Native app" |
 | Smart Label Capture | Flutter | `label-capture-flutter` | "Ask me to integrate Label Capture into your Flutter app" |
 | Smart Label Capture | Capacitor | `label-capture-capacitor` | "Ask me to integrate Label Capture into your Capacitor app" |
