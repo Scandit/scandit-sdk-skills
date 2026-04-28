@@ -1,0 +1,83 @@
+{
+  "skill_name": "label-capture-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add Scandit Label Capture to my Android app. Here's my main activity: MainActivity.kt. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (both required) and a total price (optional).",
+      "expected_output": "The skill reads integration.md, walks through the interactive label-definition questions, writes complete Label Capture integration code into MainActivity.kt, and shows the setup checklist.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "Setup checklist is shown and mentions the four Gradle dependencies: com.scandit.datacapture:core, :barcode, :label, and :label-text-models; no Scandit Maven repository is referenced" },
+        { "text": "DataCaptureContext.forLicenseKey( is present" },
+        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
+        { "text": "LabelCaptureSettings.builder() is used" },
+        { "text": ".addLabel() is called on the builder and terminated with .buildFluent(\"...\") followed by .build()" },
+        { "text": ".addCustomBarcode() is chained on the label builder and terminated with .buildFluent(\"...\")" },
+        { "text": "Symbology.EAN13_UPCA is present (Android underscore form, not EAN13UPCA)" },
+        { "text": ".addExpiryDateText() is chained on the label builder and terminated with .buildFluent(\"...\")" },
+        { "text": ".addTotalPriceText() is chained on the label builder and .isOptional(true) is called on it" },
+        { "text": "LabelCapture.forDataCaptureContext( is present" },
+        { "text": "labelCapture.addListener( is present with an onSessionUpdated override" },
+        { "text": "session.capturedLabels is accessed inside onSessionUpdated" },
+        { "text": "DataCaptureView.newInstance( is present" },
+        { "text": "LabelCaptureBasicOverlay.newInstance( is present" },
+        { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
+        { "text": "camera.switchToDesiredState(FrameSourceState.ON) is called in onResume" },
+        { "text": "camera.switchToDesiredState(FrameSourceState.OFF) is called in onPause" },
+        { "text": "No renamed-away regex methods: setPattern, setPatterns, setDataTypePattern, setDataTypePatterns are absent from the generated code" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add Label Capture with the Validation Flow to my Android app. Write the code into MainActivity.kt. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). Show me how to customize the placeholder text for the expiry date field.",
+      "expected_output": "The skill detects the platform, uses LabelCaptureValidationFlowOverlay instead of LabelCaptureBasicOverlay, implements LabelCaptureValidationFlowListener, sets placeholder text for the expiry date field, and delegates onPause/onResume to the overlay.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "LabelCaptureValidationFlowOverlay.newInstance( is used instead of LabelCaptureBasicOverlay" },
+        { "text": "LabelCaptureValidationFlowSettings.newInstance() is called" },
+        { "text": "setPlaceholderTextForLabelDefinition is called on the settings with the expiry date field name and a placeholder string" },
+        { "text": "validationFlowOverlay.applySettings( is called" },
+        { "text": "validationFlowOverlay.listener is assigned with an onValidationFlowLabelCaptured implementation" },
+        { "text": "validationFlowOverlay.onPause() is called in onPause" },
+        { "text": "validationFlowOverlay.onResume() is called in onResume" },
+        { "text": "Symbology.EAN13_UPCA is present" },
+        { "text": "DataCaptureContext.forLicenseKey( is present" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to add Scandit Label Capture to my Android app.",
+      "expected_output": "The skill asks what fields are on the label (Question A) and presents the supported field type checklist. It does NOT generate integration code yet — it correctly waits for the user to describe their label before writing anything.",
+      "files": [],
+      "assertions": [
+        { "text": "The response asks what fields or data are on the label — it does not generate code without knowing the label structure" },
+        { "text": "The supported field types are listed, including at minimum: addCustomBarcode (or Custom barcode), addExpiryDateText (or Expiry date), addTotalPriceText (or Total price)" },
+        { "text": "No LabelCaptureSettings.builder() code block is included — the skill waits for the user to answer before writing any integration code" },
+        { "text": "All clarifying questions are asked BEFORE any integration code is produced — the response explicitly states it will write the code after the user answers, not before" }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "SIMULATE A TWO-TURN CONVERSATION:\nTurn 1 — send this message first: 'I want to add Scandit Label Capture to my Android app.'\nTurn 2 — after the skill responds with clarifying questions, send this follow-up: 'The label is a perishable-product sticker with an EAN-13 barcode (required), an expiry date (required), and a total price (optional). Here is my main activity: MainActivity.kt. Please write the integration code.'",
+      "expected_output": "After the two-turn exchange the skill produces complete Label Capture integration code — equivalent to eval 1 — written into MainActivity.kt with the setup checklist.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "LabelCaptureSettings.builder() is used in the final generated code" },
+        { "text": ".addCustomBarcode() is chained on the label builder" },
+        { "text": "Symbology.EAN13_UPCA is present" },
+        { "text": ".addExpiryDateText() is chained on the label builder" },
+        { "text": ".addTotalPriceText() is chained on the label builder and .isOptional(true) is called on it" },
+        { "text": "LabelCapture.forDataCaptureContext( is present" },
+        { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
+      ]
+    }
+  ]
+}

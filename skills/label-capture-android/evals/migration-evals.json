@@ -1,0 +1,36 @@
+{
+  "skill_name": "label-capture-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm upgrading my Label Capture integration from Scandit SDK v7 to v8. Update the regex-method names in before-8.0-regex.kt.",
+      "expected_output": "The skill renames setPatterns→setValueRegexes, setDataTypePattern→setAnchorRegex, setDataTypePatterns→setAnchorRegexes throughout the file; removes the Regex(...) wrapper from the setDataTypePattern argument (v8 takes a plain String); leaves everything else untouched.",
+      "files": [
+        "fixtures/before-8.0-regex.kt"
+      ],
+      "assertions": [
+        { "text": "setPattern( is renamed to setValueRegex(" },
+        { "text": "setPatterns( is renamed to setValueRegexes(" },
+        { "text": "setDataTypePattern( is renamed to setAnchorRegex( and any Regex(...) argument is preserved as-is (v8 accepts both String and Regex; do NOT unwrap Regex to a plain String)" },
+        { "text": "setDataTypePatterns( is renamed to setAnchorRegexes(" },
+        { "text": "The old method names (setPattern, setPatterns, setDataTypePattern, setDataTypePatterns) are absent from the final file" },
+        { "text": "Imports and non-regex logic are preserved: Symbology.EAN13_UPCA, LabelCaptureSettings.builder(), .buildFluent( calls, and isOptional(true) are still present" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I upgraded my app to Scandit SDK 8.2 and now on Android 15 devices the keyboard covers the text input field when the Validation Flow asks the user to type in the expiry date. Here's my current integration: before-8.2-validation-flow.kt. How do I fix this?",
+      "expected_output": "The skill reads migration.md, identifies the v8.1→v8.2 keyboard inset section, and explains both Option A (shouldHandleKeyboardInsetsInternally = true) and Option B (fitsSystemWindows in layout XML). It applies one of the options to the user's file or clearly shows how to add the fix.",
+      "files": [
+        "fixtures/before-8.2-validation-flow.kt"
+      ],
+      "assertions": [
+        { "text": "shouldHandleKeyboardInsetsInternally is mentioned or set to true" },
+        { "text": "fitsSystemWindows is mentioned as an alternative approach" },
+        { "text": "The existing Validation Flow setup is preserved: LabelCaptureValidationFlowOverlay.newInstance(, applySettings(, and onValidationFlowLabelCaptured are still present" },
+        { "text": "The fix is applied to or shown in context of the user's before-8.2-validation-flow.kt code, not just described abstractly" },
+        { "text": "onPause() and onResume() delegation to the overlay is preserved" }
+      ]
+    }
+  ]
+}
