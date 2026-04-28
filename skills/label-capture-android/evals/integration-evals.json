@@ -60,6 +60,24 @@
         { "text": "No LabelCaptureSettings.builder() code block is included — the skill waits for the user to answer before writing any integration code" },
         { "text": "All clarifying questions are asked BEFORE any integration code is produced — the response explicitly states it will write the code after the user answers, not before" }
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "SIMULATE A TWO-TURN CONVERSATION:\nTurn 1 — send this message first: 'I want to add Scandit Label Capture to my Android app.'\nTurn 2 — after the skill responds with clarifying questions, send this follow-up: 'The label is a perishable-product sticker with an EAN-13 barcode (required), an expiry date (required), and a total price (optional). Here is my main activity: MainActivity.kt. Please write the integration code.'",
+      "expected_output": "After the two-turn exchange the skill produces complete Label Capture integration code — equivalent to eval 1 — written into MainActivity.kt with the setup checklist.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "LabelCaptureSettings.builder() is used in the final generated code" },
+        { "text": ".addCustomBarcode() is chained on the label builder" },
+        { "text": "Symbology.EAN13_UPCA is present" },
+        { "text": ".addExpiryDateText() is chained on the label builder" },
+        { "text": ".addTotalPriceText() is chained on the label builder and .isOptional(true) is called on it" },
+        { "text": "LabelCapture.forDataCaptureContext( is present" },
+        { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
+      ]
     }
   ]
 }
