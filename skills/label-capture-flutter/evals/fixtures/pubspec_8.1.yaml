@@ -1,0 +1,23 @@
+name: label_capture_flutter_app
+description: Label Capture Flutter sample app.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  scandit_flutter_datacapture_core: ^8.1.0
+  scandit_flutter_datacapture_barcode: ^8.1.0
+  scandit_flutter_datacapture_label: ^8.1.0
+  permission_handler: ^11.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

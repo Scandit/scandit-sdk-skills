@@ -1,0 +1,44 @@
+{
+  "skill_name": "label-capture-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Upgrade my Label Capture from 7.6 to 8.0. Here's my CustomText regex code: before-8.0-regex.js and package_7.6.json.",
+      "expected_output": "The skill bumps package versions to 8.0 in package.json and renames CustomText regex properties: pattern→valueRegex, dataTypePattern→anchorRegex, plus the plural variants.",
+      "files": ["fixtures/before-8.0-regex.js", "fixtures/package_7.6.json"],
+      "assertions": [
+        {"text": "package.json is updated to ^8.0.0 for scandit-capacitor-datacapture-core/barcode/label"},
+        {"text": "field.pattern is renamed to field.valueRegex"},
+        {"text": "field.dataTypePattern is renamed to field.anchorRegex"},
+        {"text": "Setup-check mentions npx cap sync"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Upgrade my Label Capture from 8.1 to 8.2 so I can react to manual field corrections. Here's my main script: before-8.2-validation-flow.js and package_8.1.json.",
+      "expected_output": "The skill bumps versions to ^8.2.0 and adds didSubmitManualInputForField to the existing validation flow listener. didCaptureLabelWithFields is preserved.",
+      "files": ["fixtures/before-8.2-validation-flow.js", "fixtures/package_8.1.json"],
+      "assertions": [
+        {"text": "package.json is updated to ^8.2.0 for scandit-capacitor-datacapture-core/barcode/label"},
+        {"text": "didSubmitManualInputForField is added to the validation flow listener"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Upgrade my Label Capture from 8.2 to 8.4. Here's my main script: before-8.4-validation-flow.js and package_8.2.json. I want fine-grained progress feedback as the validation flow accumulates partial results.",
+      "expected_output": "The skill bumps versions to ^8.4.0, adds didUpdateValidationFlowResult to the existing listener. didCaptureLabelWithFields and didSubmitManualInputForField are preserved.",
+      "files": ["fixtures/before-8.4-validation-flow.js", "fixtures/package_8.2.json"],
+      "assertions": [
+        {"text": "package.json is updated to ^8.4.0 for scandit-capacitor-datacapture-core/barcode/label"},
+        {"text": "didUpdateValidationFlowResult is added to the validation flow listener"},
+        {"text": "didUpdateValidationFlowResult signature includes (type, asyncId, fields, getFrameData) parameters"},
+        {"text": "LabelResultUpdateType is referenced or imported"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"},
+        {"text": "Existing didSubmitManualInputForField is preserved"},
+        {"text": "Setup-check mentions npx cap sync"},
+        {"text": "No web-only renames (e.g. setValueRegex/setAnchorRegex/setPlaceholderTextForLabelDefinition swap of CustomText regex setters) are introduced"}
+      ]
+    }
+  ]
+}

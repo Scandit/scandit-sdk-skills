@@ -24,6 +24,7 @@ A shared `data-capture-sdk` skill provides cross-cutting integration knowledge (
 | `data-capture-sdk` | Shared baseline — product selection, license activation, framework boilerplate, troubleshooting. Recommended alongside any product skill. |
 | `sparkscan-{framework}` | [SparkScan](https://docs.scandit.com/sdks/ios/sparkscan/intro/) integration & migration. Available for `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 | `matrixscan-ar-{framework}` | [MatrixScan AR](https://docs.scandit.com/sdks/ios/matrixscan-ar/intro/) (Barcode AR) integration & BarcodeBatch → BarcodeAr migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `label-capture-{framework}` | [Smart Label Capture](https://docs.scandit.com/sdks/ios/label-capture/intro/) integration & migration (regex renames v7.6→v8.0, Validation Flow redesign v8.1→v8.2, optional update callback v8.2→v8.4). Available for `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
 ## Installation
 

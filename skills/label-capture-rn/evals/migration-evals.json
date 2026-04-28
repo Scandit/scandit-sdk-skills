@@ -1,0 +1,25 @@
+{
+  "skill_name": "label-capture-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Upgrade my Label Capture from 8.2 to 8.4. Here's my current code: before-8.4-validation-flow.tsx, and my package.json: package_8.2.json. I want fine-grained progress feedback as the validation flow accumulates partial results.",
+      "expected_output": "The skill bumps the package versions in package.json from 8.2 to 8.4, then adds the optional didUpdateValidationFlowResult method to the existing LabelCaptureValidationFlowListener. The existing didCaptureLabelWithFields and didSubmitManualInputForField callbacks are preserved.",
+      "files": [
+        "fixtures/before-8.4-validation-flow.tsx",
+        "fixtures/package_8.2.json"
+      ],
+      "assertions": [
+        {"text": "package.json is updated to 8.4.0 (or ^8.4.0) for scandit-react-native-datacapture-core/barcode/label"},
+        {"text": "didUpdateValidationFlowResult is added to the LabelCaptureValidationFlowListener"},
+        {"text": "didUpdateValidationFlowResult signature includes (type, asyncId, fields, getFrameData) parameters"},
+        {"text": "LabelResultUpdateType is imported from scandit-react-native-datacapture-label"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"},
+        {"text": "Existing didSubmitManualInputForField is preserved"},
+        {"text": "The setup-check mentions running npx pod-install after the version bump"},
+        {"text": "The setup-check mentions restarting Metro with --reset-cache"},
+        {"text": "No web-only renames (e.g. setValueRegex/setAnchorRegex/setPlaceholderTextForLabelDefinition) are introduced"}
+      ]
+    }
+  ]
+}

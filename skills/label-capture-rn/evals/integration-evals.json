@@ -1,0 +1,80 @@
+{
+  "skill_name": "label-capture-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Label Capture to my React Native app. Here's my screen file: empty-app.tsx. I need to scan a Code 128 barcode and an expiry date on a perishable product label.",
+      "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.tsx as a function component with hooks. A Validation Flow overlay is wired up. The setup checklist is shown.",
+      "files": [
+        "fixtures/empty-app.tsx"
+      ],
+      "assertions": [
+        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
+        {"text": "Setup checklist mentions scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
+        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
+        {"text": "CustomBarcode.initWithNameAndSymbologies( is present"},
+        {"text": "Symbology.Code128 is enabled on the CustomBarcode"},
+        {"text": "new ExpiryDateText( is present"},
+        {"text": "new LabelDefinition( is present"},
+        {"text": "labelDefinition.fields = [...] assignment is present"},
+        {"text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
+        {"text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"},
+        {"text": "LabelCaptureSettingsBuilder is NOT used (web-only)"},
+        {"text": "LabelDefinitionBuilder is NOT used (web-only)"},
+        {"text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"},
+        {"text": "<DataCaptureView is rendered as JSX with context"},
+        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"},
+        {"text": "didCaptureLabelWithFields callback is registered (via listener) — NOT onValidationFlowLabelCaptured"},
+        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
+        {"text": "onManualInput is NOT used (web-only)"},
+        {"text": "The component is written as a function component (no class syntax)"},
+        {"text": "useRef is used to hold the LabelCapture and view references"},
+        {"text": "AppState.addEventListener handles background/foreground transitions"},
+        {"text": "Imports come from scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add Label Capture with the Validation Flow overlay so the user can confirm OCR results and manually correct fields if needed. Use the redesigned flow. My package.json says I'm on 8.4.0.",
+      "expected_output": "The skill recognises the v8.2+ redesigned Validation Flow, uses LabelCaptureValidationFlowOverlay, and registers a listener with both didCaptureLabelWithFields and didSubmitManualInputForField. Optionally registers didUpdateValidationFlowResult since the user is on 8.4+.",
+      "files": [
+        "fixtures/empty-app.tsx",
+        "fixtures/package_8.4.json"
+      ],
+      "assertions": [
+        {"text": "LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"},
+        {"text": "didCaptureLabelWithFields callback is registered on the listener"},
+        {"text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"},
+        {"text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"},
+        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
+        {"text": "onManualInput is NOT used (web-only)"},
+        {"text": "DataCaptureContext.initialize( is used"},
+        {"text": "License key placeholder is present"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add Label Capture with just the basic overlay (no validation flow). My package.json says I'm on 8.2.0. I want to scan a CustomBarcode plus a TotalPriceText field.",
+      "expected_output": "The skill writes a Label Capture integration that uses LabelCaptureBasicOverlay (no Validation Flow). The mode listener handles didUpdateSession and reads captured labels from the session.",
+      "files": [
+        "fixtures/empty-app.tsx",
+        "fixtures/package_8.2.json"
+      ],
+      "assertions": [
+        {"text": "LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"},
+        {"text": "LabelCaptureValidationFlowOverlay is NOT used"},
+        {"text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"},
+        {"text": "session.capturedLabels is read inside didUpdateSession to extract labels"},
+        {"text": "CustomBarcode.initWithNameAndSymbologies( is present"},
+        {"text": "new TotalPriceText( is present"},
+        {"text": "new LabelDefinition( is present and labelDefinition.fields = [...] is set"},
+        {"text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
+        {"text": "DataCaptureContext.initialize( is used"}
+      ]
+    }
+  ]
+}
