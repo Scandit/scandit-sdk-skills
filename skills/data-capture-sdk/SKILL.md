@@ -49,6 +49,7 @@ Once a product and platform are identified, **always include the relevant docs.s
 | SparkScan | iOS | `sparkscan-ios` | "Ask me to integrate SparkScan into your iOS app" |
 | SparkScan | Web | `sparkscan-web` | "Ask me to integrate SparkScan into your web app" |
 | Smart Label Capture | Web | `label-capture-web` | "Ask me to integrate Label Capture into your web app" |
+| Smart Label Capture | Android | `label-capture-android` | "Ask me to integrate Label Capture into your Android app" |
 
 For any product+platform combination not listed above, provide the docs.scandit.com link and the **specific sample app link** from the product catalog. Every product has a best-match sample for each platform — always link directly to it. The sample apps are working implementations that serve as the best starting point for integration.
 
