@@ -1,0 +1,171 @@
+{
+  "skill_name": "barcode-capture-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my Cordova app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into EmptyApp.js, and shows the setup checklist (plugins to install, cordova prepare, camera permissions, CSP, data-capture-view DOM element).",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"},
+        {"text": "Setup checklist mentions cordova prepare after plugin install"},
+        {"text": "Setup checklist mentions CSP meta tag or that iOS/Android camera permissions are auto-configured by the plugins"},
+        {"text": "Setup checklist mentions a sized DOM element (e.g. <div id=\"data-capture-view\">) is required for the camera preview"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "A license key placeholder string is present (semantic)"},
+        {"text": "new Scandit.BarcodeCapture( is present (v8 constructor used)"},
+        {"text": "Scandit.BarcodeCapture.forContext( is NOT present"},
+        {"text": "context.setMode( or context.addMode( is called to register the mode with the context"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
+        {"text": "Scandit.Symbology.Code128 is enabled"},
+        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
+        {"text": "Scandit.DataCaptureView.forContext( is present"},
+        {"text": "view.connectToElement( is called"},
+        {"text": "new Scandit.BarcodeCaptureOverlay( is present"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "barcodeCapture.addListener( is called to register the scan listener"},
+        {"text": "Listener object has a didScan callback"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called"},
+        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add BarcodeCapture barcode scanning to ProductListApp.js. When a barcode is scanned, add it to the scannedProducts array and re-render the product list.",
+      "expected_output": "The skill adds BarcodeCapture to ProductListApp.js alongside the existing DOM rendering code. All existing DOM hooks, state, and render functions are preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "document.addEventListener('deviceready' is present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new Scandit.BarcodeCapture( is present"},
+        {"text": "context.setMode( or context.addMode( is called"},
+        {"text": "Scandit.DataCaptureView.forContext( is present"},
+        {"text": "view.connectToElement( is present"},
+        {"text": "new Scandit.BarcodeCaptureOverlay( is present"},
+        {"text": "view.addOverlay( is present"},
+        {"text": "barcodeCapture.addListener( is present"},
+        {"text": "didScan callback is present"},
+        {"text": "session.newlyRecognizedBarcode is present"},
+        {"text": "didScan callback pushes / appends to scannedProducts"},
+        {"text": "Existing scannedProducts array is preserved"},
+        {"text": "Existing renderProductList function is preserved and called after each scan"},
+        {"text": "Existing total / totalLabel DOM update logic is preserved"},
+        {"text": "Existing clearButton click handler is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Cordova app, I want to disable the capture mode while a result modal is shown, then re-enable it when the user taps OK. Wire this up.",
+      "expected_output": "The skill sets barcodeCapture.isEnabled = false inside the didScan callback, shows a result UI, and re-enables the mode (barcodeCapture.isEnabled = true) when the user dismisses the modal.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set inside the didScan callback"},
+        {"text": "A result UI element is shown (DOM creation, classList toggle, or a dialog)"},
+        {"text": "An OK / dismiss handler re-enables scanning by setting barcodeCapture.isEnabled = true"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to suppress duplicate scans of the same barcode within 500 milliseconds. Update my BarcodeCapture settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the BarcodeCaptureSettings instance and re-applies the settings to the BarcodeCapture mode if needed.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter = 500 is set (or equivalent with the local variable name used)"},
+        {"text": "codeDuplicateFilter is set before constructing BarcodeCapture, or barcodeCapture.applySettings(settings) is called after the change (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a rectangular viewfinder to my BarcodeCapture overlay so users see a clear scan area on screen.",
+      "expected_output": "The skill assigns a RectangularViewfinder to overlay.viewfinder.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.viewfinder is assigned a new Scandit.RectangularViewfinder( instance"},
+        {"text": "Scandit.RectangularViewfinderStyle is referenced (e.g. Square, Rounded)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Customize the BarcodeCapture feedback so a successful scan vibrates but does not play a sound.",
+      "expected_output": "The skill builds a BarcodeCaptureFeedback with a Feedback whose sound is null and vibration is the default vibration, then assigns it to barcodeCapture.feedback.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodeCaptureFeedback.defaultFeedback is referenced (or new Scandit.BarcodeCaptureFeedback() is constructed)"},
+        {"text": "feedback.success is assigned a new Scandit.Feedback( with Vibration.defaultVibration and null sound (or equivalent)"},
+        {"text": "barcodeCapture.feedback = feedback is assigned"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to clean up properly when the user leaves the scan page in my Cordova app — disable the BarcodeCapture mode and switch the camera off so battery isn't drained.",
+      "expected_output": "The skill wires teardown code into the page-exit path: barcodeCapture.isEnabled = false and camera.switchToDesiredState(Scandit.FrameSourceState.Off).",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set in the teardown path"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called in the teardown path"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to restrict scanning to barcodes near the centre of the camera frame so that bystander barcodes don't get scanned. Use a radius location selection.",
+      "expected_output": "The skill sets a RadiusLocationSelection on settings.locationSelection and re-applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.locationSelection is assigned a Scandit.RadiusLocationSelection (or equivalent location selection)"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Switch BarcodeCapture from the default Smart scan intention to Manual so the user has to deliberately aim at each barcode.",
+      "expected_output": "The skill sets settings.scanIntention = Scandit.ScanIntention.Manual and re-applies the settings to the BarcodeCapture instance.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.scanIntention = Scandit.ScanIntention.Manual is set"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Enable scanning of GS1 Composite Code Type A and Type B in my BarcodeCapture integration.",
+      "expected_output": "The skill enables the symbologies needed for the requested composite types and sets enabledCompositeTypes on the settings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.enableSymbologiesForCompositeTypes( is called with Scandit.CompositeType.A and Scandit.CompositeType.B"},
+        {"text": "settings.enabledCompositeTypes is assigned an array containing Scandit.CompositeType.A and Scandit.CompositeType.B"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+name: barcode_capture_flutter_app
+description: A sample Flutter app using Scandit BarcodeCapture (v6).
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Scandit BarcodeCapture packages pinned to v6.
+  scandit_flutter_datacapture_core: ^6.28.0
+  scandit_flutter_datacapture_barcode: ^6.28.0
+
+  permission_handler: ^11.0.0
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

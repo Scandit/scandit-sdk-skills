@@ -1,0 +1,100 @@
+{
+  "skill_name": "barcode-capture-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my BarcodeCapture Capacitor integration to v7. Here's my scanner file: ScannerApp_v6.js",
+      "expected_output": "The skill reads migration.md, applies the 6→7 changes to ScannerApp_v6.js (the v6→v7 path is largely additive — the legacy factories still work), and summarizes any changes made.",
+      "files": [
+        "fixtures/ScannerApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeCapture.forContext( is still acceptable in the output, or was upgraded to new BarcodeCapture(settings) plus context.setMode( (semantic)"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is still acceptable in the output, or was upgraded to new BarcodeCaptureOverlay( plus view.addOverlay( (semantic)"},
+        {"text": "DataCaptureContext.forLicenseKey( is still acceptable in the output (v7 keeps it valid)"},
+        {"text": "A summary.md file is present describing changes (or stating that no source changes were strictly required)"},
+        {"text": "Summary mentions the package.json dependency versions need to be bumped to ^7.x and npx cap sync must be run"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're upgrading our Capacitor app from Scandit SDK 7 to 8. Here's our BarcodeCapture code: ScannerApp_v7.js. Please apply any necessary changes.",
+      "expected_output": "The skill applies the v7→v8 renames (DataCaptureContext.forLicenseKey → DataCaptureContext.initialize, BarcodeCapture.forContext → new BarcodeCapture + context.setMode, BarcodeCaptureOverlay.withBarcodeCaptureForView → new BarcodeCaptureOverlay + view.addOverlay) and summarizes the changes.",
+      "files": [
+        "fixtures/ScannerApp_v7.js"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present in the output file"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "new BarcodeCapture( is present in the output file"},
+        {"text": "BarcodeCapture.forContext( is NOT present in the output file"},
+        {"text": "context.setMode( is called on the BarcodeCapture instance"},
+        {"text": "new BarcodeCaptureOverlay( is present in the output file"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is NOT present in the output file"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "A summary.md is present listing the renames"},
+        {"text": "Summary mentions npx cap sync must be run after the plugin version bump"},
+        {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to upgrade our BarcodeCapture integration from SDK 6 all the way to v8. Here's our current code: ScannerApp_v6.js",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
+      "files": [
+        "fixtures/ScannerApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new BarcodeCapture( is present (7→8 rename applied)"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "context.setMode( is called on the BarcodeCapture instance"},
+        {"text": "new BarcodeCaptureOverlay( is present (7→8 rename applied)"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is NOT present"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "Summary covers both migration steps (references both 6→7 and 7→8)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to upgrade my BarcodeCapture to the latest Scandit SDK version. Here's my code and package.json.",
+      "expected_output": "The skill reads package.json to detect v6.28.x, determines the target is v8, applies both migrations without asking the user for their version.",
+      "files": [
+        "fixtures/ScannerApp_v6.js",
+        "fixtures/package_v6.json"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.x or v6)"},
+        {"text": "Summary mentions the package.json dependency versions need to be bumped to ^8.0.0"},
+        {"text": "Summary mentions npx cap sync must be run after the bump"},
+        {"text": "DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "new BarcodeCapture( is present (7→8 rename applied)"},
+        {"text": "context.setMode( is called on the BarcodeCapture instance"},
+        {"text": "new BarcodeCaptureOverlay( is present (7→8 rename applied)"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Upgrade my BarcodeCapture from v7 to v8 — here's the package.json and the source.",
+      "expected_output": "The skill reads package.json to detect v7.6.0, determines the target is v8, and applies only the 7→8 migration.",
+      "files": [
+        "fixtures/ScannerApp_v7.js",
+        "fixtures/package_v7.json"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (7.6.x or v7)"},
+        {"text": "Summary mentions the package.json dependency versions need to be bumped to ^8.0.0"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new BarcodeCapture( is present"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "new BarcodeCaptureOverlay( is present"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is NOT present"},
+        {"text": "Summary mentions npx cap sync must be run after the bump"}
+      ]
+    }
+  ]
+}

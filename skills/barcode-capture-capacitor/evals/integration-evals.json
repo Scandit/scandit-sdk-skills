@@ -1,0 +1,176 @@
+{
+  "skill_name": "barcode-capture-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my Capacitor app. Here's my entry point: EmptyApp.js. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into EmptyApp.js, and shows the setup checklist (packages to install, npx cap sync, camera permission entries).",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
+        {"text": "Setup checklist mentions Android camera permission is handled automatically by the plugin"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
+        {"text": "ScanditCaptureCorePlugin.initializePlugins() is awaited before any other Scandit call (semantic)"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "A license key placeholder string is present (semantic)"},
+        {"text": "new BarcodeCapture(settings) is present (v8 constructor used, not BarcodeCapture.forContext)"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "context.setMode( is called to register the BarcodeCapture mode with the context"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
+        {"text": "DataCaptureView.forContext( is present"},
+        {"text": "view.connectToElement( is called to mount the view to a DOM element"},
+        {"text": "new BarcodeCaptureOverlay( is present"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "Camera.withSettings or Camera.default is present"},
+        {"text": "setFrameSource(camera) is called on the DataCaptureContext (the receiver may be named context or dataCaptureContext) (semantic)"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"},
+        {"text": "barcodeCapture.addListener( is called to register the scan listener"},
+        {"text": "Listener object has a didScan callback"},
+        {"text": "Imports come from scandit-capacitor-datacapture-core (DataCaptureContext, ScanditCaptureCorePlugin, Camera, FrameSourceState, DataCaptureView) and scandit-capacitor-datacapture-barcode (BarcodeCapture, BarcodeCaptureOverlay, BarcodeCaptureSettings, Symbology)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add BarcodeCapture barcode scanning to ProductListApp.js. When a barcode is scanned, add it to the scannedProducts array and re-render the product list.",
+      "expected_output": "The skill adds BarcodeCapture to ProductListApp.js alongside the existing DOM rendering code. All existing DOM hooks, state, and render functions are preserved.",
+      "files": [
+        "fixtures/ProductListApp.js"
+      ],
+      "assertions": [
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new BarcodeCapture(settings) is present"},
+        {"text": "context.setMode( is called"},
+        {"text": "DataCaptureView.forContext( is present"},
+        {"text": "view.connectToElement( is called"},
+        {"text": "new BarcodeCaptureOverlay( is present"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "barcodeCapture.addListener( is present"},
+        {"text": "didScan callback is present"},
+        {"text": "didScan callback pushes / appends to scannedProducts"},
+        {"text": "Existing scannedProducts array is preserved"},
+        {"text": "Existing renderProductList function is preserved and called after each scan"},
+        {"text": "Existing updateTotal / total-label DOM update logic is preserved"},
+        {"text": "Existing clearButton click handler is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Capacitor app, I want to do a slow database lookup before re-enabling scanning. Disable the BarcodeCapture mode while handling the scan, then re-enable it once the lookup is done. Use IntegratedApp.js.",
+      "expected_output": "The skill sets barcodeCapture.isEnabled = false at the start of the didScan callback, performs the lookup, and sets isEnabled = true after the lookup completes.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set inside didScan before the lookup"},
+        {"text": "A database lookup or async work step is present (e.g. await fetch, await lookup, setTimeout, or similar)"},
+        {"text": "barcodeCapture.isEnabled = true is set after the lookup completes"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to add a rectangular viewfinder to the BarcodeCapture overlay so users know where to aim. Use IntegratedApp.js.",
+      "expected_output": "The skill assigns a RectangularViewfinder to overlay.viewfinder and imports it from scandit-capacitor-datacapture-core.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.viewfinder = new RectangularViewfinder( is set (or assigned via an intermediate variable)"},
+        {"text": "RectangularViewfinder is imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to filter scans so duplicates within 500 milliseconds are ignored in my Capacitor BarcodeCapture app. Use IntegratedApp.js.",
+      "expected_output": "The skill sets codeDuplicateFilter on the BarcodeCaptureSettings instance before constructing the BarcodeCapture mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter = 500 is set"},
+        {"text": "codeDuplicateFilter is set before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to restrict scanning to a small circular area in the center of the camera view in my Capacitor BarcodeCapture app. Use a radius location selection.",
+      "expected_output": "The skill creates a RadiusLocationSelection and assigns it to settings.locationSelection before constructing the BarcodeCapture mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.locationSelection = new RadiusLocationSelection( is set (or assigned via an intermediate variable)"},
+        {"text": "RadiusLocationSelection, NumberWithUnit, and MeasureUnit are imported from scandit-capacitor-datacapture-core"},
+        {"text": "locationSelection is set before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Customize the BarcodeCapture feedback in my Capacitor app — disable the default sound and keep only the vibration. Use IntegratedApp.js.",
+      "expected_output": "The skill modifies barcodeCapture.feedback so that success has only vibration and no sound.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.feedback is assigned, either via direct assignment or via mutating barcodeCapture.feedback.success (semantic)"},
+        {"text": "new Feedback( is constructed with Vibration.defaultVibration and null for sound (semantic)"},
+        {"text": "Feedback and Vibration are imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I need to clean up properly when my Capacitor scanning view is destroyed — turn the camera off, disable BarcodeCapture, and detach the DataCaptureView from the DOM.",
+      "expected_output": "The skill wires camera.switchToDesiredState(FrameSourceState.Off), barcodeCapture.isEnabled = false, and view.detachFromElement() into a teardown function.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "camera.switchToDesiredState(FrameSourceState.Off) is called in the teardown path"},
+        {"text": "barcodeCapture.isEnabled = false is set in the teardown path"},
+        {"text": "view.detachFromElement() is called in the teardown path"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I want to enable composite codes (Type A and Type B) in my Capacitor BarcodeCapture app, alongside the symbologies they require. Use IntegratedApp.js.",
+      "expected_output": "The skill calls enableSymbologiesForCompositeTypes for the chosen composite types and sets enabledCompositeTypes on the BarcodeCaptureSettings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.enableSymbologiesForCompositeTypes( is called with [CompositeType.A, CompositeType.B]"},
+        {"text": "settings.enabledCompositeTypes is assigned [CompositeType.A, CompositeType.B]"},
+        {"text": "CompositeType is imported from scandit-capacitor-datacapture-barcode"},
+        {"text": "Both calls happen before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Use ScanIntention.Manual for my Capacitor BarcodeCapture app instead of the default Smart algorithm. Use IntegratedApp.js.",
+      "expected_output": "The skill sets settings.scanIntention to ScanIntention.Manual before constructing the BarcodeCapture mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.scanIntention = ScanIntention.Manual is set"},
+        {"text": "ScanIntention is imported from scandit-capacitor-datacapture-core"},
+        {"text": "scanIntention is set before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ]
+    }
+  ]
+}
