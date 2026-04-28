@@ -1,0 +1,121 @@
+{
+  "skill_name": "matrixscan-batch-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Batch to my Capacitor app. Here's my entry point: EmptyApp.js. I need to track EAN-13 and Code 128 barcodes and log each tracked barcode's data to the console.",
+      "expected_output": "The skill reads integration.md, writes a complete BarcodeBatch integration into EmptyApp.js including plugin init, context creation, camera setup using BarcodeBatch.createRecommendedCameraSettings(), BarcodeBatchSettings with EAN-13 and Code 128 enabled, new BarcodeBatch(settings) + context.setMode, a didUpdateSession listener that logs tracked barcodes, DataCaptureView.forContext + connectToElement, camera on, and barcodeBatch.isEnabled = true. Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeBatch.createRecommendedCameraSettings() is called"},
+        {"text": "Camera.withSettings( is called"},
+        {"text": "context.setFrameSource(camera) or context.setFrameSource(window.camera) is called"},
+        {"text": "new BarcodeBatchSettings() is present"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "new BarcodeBatch(settings) is present (context NOT passed to BarcodeBatch constructor)"},
+        {"text": "context.setMode( is called with barcodeBatch"},
+        {"text": "barcodeBatch.addListener( is called with a didUpdateSession callback"},
+        {"text": "session.trackedBarcodes is accessed inside the didUpdateSession callback"},
+        {"text": "DataCaptureView.forContext( is present"},
+        {"text": "connectToElement( is called on the view"},
+        {"text": "barcodeBatch.isEnabled = true is present"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called"},
+        {"text": "Import from 'scandit-capacitor-datacapture-core' is present"},
+        {"text": "Import from 'scandit-capacitor-datacapture-barcode' is present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to vary the highlight color for tracked barcodes based on symbology in my MatrixScan Batch Capacitor app. EAN-13 barcodes should show green, all others blue. Use BarcodeBatchBasicOverlay with brushForTrackedBarcode.",
+      "expected_output": "The skill sets a listener on BarcodeBatchBasicOverlay with brushForTrackedBarcode that returns a green Brush for EAN13UPCA and a blue Brush for all other symbologies. Adds a note that brushForTrackedBarcode requires the MatrixScan AR add-on. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "basicOverlay.listener = { is set with a brushForTrackedBarcode callback"},
+        {"text": "brushForTrackedBarcode checks trackedBarcode.barcode.symbology === Symbology.EAN13UPCA (or equivalent)"},
+        {"text": "A green-ish Brush is returned for EAN13UPCA"},
+        {"text": "A blue-ish (or different) Brush is returned as default / for other symbologies"},
+        {"text": "new Brush( is used to construct at least one brush"},
+        {"text": "A comment or note mentions that brushForTrackedBarcode requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to hide the highlight for barcodes starting with '0' in my MatrixScan Batch Capacitor app. All other barcodes should keep the default highlight.",
+      "expected_output": "The skill sets a brushForTrackedBarcode listener on BarcodeBatchBasicOverlay that returns a transparent Brush (or null) for barcodes whose data starts with '0', and returns the default brush otherwise. Mentions AR add-on requirement.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "brushForTrackedBarcode callback is set on basicOverlay.listener"},
+        {"text": "trackedBarcode.barcode.data is checked for startsWith('0') or equivalent prefix check"},
+        {"text": "A transparent brush or null is returned for barcodes starting with '0'"},
+        {"text": "The transparent brush has zero or near-zero alpha, OR null is returned (semantic)"},
+        {"text": "A non-null brush or the overlay's default brush is returned for other barcodes"},
+        {"text": "A comment or note mentions that brushForTrackedBarcode requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add AR bubble annotations above each tracked barcode in my Capacitor MatrixScan Batch app. Each bubble should show the barcode's data. Use BarcodeBatchAdvancedOverlay.",
+      "expected_output": "The skill adds BarcodeBatchAdvancedOverlay using new BarcodeBatchAdvancedOverlay(barcodeBatch), sets a listener with anchorForTrackedBarcode (Anchor.TopCenter) and offsetForTrackedBarcode (0, -1 Fraction), and inside didUpdateSession calls advancedOverlay.setViewForTrackedBarcode with a TrackedBarcodeView built from a DOM element showing the barcode data. Notes that this requires the MatrixScan AR add-on.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "new BarcodeBatchAdvancedOverlay( is constructed with barcodeBatch"},
+        {"text": "view.addOverlay( is called with the advanced overlay"},
+        {"text": "advancedOverlay.listener is set with anchorForTrackedBarcode and offsetForTrackedBarcode callbacks"},
+        {"text": "anchorForTrackedBarcode returns Anchor.TopCenter or an equivalent anchor"},
+        {"text": "offsetForTrackedBarcode returns a PointWithUnit with a negative vertical offset using MeasureUnit.Fraction"},
+        {"text": "TrackedBarcodeView.withHTMLElement( is called to create the serialized view"},
+        {"text": "advancedOverlay.setViewForTrackedBarcode( is called with the TrackedBarcodeView and trackedBarcode"},
+        {"text": "The bubble DOM element shows the barcode data (trackedBarcode.barcode.data) (semantic)"},
+        {"text": "A comment or note mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add lifecycle management to my MatrixScan Batch Capacitor app so that scanning pauses when the app goes to the background and resumes when it comes back to the foreground.",
+      "expected_output": "The skill adds Capacitor App.addListener('appStateChange', ...) (or equivalent visibility/focus listeners) that pauses BarcodeBatch and camera when the app becomes inactive, and resumes them when active. Alternatively it documents window focus/blur or Capacitor pause/resume events as the correct mechanism.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "An app state change listener is registered (App.addListener, document.addEventListener('pause'), or window focus/blur)"},
+        {"text": "barcodeBatch.isEnabled = false is called when the app goes to background / becomes inactive"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.Off) is called when the app goes to background"},
+        {"text": "barcodeBatch.isEnabled = true is called when the app returns to foreground"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called when the app returns to foreground"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Show me how to properly clean up MatrixScan Batch in my Capacitor app when the user navigates away from the scanning screen.",
+      "expected_output": "The skill provides a teardown function (or augments the existing uninitialize function) that switches the camera off, sets barcodeBatch.isEnabled = false, and calls view.detachFromElement(). Explains when to call it.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "camera.switchToDesiredState(FrameSourceState.Off) is called in the teardown function"},
+        {"text": "barcodeBatch.isEnabled = false is set in the teardown function"},
+        {"text": "view.detachFromElement() is called in the teardown function"},
+        {"text": "The teardown function is explained as being called on navigation away or screen exit (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "skill_name": "matrixscan-batch-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Batch to my Cordova app. Here's my entry point: EmptyApp.js. I need to track EAN-13 and Code 128 barcodes and log each tracked barcode's data to the console.",
+      "expected_output": "The skill reads integration.md, writes a complete BarcodeBatch integration into EmptyApp.js inside the deviceready handler. It includes context creation via Scandit.DataCaptureContext.initialize, camera setup using Scandit.BarcodeBatch.createRecommendedCameraSettings(), BarcodeBatchSettings with EAN-13 and Code 128 enabled, new Scandit.BarcodeBatch(settings) + context.setMode, a didUpdateSession listener that logs tracked barcodes, DataCaptureView.forContext + connectToElement, camera on, and barcodeBatch.isEnabled = true. Shows the setup checklist and uses Scandit.* global namespace throughout.",
+      "files": [
+        "fixtures/EmptyApp.js"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"},
+        {"text": "Setup checklist mentions cordova prepare after plugin install"},
+        {"text": "Setup checklist mentions camera permissions are auto-configured by the plugins"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "Scandit.BarcodeBatch.createRecommendedCameraSettings() is called"},
+        {"text": "Scandit.Camera.withSettings( is called"},
+        {"text": "context.setFrameSource( is called"},
+        {"text": "new Scandit.BarcodeBatchSettings() is present"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
+        {"text": "Scandit.Symbology.Code128 is enabled"},
+        {"text": "new Scandit.BarcodeBatch(settings) is present (context NOT passed to BarcodeBatch constructor)"},
+        {"text": "context.setMode( is called with barcodeBatch"},
+        {"text": "barcodeBatch.addListener( or window.barcodeBatch.addListener( is called with a didUpdateSession callback"},
+        {"text": "session.trackedBarcodes is accessed inside the didUpdateSession callback"},
+        {"text": "Scandit.DataCaptureView.forContext( is present"},
+        {"text": "connectToElement( is called on the view"},
+        {"text": "barcodeBatch.isEnabled = true is present"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called"},
+        {"text": "import statements from scandit-cordova-datacapture-* are NOT present in runtime code (Scandit.* global is used instead)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to vary the highlight color for tracked barcodes based on symbology in my MatrixScan Batch Cordova app (IntegratedApp.js). EAN-13 barcodes should show green, all others red. Use BarcodeBatchBasicOverlay with brushForTrackedBarcode.",
+      "expected_output": "The skill sets a listener on window.basicOverlay (or a new BarcodeBatchBasicOverlay) with a brushForTrackedBarcode callback that returns a green Brush for EAN13UPCA and a red Brush for all other symbologies. Adds a note that brushForTrackedBarcode requires the MatrixScan AR add-on. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "basicOverlay.listener = { is set with a brushForTrackedBarcode callback"},
+        {"text": "brushForTrackedBarcode checks trackedBarcode.barcode.symbology === Scandit.Symbology.EAN13UPCA (or equivalent)"},
+        {"text": "A green-ish Brush is returned for EAN13UPCA"},
+        {"text": "A red-ish (or different) Brush is returned as default / for other symbologies"},
+        {"text": "new Scandit.Brush( is used to construct at least one brush"},
+        {"text": "A comment or note mentions that brushForTrackedBarcode requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my Cordova MatrixScan Batch app (IntegratedApp.js), hide the highlight for barcodes whose data starts with '0'. All other barcodes should keep their default highlight.",
+      "expected_output": "The skill sets a brushForTrackedBarcode listener on basicOverlay that returns a transparent Brush (or null) for barcodes whose data starts with '0', and returns the default brush (or null for the listener to fall back to the overlay brush) for all others. Mentions AR add-on requirement.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "brushForTrackedBarcode callback is set on basicOverlay.listener"},
+        {"text": "trackedBarcode.barcode.data is checked for startsWith('0') or equivalent prefix check"},
+        {"text": "A transparent brush or null is returned for barcodes starting with '0'"},
+        {"text": "The transparent brush has zero or near-zero alpha, OR null is returned (semantic)"},
+        {"text": "A non-null brush or the overlay's default brush is returned for other barcodes"},
+        {"text": "A comment or note mentions that brushForTrackedBarcode requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add AR bubble annotations above each tracked barcode in my Cordova MatrixScan Batch app (IntegratedApp.js). Each bubble should show the barcode's data. Use BarcodeBatchAdvancedOverlay.",
+      "expected_output": "The skill adds BarcodeBatchAdvancedOverlay using new Scandit.BarcodeBatchAdvancedOverlay(barcodeBatch), sets a listener with anchorForTrackedBarcode (Anchor.TopCenter) and offsetForTrackedBarcode (0, -1 Fraction), calls view.addOverlay with the advanced overlay, and inside didUpdateSession calls advancedOverlay.setViewForTrackedBarcode with a Scandit.TrackedBarcodeView built from a DOM element showing the barcode data. Notes that this requires the MatrixScan AR add-on.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "new Scandit.BarcodeBatchAdvancedOverlay( is constructed with barcodeBatch"},
+        {"text": "view.addOverlay( is called with the advanced overlay"},
+        {"text": "advancedOverlay.listener is set with anchorForTrackedBarcode and offsetForTrackedBarcode callbacks"},
+        {"text": "anchorForTrackedBarcode returns Scandit.Anchor.TopCenter or an equivalent anchor"},
+        {"text": "offsetForTrackedBarcode returns a PointWithUnit with a negative vertical offset using MeasureUnit.Fraction"},
+        {"text": "Scandit.TrackedBarcodeView.withHTMLElement( is called to create the serialized view"},
+        {"text": "advancedOverlay.setViewForTrackedBarcode( is called with the TrackedBarcodeView and trackedBarcode"},
+        {"text": "The bubble DOM element shows the barcode data (trackedBarcode.barcode.data) (semantic)"},
+        {"text": "A comment or note mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add lifecycle management to my MatrixScan Batch Cordova app (IntegratedApp.js) so that scanning pauses when the app goes to the background and resumes when it comes back to the foreground.",
+      "expected_output": "The skill adds document.addEventListener('pause', ...) and document.addEventListener('resume', ...) handlers that set barcodeBatch.isEnabled = false and switch the camera off on pause, and set barcodeBatch.isEnabled = true and switch the camera on on resume.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "document.addEventListener('pause', is registered"},
+        {"text": "document.addEventListener('resume', is registered"},
+        {"text": "barcodeBatch.isEnabled = false or window.barcodeBatch.isEnabled = false is called in the pause handler"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called in the pause handler"},
+        {"text": "barcodeBatch.isEnabled = true or window.barcodeBatch.isEnabled = true is called in the resume handler"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called in the resume handler"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Show me how to properly clean up MatrixScan Batch in my Cordova app (IntegratedApp.js) when the user navigates away from the scanning screen.",
+      "expected_output": "The skill provides a teardown function (or augments the existing uninitialize function) that switches the camera off, sets barcodeBatch.isEnabled = false, and calls view.detachFromElement(). Explains when to call it.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called in the teardown function"},
+        {"text": "barcodeBatch.isEnabled = false is set in the teardown function"},
+        {"text": "view.detachFromElement() is called in the teardown function"},
+        {"text": "The teardown function is explained as being called on navigation away or screen exit (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    }
+  ]
+}

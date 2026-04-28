@@ -1,0 +1,114 @@
+{
+  "skill_name": "matrixscan-batch-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my Flutter app. Here's my starter screen: EmptyScreen.dart. I need to track EAN-13 and Code 128 barcodes and log them as they appear.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeBatch integration code into EmptyScreen.dart (StatefulWidget implementing BarcodeBatchListener with DataCaptureContext, BarcodeBatch, DataCaptureView, camera permission, lifecycle), and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyScreen.dart"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"},
+        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"},
+        {"text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"},
+        {"text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeBatch( captureSettings ) is used to construct the mode (context-free Flutter ≥7.6 form)"},
+        {"text": "dataCaptureContext.setMode( or _context.setMode( is called to register the mode"},
+        {"text": "Symbology.ean13Upca is enabled"},
+        {"text": "Symbology.code128 is enabled"},
+        {"text": "A class implements BarcodeBatchListener and defines didUpdateSession("},
+        {"text": "session.addedTrackedBarcodes or session.trackedBarcodes is accessed"},
+        {"text": "Import from scandit_flutter_datacapture_barcode_batch is present"},
+        {"text": "Import from scandit_flutter_datacapture_barcode is present"},
+        {"text": "Camera lifecycle is handled (didChangeAppLifecycleState or WidgetsBindingObserver)"},
+        {"text": "Permission.camera.request() is called for the runtime camera permission"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Batch Flutter app, I want different brush colors per symbology. EAN-13/UPC-A barcodes should get a green frame, Code 128 should get a blue frame, and any barcode whose data starts with '0' should be hidden entirely.",
+      "expected_output": "The skill implements or updates brushForTrackedBarcode on BarcodeBatchBasicOverlayListener to return a green Brush for EAN-13, a blue Brush for Code 128, and a fully transparent Brush (all zeros) for barcodes whose data starts with '0'. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "brushForTrackedBarcode( is implemented and returns a Brush"},
+        {"text": "Symbology.ean13Upca check is present with a green-toned brush (semantic)"},
+        {"text": "Symbology.code128 check is present with a blue-toned brush (semantic)"},
+        {"text": "A transparent or zero-alpha Brush is returned for barcodes starting with '0' (hide pattern)"},
+        {"text": "BarcodeBatchBasicOverlayListener is implemented on the class"},
+        {"text": "Existing integration code (BarcodeBatch, DataCaptureView, didUpdateSession) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add AR bubbles to my MatrixScan Batch Flutter app. Each tracked barcode should show a small blue rounded widget above it displaying the barcode data. Use BarcodeBatchAdvancedOverlay.",
+      "expected_output": "The skill creates a BarcodeBatchAdvancedOverlayWidget subclass (e.g. ARBubble) with ARBubbleState extending BarcodeBatchAdvancedOverlayWidgetState, sets up BarcodeBatchAdvancedOverlay, implements BarcodeBatchAdvancedOverlayListener (widgetForTrackedBarcode, anchorForTrackedBarcode, offsetForTrackedBarcode), and calls setWidgetForTrackedBarcode from didUpdateSession. Mentions MatrixScan AR add-on requirement.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "A class extends BarcodeBatchAdvancedOverlayWidget"},
+        {"text": "A state class extends BarcodeBatchAdvancedOverlayWidgetState"},
+        {"text": "build() returns BarcodeBatchAdvancedOverlayContainer"},
+        {"text": "BarcodeBatchAdvancedOverlay( _barcodeBatch ) is constructed"},
+        {"text": "captureView.addOverlay( is called for the advanced overlay"},
+        {"text": "setWidgetForTrackedBarcode( is called (Flutter-specific name, not setViewForTrackedBarcode)"},
+        {"text": "widgetForTrackedBarcode( is implemented on the listener"},
+        {"text": "anchorForTrackedBarcode( is implemented returning an Anchor value"},
+        {"text": "offsetForTrackedBarcode( is implemented returning a PointWithUnit"},
+        {"text": "MatrixScan AR add-on requirement is mentioned"},
+        {"text": "Existing integration code (BarcodeBatch, didUpdateSession) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan Batch Flutter app, the AR bubble should toggle its content when tapped — between showing the barcode data and showing a 'Product info' label. Update the tap handling.",
+      "expected_output": "The skill implements didTapViewForTrackedBarcode on BarcodeBatchAdvancedOverlayListener to toggle the widget's state and then call setWidgetForTrackedBarcode again to push the update to the native layer. The explanation mentions that native-layer widgets require setWidgetForTrackedBarcode to be called again after state changes.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "didTapViewForTrackedBarcode( is implemented"},
+        {"text": "setWidgetForTrackedBarcode( is called inside didTapViewForTrackedBarcode to re-push the widget"},
+        {"text": "The explanation or comment mentions that native-layer widgets require setWidgetForTrackedBarcode after state changes (semantic)"},
+        {"text": "Existing integration code (BarcodeBatch, overlays, didUpdateSession) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "How do I properly clean up BarcodeBatch when the Flutter screen is disposed? I want to make sure the camera stops, the mode is removed from the context, and listeners are unregistered.",
+      "expected_output": "The skill provides a cleanup pattern that calls removeListener, sets isEnabled = false, switches the camera to FrameSourceState.off, and calls dataCaptureContext.removeAllModes() (or removeCurrentMode()), all called from dispose() or a dedicated cleanup method invoked from dispose().",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "_barcodeBatch.removeListener( is called to unregister the listener"},
+        {"text": "_barcodeBatch.isEnabled = false is set"},
+        {"text": "Camera is switched to FrameSourceState.off"},
+        {"text": "dataCaptureContext.removeAllModes() or removeCurrentMode() is called to remove the mode"},
+        {"text": "The cleanup is called from dispose() or an overridden dispose method"},
+        {"text": "WidgetsBinding.instance.removeObserver( is called if addObserver was used"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to react to barcodes being removed from the camera view in my MatrixScan Batch Flutter app. When a barcode leaves the frame, log its identifier. Also log how many barcodes are currently tracked on each update.",
+      "expected_output": "The skill updates didUpdateSession to access session.removedTrackedBarcodes (a List<int> of integer identifiers) for removed barcodes, and session.trackedBarcodes.length for the current count. Notes that session data must not be held outside the callback.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "session.removedTrackedBarcodes is accessed in didUpdateSession"},
+        {"text": "The removed identifiers are used (e.g. logged or iterated)"},
+        {"text": "session.trackedBarcodes is accessed to get the current tracked count"},
+        {"text": "didUpdateSession( is present and properly overrides the listener method"},
+        {"text": "Existing integration code (BarcodeBatch, overlays, lifecycle) is preserved"}
+      ]
+    }
+  ]
+}
