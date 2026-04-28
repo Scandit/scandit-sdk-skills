@@ -1,0 +1,43 @@
+{
+  "skill_name": "label-capture-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Upgrade my Label Capture from 7.6 to 8.0. Here's my CustomText regex code: before-8.0-regex.js and config_7.6.xml.",
+      "expected_output": "The skill bumps plugin specs to ^8.0.0 in config.xml and renames CustomText regex properties: pattern→valueRegex, dataTypePattern→anchorRegex, plus the plural variants.",
+      "files": ["fixtures/before-8.0-regex.js", "fixtures/config_7.6.xml"],
+      "assertions": [
+        {"text": "config.xml plugin specs are updated to ^8.0.0 for scandit-cordova-datacapture-core/barcode/label"},
+        {"text": "field.pattern is renamed to field.valueRegex"},
+        {"text": "field.dataTypePattern is renamed to field.anchorRegex"},
+        {"text": "Setup-check mentions cordova prepare for ios and android"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Upgrade my Label Capture from 8.1 to 8.2 so I can react to manual field corrections. Here's my main script: before-8.2-validation-flow.js and config_8.1.xml.",
+      "expected_output": "The skill bumps versions to ^8.2.0 and adds didSubmitManualInputForField to the existing validation flow listener. didCaptureLabelWithFields is preserved.",
+      "files": ["fixtures/before-8.2-validation-flow.js", "fixtures/config_8.1.xml"],
+      "assertions": [
+        {"text": "config.xml is updated to ^8.2.0 for scandit-cordova-datacapture-core/barcode/label"},
+        {"text": "didSubmitManualInputForField is added to the validation flow listener"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Upgrade my Label Capture from 8.2 to 8.4. Here's my main script: before-8.4-validation-flow.js and config_8.2.xml. I want fine-grained progress feedback as the validation flow accumulates partial results.",
+      "expected_output": "The skill bumps versions to ^8.4.0, adds didUpdateValidationFlowResult to the existing listener. didCaptureLabelWithFields and didSubmitManualInputForField are preserved.",
+      "files": ["fixtures/before-8.4-validation-flow.js", "fixtures/config_8.2.xml"],
+      "assertions": [
+        {"text": "config.xml is updated to ^8.4.0 for scandit-cordova-datacapture-core/barcode/label"},
+        {"text": "didUpdateValidationFlowResult is added to the validation flow listener"},
+        {"text": "didUpdateValidationFlowResult signature includes (type, asyncId, fields, getFrameData) parameters"},
+        {"text": "Scandit.LabelResultUpdateType is referenced or imported"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"},
+        {"text": "Existing didSubmitManualInputForField is preserved"},
+        {"text": "No web-only renames (e.g. setValueRegex/setAnchorRegex) are introduced"}
+      ]
+    }
+  ]
+}

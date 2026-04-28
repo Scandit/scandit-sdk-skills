@@ -1,0 +1,35 @@
+{
+  "skill_name": "label-capture-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Upgrade my Label Capture from 8.1 to 8.2 so I can react to manual field corrections. Here's my screen file: before-8.2-validation-flow.dart and pubspec_8.1.yaml.",
+      "expected_output": "The skill bumps versions to 8.2 in pubspec, switches the listener implementation from LabelCaptureValidationFlowListener to LabelCaptureValidationFlowExtendedListener, and adds didSubmitManualInputForField. didCaptureLabelWithFields is preserved.",
+      "files": ["fixtures/before-8.2-validation-flow.dart", "fixtures/pubspec_8.1.yaml"],
+      "assertions": [
+        {"text": "pubspec.yaml is updated to ^8.2.0 for scandit_flutter_datacapture_core/barcode/label"},
+        {"text": "Listener changed from LabelCaptureValidationFlowListener to LabelCaptureValidationFlowExtendedListener"},
+        {"text": "didSubmitManualInputForField is added"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"},
+        {"text": "Setup-check mentions running flutter pub get"},
+        {"text": "Setup-check mentions running pod install for iOS"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Upgrade my Label Capture from 8.2 to 8.4. Here's my screen file: before-8.4-validation-flow.dart and pubspec_8.2.yaml. I want fine-grained progress feedback as the validation flow accumulates partial results.",
+      "expected_output": "The skill bumps versions to 8.4 in pubspec, adds didUpdateValidationFlowResult to the existing LabelCaptureValidationFlowExtendedListener implementation. Existing didCaptureLabelWithFields and didSubmitManualInputForField are preserved.",
+      "files": ["fixtures/before-8.4-validation-flow.dart", "fixtures/pubspec_8.2.yaml"],
+      "assertions": [
+        {"text": "pubspec.yaml is updated to ^8.4.0 for scandit_flutter_datacapture_core/barcode/label"},
+        {"text": "didUpdateValidationFlowResult is added to the listener implementation"},
+        {"text": "didUpdateValidationFlowResult signature includes (LabelResultUpdateType type, int asyncId, List<LabelField> fields, getFrameData) parameters"},
+        {"text": "LabelResultUpdateType is imported"},
+        {"text": "Existing didCaptureLabelWithFields is preserved"},
+        {"text": "Existing didSubmitManualInputForField is preserved"},
+        {"text": "Setup-check mentions running flutter pub get"},
+        {"text": "No web-only renames are introduced"}
+      ]
+    }
+  ]
+}

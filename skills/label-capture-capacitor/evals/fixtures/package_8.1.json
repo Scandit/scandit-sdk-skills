@@ -1,0 +1,14 @@
+{
+  "name": "label-capture-capacitor-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@capacitor/app": "^5.0.0",
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/ios": "^5.0.0",
+    "@capacitor/android": "^5.0.0",
+    "scandit-capacitor-datacapture-core": "^8.1.0",
+    "scandit-capacitor-datacapture-barcode": "^8.1.0",
+    "scandit-capacitor-datacapture-label": "^8.1.0"
+  }
+}

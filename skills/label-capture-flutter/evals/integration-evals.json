@@ -1,0 +1,68 @@
+{
+  "skill_name": "label-capture-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Label Capture to my Flutter app. Here's my screen file: empty-app.dart. I need to scan a Code 128 barcode and an expiry date on a perishable product label.",
+      "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.dart as a StatefulWidget. A Validation Flow overlay is wired up. The setup checklist is shown.",
+      "files": ["fixtures/empty-app.dart"],
+      "assertions": [
+        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
+        {"text": "Setup checklist mentions scandit_flutter_datacapture_core, scandit_flutter_datacapture_barcode, and scandit_flutter_datacapture_label"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "await ScanditFlutterDataCaptureLabel.initialize() is called before DataCaptureContext.initialize"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "DataCaptureContext.sharedInstance is used"},
+        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
+        {"text": "CustomBarcodeBuilder() is used"},
+        {"text": "Symbology.code128 is enabled on the CustomBarcode"},
+        {"text": "ExpiryDateTextBuilder() is used"},
+        {"text": "LabelDefinitionBuilder() is used and .build('<name>') is called"},
+        {"text": "LabelCaptureSettings([...]) is constructed with a list of LabelDefinition"},
+        {"text": "LabelCapture.forContext( OR new LabelCapture(settings) is used"},
+        {"text": "DataCaptureView.forContext( is used"},
+        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is constructed"},
+        {"text": "didCaptureLabelWithFields callback is implemented — NOT onValidationFlowLabelCaptured"},
+        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
+        {"text": "onManualInput is NOT used (web-only)"},
+        {"text": "WidgetsBindingObserver is used for app lifecycle"},
+        {"text": "didChangeAppLifecycleState handles paused/resumed transitions"},
+        {"text": "Imports come from scandit_flutter_datacapture_core, scandit_flutter_datacapture_barcode, and scandit_flutter_datacapture_label"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add Label Capture with the Validation Flow overlay so the user can confirm OCR results and manually correct fields if needed. My pubspec.yaml says I'm on 8.4.0.",
+      "expected_output": "The skill recognises 8.4+, uses LabelCaptureValidationFlowOverlay with LabelCaptureValidationFlowExtendedListener, and implements didCaptureLabelWithFields, didSubmitManualInputForField, and didUpdateValidationFlowResult.",
+      "files": ["fixtures/empty-app.dart", "fixtures/pubspec_8.4.yaml"],
+      "assertions": [
+        {"text": "LabelCaptureValidationFlowOverlay is constructed and attached to the view"},
+        {"text": "LabelCaptureValidationFlowExtendedListener is implemented (since user wants manual-correction handling)"},
+        {"text": "didCaptureLabelWithFields is implemented"},
+        {"text": "didSubmitManualInputForField is implemented (v8.2+)"},
+        {"text": "didUpdateValidationFlowResult is implemented or noted as optional"},
+        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
+        {"text": "onManualInput is NOT used (web-only)"},
+        {"text": "await ScanditFlutterDataCaptureLabel.initialize() is called"},
+        {"text": "License key placeholder is present"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add Label Capture with just the basic overlay (no validation flow). My pubspec.yaml says I'm on 8.2.0. I want to scan a CustomBarcode plus a TotalPriceText field.",
+      "expected_output": "The skill writes a Label Capture integration that uses LabelCaptureBasicOverlay (no Validation Flow). The mode listener implements didUpdateSession and reads captured labels from the session.",
+      "files": ["fixtures/empty-app.dart", "fixtures/pubspec_8.2.yaml"],
+      "assertions": [
+        {"text": "LabelCaptureBasicOverlay is constructed and attached"},
+        {"text": "LabelCaptureValidationFlowOverlay is NOT used"},
+        {"text": "labelCapture.addListener( is called with a LabelCaptureListener that implements didUpdateSession"},
+        {"text": "session.capturedLabels is read inside didUpdateSession"},
+        {"text": "CustomBarcodeBuilder() is used"},
+        {"text": "TotalPriceTextBuilder() is used"},
+        {"text": "LabelDefinitionBuilder().addCustomBarcode(...).addTotalPriceText(...).build('<name>') is used"},
+        {"text": "LabelCaptureSettings([labelDefinition]) is used"},
+        {"text": "await ScanditFlutterDataCaptureLabel.initialize() is called"}
+      ]
+    }
+  ]
+}

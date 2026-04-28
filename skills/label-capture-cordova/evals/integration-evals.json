@@ -1,0 +1,68 @@
+{
+  "skill_name": "label-capture-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Label Capture to my Cordova app. Here's my main script: empty-app.js. I need to scan a Code 128 barcode and an expiry date on a perishable product label.",
+      "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.js wrapped in deviceready. A Validation Flow overlay is wired up. The setup checklist is shown.",
+      "files": ["fixtures/empty-app.js"],
+      "assertions": [
+        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
+        {"text": "Setup checklist mentions cordova plugin add for scandit-cordova-datacapture-core, -barcode, and -label"},
+        {"text": "Setup checklist mentions cordova prepare ios and android"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription"},
+        {"text": "All Scandit code is wrapped in document.addEventListener('deviceready', ..."},
+        {"text": "Scandit.DataCaptureContext.initialize( is present"},
+        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
+        {"text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"},
+        {"text": "Scandit.Symbology.Code128 is enabled on the CustomBarcode"},
+        {"text": "new Scandit.ExpiryDateText( is present"},
+        {"text": "new Scandit.LabelDefinition( is present"},
+        {"text": "labelDefinition.fields = [...] assignment is present"},
+        {"text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
+        {"text": "new Scandit.LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"},
+        {"text": "LabelCaptureSettingsBuilder is NOT used (web-only)"},
+        {"text": "LabelDefinitionBuilder is NOT used (web-only)"},
+        {"text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"},
+        {"text": "Scandit.DataCaptureView.forContext( is used and view.connectToElement( is called"},
+        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"},
+        {"text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"},
+        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
+        {"text": "onManualInput is NOT used (web-only)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add Label Capture with the Validation Flow overlay so the user can confirm OCR results and manually correct fields if needed. Use the redesigned flow. My config.xml says I'm on 8.4.0.",
+      "expected_output": "The skill recognises 8.4+, uses LabelCaptureValidationFlowOverlay, and registers a listener with both didCaptureLabelWithFields and didSubmitManualInputForField. Optionally registers didUpdateValidationFlowResult since the user is on 8.4+.",
+      "files": ["fixtures/empty-app.js", "fixtures/config_8.4.xml"],
+      "assertions": [
+        {"text": "Scandit.LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"},
+        {"text": "didCaptureLabelWithFields callback is registered on the listener"},
+        {"text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"},
+        {"text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"},
+        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
+        {"text": "onManualInput is NOT used (web-only)"},
+        {"text": "deviceready event is used"},
+        {"text": "License key placeholder is present"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add Label Capture with just the basic overlay (no validation flow). My config.xml says I'm on 8.2.0. I want to scan a CustomBarcode plus a TotalPriceText field.",
+      "expected_output": "The skill writes a Label Capture integration that uses LabelCaptureBasicOverlay (no Validation Flow). The mode listener handles didUpdateSession and reads captured labels from the session.",
+      "files": ["fixtures/empty-app.js", "fixtures/config_8.2.xml"],
+      "assertions": [
+        {"text": "Scandit.LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"},
+        {"text": "Scandit.LabelCaptureValidationFlowOverlay is NOT used"},
+        {"text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"},
+        {"text": "session.capturedLabels is read inside didUpdateSession to extract labels"},
+        {"text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"},
+        {"text": "new Scandit.TotalPriceText( is present"},
+        {"text": "new Scandit.LabelDefinition( is present and labelDefinition.fields = [...] is set"},
+        {"text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
+        {"text": "Scandit.DataCaptureContext.initialize( is used"}
+      ]
+    }
+  ]
+}
