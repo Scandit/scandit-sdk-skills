@@ -1,0 +1,59 @@
+{
+  "skill_name": "matrixscan-count-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this MatrixScan Count Flutter BLoC from the old BarcodeCount.forDataCaptureContext constructor to the newer BarcodeCount(settings) constructor. File: MigrationOldConstructorBloc.dart",
+      "expected_output": "The skill reads migration.md, replaces the async BarcodeCount.forDataCaptureContext(context, settings) factory with the synchronous BarcodeCount(settings) constructor, removes the await, adds dataCaptureContext.setMode(barcodeCount) after construction, and adds BarcodeCount.createRecommendedCameraSettings() applied to the camera. The didScan listener and all other integration code are preserved.",
+      "files": [
+        "fixtures/MigrationOldConstructorBloc.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output"},
+        {"text": "await BarcodeCount. is NOT present in the output"},
+        {"text": "BarcodeCount( settings ) is present (context-free constructor)"},
+        {"text": "dataCaptureContext.setMode( is present in the output"},
+        {"text": "BarcodeCount.createRecommendedCameraSettings() is present in the output"},
+        {"text": "didScan( is preserved in the output"},
+        {"text": "The camera lifecycle (switchToDesiredState) is preserved (semantic)"},
+        {"text": "The scanned items accumulation logic is preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add status mode to my existing MatrixScan Count Flutter app. When status mode is activated, look up each barcode's data in a Map<String, bool> called stockMap. If the barcode is in the map and the value is true, mark it accepted; otherwise mark it rejected. Show status icons immediately on scan (without requiring the user to press a button).",
+      "expected_output": "The skill adds a BarcodeCountStatusProvider implementation that looks up barcodes in stockMap, calls onStatusReady with appropriate BarcodeCountStatus values (e.g. BarcodeCountStatus.none for in-stock, BarcodeCountStatus.wrong or BarcodeCountStatus.notAvailable for out-of-stock), attaches it with setStatusProvider, and sets shouldShowStatusIconsOnScan = true (not shouldShowStatusModeButton).",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A class implements BarcodeCountStatusProvider"},
+        {"text": "onStatusRequested( is present"},
+        {"text": "stockMap is referenced in the status lookup logic (semantic)"},
+        {"text": "A BarcodeCountStatus value is used for in-stock barcodes (e.g. BarcodeCountStatus.none — no icon — or any other enum value; NOT a fabricated .accept value)"},
+        {"text": "A BarcodeCountStatus value is used for out-of-stock barcodes (e.g. BarcodeCountStatus.wrong or BarcodeCountStatus.notAvailable; NOT a fabricated .reject value)"},
+        {"text": "providerCallback.onStatusReady( is called"},
+        {"text": "view.setStatusProvider( is called"},
+        {"text": "shouldShowStatusIconsOnScan = true is set (not shouldShowStatusModeButton = true)"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, didScan) is preserved"},
+        {"text": "shouldShowStatusModeButton = true is NOT the chosen activation path (semantic: shouldShowStatusIconsOnScan is used)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add the mapping flow to my MatrixScan Count Flutter app (SDK 8.3+). Enable barcode mapping in settings, create BarcodeCountMappingFlowSettings with a custom finish button label 'Done mapping', and use the mapping view constructor. After the shutter is pressed, retrieve the spatial map from the session.",
+      "expected_output": "The skill sets mappingEnabled = true in BarcodeCountSettings, creates BarcodeCountMappingFlowSettings with finishButtonText = 'Done mapping', switches the view constructor to BarcodeCountView.forMapping, and retrieves the spatial map via session.getSpatialMap() in didScan.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "mappingEnabled = true is set in BarcodeCountSettings"},
+        {"text": "BarcodeCountMappingFlowSettings is instantiated"},
+        {"text": "finishButtonText is set to the custom label (semantic: 'Done mapping')"},
+        {"text": "BarcodeCountView.forMapping( is used to construct the view"},
+        {"text": "session.getSpatialMap() or session.getSpatialMapWithHints( is called inside didScan"},
+        {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
+      ]
+    }
+  ]
+}

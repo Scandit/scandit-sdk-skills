@@ -24,6 +24,7 @@ A shared `data-capture-sdk` skill provides cross-cutting integration knowledge (
 | `data-capture-sdk` | Shared baseline — product selection, license activation, framework boilerplate, troubleshooting. Recommended alongside any product skill. |
 | `sparkscan-{framework}` | [SparkScan](https://docs.scandit.com/sdks/ios/sparkscan/intro/) integration & migration. Available for `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 | `matrixscan-ar-{framework}` | [MatrixScan AR](https://docs.scandit.com/sdks/ios/matrixscan-ar/intro/) (Barcode AR) integration & BarcodeBatch → BarcodeAr migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `matrixscan-count-{framework}` | [MatrixScan Count](https://docs.scandit.com/sdks/ios/matrixscan-count/intro/) (BarcodeCount) integration — counting against a list, status overlays, capture-list and not-in-list workflows, plus pre-7.6 → 7.6 constructor migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 | `label-capture-{framework}` | [Smart Label Capture](https://docs.scandit.com/sdks/ios/label-capture/intro/) integration & migration (regex renames v7.6→v8.0, Validation Flow redesign v8.1→v8.2, optional update callback v8.2→v8.4). Available for `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
 ## Installation
@@ -56,3 +57,28 @@ Two ways the skill is invoked:
   ```
 
 - **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
+
+### SparkScan iOS implementation
+
+- "How do I add SparkScan to my iOS app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### SparkScan Web implementation
+
+- "How do I add SparkScan to my web app?"
+- "How do I add SparkScan to my react web app?"
+- "How do I enable symbologies in SparkScan?"
+- "How do I handle scan results in SparkScan?"
+- "Migrate my SparkScan integration from SDK v6 to v7"
+- "Upgrade my SparkScan to the latest SDK version"
+
+### Label Capture Web implementation
+
+- "How do I add Label Capture to my web app?"
+- "Scan a perishable-product label with a barcode and an expiry date"
+- "How do I enable the Validation Flow?"
+- "Migrate my Label Capture integration from SDK 8.1 to 8.2"
+- "Upgrade my Label Capture to the latest SDK version"

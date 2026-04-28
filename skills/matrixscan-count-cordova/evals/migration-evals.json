@@ -1,0 +1,68 @@
+{
+  "skill_name": "matrixscan-count-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this Cordova MatrixScan Count code from the pre-7.6 constructor pattern to the >=7.6 pattern. The file uses BarcodeCount.forDataCaptureContext and DataCaptureContext.forLicenseKey. File: MigrationLegacyApp.js",
+      "expected_output": "The skill reads migration.md, replaces DataCaptureContext.forLicenseKey with DataCaptureContext.initialize, replaces BarcodeCount.forDataCaptureContext(context, settings) with new BarcodeCount(settings), adds context.addMode(barcodeCount) after construction, and adds context.removeMode(barcodeCount) to the teardown function. The existing listener, view setup, lifecycle, and DOM logic are preserved.",
+      "files": [
+        "fixtures/MigrationLegacyApp.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output file"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "DataCaptureContext.initialize( is present in the output file"},
+        {"text": "new Scandit.BarcodeCount(settings) is present in the output file"},
+        {"text": "context.addMode(barcodeCount) is present in the output file"},
+        {"text": "context.removeMode(barcodeCount) is present in the teardown function of the output file"},
+        {"text": "barcodeCountView.connectToElement( is present in the output file"},
+        {"text": "barcodeCountView.detachFromElement() is present in the output file"},
+        {"text": "The existing didScan listener callback is preserved (semantic)"},
+        {"text": "The existing uiListener (didTapExitButton, didTapListButton) is preserved (semantic)"},
+        {"text": "camera.switchToDesiredState( is preserved in the output (camera lifecycle unchanged) (semantic)"},
+        {"text": "The showResults function is preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My Cordova MatrixScan Count app (MigrationLegacyApp.js) is upgraded to plugin 7.1. Add not-in-list action settings so that when a barcode not in a capture list is detected, the user sees an accept/reject popup with labels 'Add to list' and 'Skip'. Wire the accepted and rejected callbacks to console.log the barcode data.",
+      "expected_output": "The skill reads migration.md, sets a BarcodeCountCaptureList on barcodeCount, enables barcodeNotInListActionSettings with the specified button texts, and wires didTapAcceptedBarcode and didTapRejectedBarcode on view.listener.",
+      "files": [
+        "fixtures/MigrationLegacyApp.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodeCountCaptureList.create( is called"},
+        {"text": "barcodeCount.setBarcodeCountCaptureList( is called"},
+        {"text": "barcodeCountView.barcodeNotInListActionSettings is read and assigned back"},
+        {"text": "notInListSettings.enabled = true is present"},
+        {"text": "acceptButtonText is set to 'Add to list' or equivalent"},
+        {"text": "rejectButtonText is set to 'Skip' or equivalent"},
+        {"text": "view.listener or barcodeCountView.listener includes a didTapAcceptedBarcode callback"},
+        {"text": "view.listener or barcodeCountView.listener includes a didTapRejectedBarcode callback"},
+        {"text": "Both callbacks log the barcode data (semantic)"},
+        {"text": "Existing camera lifecycle and teardown are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Migrate my Cordova MatrixScan Count app (MigrationLegacyApp.js) to use the >=7.6 constructor AND add a custom brush for recognized barcodes (green fill, green stroke) and a red brush for not-in-list barcodes. Use the Dot view style.",
+      "expected_output": "The skill applies Migration 1 (constructor update) AND adds custom brushes to barcodeCountView.recognizedBrush and barcodeCountView.notInListBrush with the specified colors, using BarcodeCountViewStyle.Dot.",
+      "files": [
+        "fixtures/MigrationLegacyApp.js"
+      ],
+      "assertions": [
+        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output file"},
+        {"text": "DataCaptureContext.initialize( is present in the output file"},
+        {"text": "new Scandit.BarcodeCount(settings) is present in the output file"},
+        {"text": "context.addMode( is present in the output file"},
+        {"text": "context.removeMode( is present in the teardown in the output file"},
+        {"text": "Scandit.BarcodeCountViewStyle.Dot is used in the view factory call"},
+        {"text": "barcodeCountView.recognizedBrush is assigned a Brush with a green color (semantic)"},
+        {"text": "barcodeCountView.notInListBrush is assigned a Brush with a red color (semantic)"},
+        {"text": "new Scandit.Brush( is present in the output file"},
+        {"text": "Scandit.Color.fromHex( is present in the output file"},
+        {"text": "The existing camera lifecycle, uiListener, and teardown structure are preserved (semantic)"}
+      ]
+    }
+  ]
+}
