@@ -1,0 +1,32 @@
+{
+  "skill_name": "sparkscan-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have an Android app using ZXing for barcode scanning. I want to replace it with SparkScan. Here is my activity: ZxingActivity.kt",
+      "expected_output": "Removes all ZXing APIs and intent-based scanner launch, adds SparkScan integration with matching symbologies (EAN13_UPCA, CODE128, QR), preserves ScannedBarcode data class and deduplication logic.",
+      "files": [
+        "eval-fixtures/ZxingActivity.kt"
+      ],
+      "assertions": [
+        {"text": "com.google.zxing import is NOT present in the output"},
+        {"text": "IntentIntegrator is NOT present anywhere in the output"},
+        {"text": "IntentResult is NOT present in the output"},
+        {"text": "onActivityResult is NOT present (ZXing-specific flow removed)"},
+        {"text": "com.scandit.datacapture import IS present"},
+        {"text": "SparkScanListener is implemented"},
+        {"text": "SparkScan is initialized with EAN13_UPCA, CODE128, and QR symbologies"},
+        {"text": "onResume calls sparkScanView.onResume()"},
+        {"text": "onPause calls sparkScanView.onPause()"},
+        {"text": "ScannedBarcode data class is preserved in output"},
+        {"text": "scannedBarcodes list is preserved in output"},
+        {"text": "Deduplication logic (checking for existing value before adding) is preserved"},
+        {"text": "A summary of changes is shown with what was removed and what was added"},
+        {"text": "Setup checklist mentions com.scandit.datacapture:barcode as a Gradle dependency"},
+        {"text": "Setup checklist mentions com.scandit.datacapture:core as a Gradle dependency"},
+        {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
+        {"text": "Setup checklist mentions the camera permission (CAMERA or AndroidManifest)"}
+      ]
+    }
+  ]
+}
