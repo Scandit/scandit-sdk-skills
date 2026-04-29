@@ -44,11 +44,50 @@ When a user asks for help choosing a Scandit product, load both reference files 
 
 Once a product and platform are identified, **always include the relevant docs.scandit.com link** from the product catalog. Then check this table for an available implementation skill. If one exists, suggest a concrete invocation alongside the docs link.
 
+The implementation skills below ship in the same repository as this skill (`Scandit/scandit-sdk-skills`) but are distributed as separate packages — the user may not have them installed locally. After naming the skill, tell the user how to install it if they don't already have it:
+
+- **Skills CLI (works with Claude Code, Codex, Cursor, Copilot, Cline, Windsurf, and 40+ others):**
+  ```bash
+  npx skills add Scandit/scandit-sdk-skills
+  ```
+  The interactive prompt lets them pick the specific skill (e.g. `sparkscan-rn`).
+- **Claude Code plugin marketplace:**
+  ```
+  /plugin marketplace add Scandit/scandit-sdk-skills
+  /plugin install scandit-sdk@scandit-plugins
+  ```
+
+Phrase the handoff so it works whether or not the skill is already present, e.g. *"If you have the `sparkscan-rn` skill installed, ask me to integrate SparkScan into your React Native app. If not, install it with `npx skills add Scandit/scandit-sdk-skills` and pick `sparkscan-rn`."*
+
 | Product | Platform | Skill | Suggested Invocation |
 |---|---|---|---|
 | SparkScan | iOS | `sparkscan-ios` | "Ask me to integrate SparkScan into your iOS app" |
 | SparkScan | Web | `sparkscan-web` | "Ask me to integrate SparkScan into your web app" |
+| SparkScan | React Native | `sparkscan-rn` | "Ask me to integrate SparkScan into your React Native app" |
+| SparkScan | Flutter | `sparkscan-flutter` | "Ask me to integrate SparkScan into your Flutter app" |
+| SparkScan | Capacitor | `sparkscan-capacitor` | "Ask me to integrate SparkScan into your Capacitor app" |
+| SparkScan | Cordova | `sparkscan-cordova` | "Ask me to integrate SparkScan into your Cordova app" |
+| Barcode Capture | React Native | `barcode-capture-rn` | "Ask me to integrate Barcode Capture into your React Native app" |
+| Barcode Capture | Flutter | `barcode-capture-flutter` | "Ask me to integrate Barcode Capture into your Flutter app" |
+| Barcode Capture | Capacitor | `barcode-capture-capacitor` | "Ask me to integrate Barcode Capture into your Capacitor app" |
+| Barcode Capture | Cordova | `barcode-capture-cordova` | "Ask me to integrate Barcode Capture into your Cordova app" |
 | Smart Label Capture | Web | `label-capture-web` | "Ask me to integrate Label Capture into your web app" |
+| Smart Label Capture | React Native | `label-capture-rn` | "Ask me to integrate Label Capture into your React Native app" |
+| Smart Label Capture | Flutter | `label-capture-flutter` | "Ask me to integrate Label Capture into your Flutter app" |
+| Smart Label Capture | Capacitor | `label-capture-capacitor` | "Ask me to integrate Label Capture into your Capacitor app" |
+| Smart Label Capture | Cordova | `label-capture-cordova` | "Ask me to integrate Label Capture into your Cordova app" |
+| MatrixScan AR | React Native | `matrixscan-ar-rn` | "Ask me to integrate MatrixScan AR into your React Native app" |
+| MatrixScan AR | Flutter | `matrixscan-ar-flutter` | "Ask me to integrate MatrixScan AR into your Flutter app" |
+| MatrixScan AR | Capacitor | `matrixscan-ar-capacitor` | "Ask me to integrate MatrixScan AR into your Capacitor app" |
+| MatrixScan AR | Cordova | `matrixscan-ar-cordova` | "Ask me to integrate MatrixScan AR into your Cordova app" |
+| MatrixScan Batch | React Native | `matrixscan-batch-rn` | "Ask me to integrate MatrixScan Batch into your React Native app" |
+| MatrixScan Batch | Flutter | `matrixscan-batch-flutter` | "Ask me to integrate MatrixScan Batch into your Flutter app" |
+| MatrixScan Batch | Capacitor | `matrixscan-batch-capacitor` | "Ask me to integrate MatrixScan Batch into your Capacitor app" |
+| MatrixScan Batch | Cordova | `matrixscan-batch-cordova` | "Ask me to integrate MatrixScan Batch into your Cordova app" |
+| MatrixScan Count | React Native | `matrixscan-count-rn` | "Ask me to integrate MatrixScan Count into your React Native app" |
+| MatrixScan Count | Flutter | `matrixscan-count-flutter` | "Ask me to integrate MatrixScan Count into your Flutter app" |
+| MatrixScan Count | Capacitor | `matrixscan-count-capacitor` | "Ask me to integrate MatrixScan Count into your Capacitor app" |
+| MatrixScan Count | Cordova | `matrixscan-count-cordova` | "Ask me to integrate MatrixScan Count into your Cordova app" |
 
 For any product+platform combination not listed above, provide the docs.scandit.com link and the **specific sample app link** from the product catalog. Every product has a best-match sample for each platform — always link directly to it. The sample apps are working implementations that serve as the best starting point for integration.
 
