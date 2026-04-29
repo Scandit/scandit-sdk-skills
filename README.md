@@ -4,8 +4,6 @@ AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scan
 
 Each skill teaches your coding assistant how to integrate a specific Scandit SDK correctly. Instead of pasting docs snippets into your AI editor, install a skill once and your agent follows Scandit's recommended patterns whenever you ask it to add a Scandit feature.
 
-Skills are distributed using [`skills`](https://github.com/vercel-labs/skills), the open-source CLI from Vercel that has become the common standard for agent-skill packaging.
-
 ## What you get
 
 Each skill bundles:
@@ -48,6 +46,10 @@ Claude Code can also install the skills as a plugin from the marketplace:
 /plugin install scandit-sdk@scandit-plugins
 ```
 
+### Cursor plugin
+
+Install the official Scandit plugin in Cursor with one click from the [Cursor marketplace](https://cursor.com/marketplace/scandit).
+
 ## Using a skill
 
 Two ways the skill is invoked:
@@ -59,28 +61,3 @@ Two ways the skill is invoked:
   ```
 
 - **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
-
-### SparkScan iOS implementation
-
-- "How do I add SparkScan to my iOS app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### SparkScan Web implementation
-
-- "How do I add SparkScan to my web app?"
-- "How do I add SparkScan to my react web app?"
-- "How do I enable symbologies in SparkScan?"
-- "How do I handle scan results in SparkScan?"
-- "Migrate my SparkScan integration from SDK v6 to v7"
-- "Upgrade my SparkScan to the latest SDK version"
-
-### Label Capture Web implementation
-
-- "How do I add Label Capture to my web app?"
-- "Scan a perishable-product label with a barcode and an expiry date"
-- "How do I enable the Validation Flow?"
-- "Migrate my Label Capture integration from SDK 8.1 to 8.2"
-- "Upgrade my Label Capture to the latest SDK version"
