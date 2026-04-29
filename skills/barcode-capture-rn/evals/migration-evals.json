@@ -1,0 +1,97 @@
+{
+  "skill_name": "barcode-capture-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my BarcodeCapture React Native integration to v7. Here's my scanner file: ScannerApp_v6.tsx",
+      "expected_output": "The skill reads migration.md, applies the 6→7 changes (mostly informational — scan intention default, codeDuplicateFilter default, BarcodeTracking→BarcodeBatch rename if applicable) to ScannerApp_v6.tsx, and summarizes all changes made.",
+      "files": [
+        "fixtures/ScannerApp_v6.tsx"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the v7 default scanIntention change to Smart"},
+        {"text": "Summary mentions the codeDuplicateFilter -2 default behavior change in v7.1+"},
+        {"text": "BarcodeCapture.forContext( is still allowed (not removed in v7)"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView is still allowed (not removed in v7)"},
+        {"text": "DataCaptureContext.forLicenseKey is still allowed (not removed in v7)"},
+        {"text": "A summary is shown describing changes"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're upgrading our React Native app from Scandit SDK 7 to 8. Here's our BarcodeCapture code: ScannerApp_v7.tsx. Please apply any necessary changes.",
+      "expected_output": "The skill applies the v7→v8 renames (DataCaptureContext.forLicenseKey → DataCaptureContext.initialize + sharedInstance, BarcodeCapture.forContext → new BarcodeCapture + addMode, BarcodeCaptureOverlay.withBarcodeCaptureForView → new BarcodeCaptureOverlay + addOverlay, dataCaptureContext.dispose() → dataCaptureContext.removeMode(barcodeCapture)) and summarizes the changes.",
+      "files": [
+        "fixtures/ScannerApp_v7.tsx"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present in the output file"},
+        {"text": "DataCaptureContext.sharedInstance is used to read the context"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "new BarcodeCapture( is present in the output file"},
+        {"text": "BarcodeCapture.forContext( is NOT present in the output file"},
+        {"text": "dataCaptureContext.addMode( is called to attach the BarcodeCapture mode"},
+        {"text": "new BarcodeCaptureOverlay( is present (or BarcodeCaptureOverlay.withBarcodeCaptureForView replaced)"},
+        {"text": "dataCaptureView.addOverlay( is called for the BarcodeCaptureOverlay"},
+        {"text": "dataCaptureContext.dispose() is NOT present (replaced with removeMode or removed entirely)"},
+        {"text": "dataCaptureContext.removeMode( is present in the cleanup path"},
+        {"text": "A summary is shown listing the renames"},
+        {"text": "Summary mentions npx pod-install must be run after the package bump"},
+        {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to upgrade our BarcodeCapture integration from SDK 6 all the way to v8. Here's our current code: ScannerApp_v6.tsx",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
+      "files": [
+        "fixtures/ScannerApp_v6.tsx"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "DataCaptureContext.sharedInstance is used to read the context"},
+        {"text": "new BarcodeCapture( is present (7→8 rename applied)"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "dataCaptureContext.addMode( is called"},
+        {"text": "new BarcodeCaptureOverlay( is present"},
+        {"text": "dataCaptureContext.dispose() is NOT present"},
+        {"text": "dataCaptureContext.removeMode( is present in the cleanup"},
+        {"text": "Summary covers both migration steps (references both 6→7 and 7→8)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to upgrade my BarcodeCapture to the latest Scandit SDK version. Here's my code and package.json.",
+      "expected_output": "The skill reads package.json to detect v6.28.x, determines the target is v8, applies both migrations without asking the user for their version.",
+      "files": [
+        "fixtures/ScannerApp_v6.tsx",
+        "fixtures/package_v6.json"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.x or v6)"},
+        {"text": "Summary mentions the package.json dependency versions need to be bumped to ^8.0.0"},
+        {"text": "Summary mentions npx pod-install must be run after the bump"},
+        {"text": "DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "new BarcodeCapture( is present (7→8 rename applied)"},
+        {"text": "dataCaptureContext.addMode( is called"},
+        {"text": "dataCaptureContext.dispose() is NOT present"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Migrate my BarcodeCapture overlay creation in ScannerApp_v7.tsx to the v8 idiom — I want the explicit `new BarcodeCaptureOverlay(...)` + `dataCaptureView.addOverlay(...)` form, not the legacy factory.",
+      "expected_output": "The skill replaces BarcodeCaptureOverlay.withBarcodeCaptureForView with new BarcodeCaptureOverlay(barcodeCapture) and adds dataCaptureView.addOverlay(overlay), and otherwise leaves the file untouched (the v7 surface is otherwise valid).",
+      "files": [
+        "fixtures/ScannerApp_v7.tsx"
+      ],
+      "assertions": [
+        {"text": "new BarcodeCaptureOverlay( is present in the output file"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView is NOT present"},
+        {"text": "dataCaptureView.addOverlay( or viewRef.current.addOverlay is called for the overlay"},
+        {"text": "A summary is shown listing the overlay rewrite"}
+      ]
+    }
+  ]
+}

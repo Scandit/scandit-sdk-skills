@@ -1,0 +1,22 @@
+{
+  "name": "my-rn-barcode-capture-app",
+  "version": "1.0.0",
+  "description": "React Native app using BarcodeCapture v6",
+  "private": true,
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.72.0",
+    "scandit-react-native-datacapture-core": "6.28.1",
+    "scandit-react-native-datacapture-barcode": "6.28.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@types/react": "^18.0.0",
+    "typescript": "^4.9.0"
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "skill_name": "barcode-capture-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my React Native app. Here's my screen file: EmptyApp.tsx. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into EmptyApp.tsx as a function component with hooks (DataCaptureView + BarcodeCaptureOverlay + Camera), and shows the setup checklist (packages to install, npx pod-install, camera permission entries).",
+      "files": [
+        "fixtures/EmptyApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (PermissionsAndroid) or notes Android auto-links"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "A license key placeholder string is present (semantic)"},
+        {"text": "new BarcodeCapture(settings) is present (v8 constructor used, not BarcodeCapture.forContext)"},
+        {"text": "dataCaptureContext.addMode( is called to attach the BarcodeCapture mode to the context"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
+        {"text": "<DataCaptureView is rendered as JSX with a context prop"},
+        {"text": "BarcodeCaptureOverlay is constructed and added to the DataCaptureView via addOverlay or withBarcodeCaptureForView (semantic)"},
+        {"text": "Camera.default is present"},
+        {"text": "dataCaptureContext.setFrameSource(camera) is called"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"},
+        {"text": "The component is written as a function component (no extends React.Component / class syntax)"},
+        {"text": "useRef is used to hold the BarcodeCapture mode reference across renders"},
+        {"text": "addListener is called on the BarcodeCapture mode to register a listener with a didScan callback"},
+        {"text": "The didScan callback sets barcodeCapture.isEnabled = false (or mode.isEnabled = false) before processing the scan"},
+        {"text": "Imports come from scandit-react-native-datacapture-core (DataCaptureContext, DataCaptureView, Camera, FrameSourceState) and scandit-react-native-datacapture-barcode (BarcodeCapture, BarcodeCaptureSettings, BarcodeCaptureOverlay, Symbology)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add BarcodeCapture barcode scanning to ProductListApp.tsx. When a barcode is scanned, append it to the scannedProducts state and re-render the product list. Keep the existing clear button and list rendering.",
+      "expected_output": "The skill adds BarcodeCapture to ProductListApp.tsx. The existing scannedProducts state, render logic, and clear button are preserved. Scanned barcodes are appended via setScannedProducts.",
+      "files": [
+        "fixtures/ProductListApp.tsx"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new BarcodeCapture(settings) is present"},
+        {"text": "dataCaptureContext.addMode( is called"},
+        {"text": "<DataCaptureView is rendered in the component's JSX"},
+        {"text": "BarcodeCaptureOverlay is created and added to the DataCaptureView"},
+        {"text": "barcodeCapture.addListener( is called with a didScan callback"},
+        {"text": "didScan callback pushes / appends to scannedProducts via setScannedProducts (or equivalent state setter)"},
+        {"text": "Existing scannedProducts state and setScannedProducts setter are preserved"},
+        {"text": "Existing list rendering (FlatList / ScrollView / map) is preserved"},
+        {"text": "Existing clear button / onClearTapped handler is preserved"},
+        {"text": "useEffect cleanup calls dataCaptureContext.removeMode(...)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to draw a square viewfinder over the camera preview in my BarcodeCapture React Native app so users know where to aim.",
+      "expected_output": "The skill creates a RectangularViewfinder and assigns it to the BarcodeCaptureOverlay's viewfinder property.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "new RectangularViewfinder( is constructed"},
+        {"text": "RectangularViewfinder is imported from scandit-react-native-datacapture-core"},
+        {"text": "The viewfinder is assigned to the BarcodeCaptureOverlay (overlay.viewfinder = ...)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Customize the success feedback in my BarcodeCapture React Native app so it vibrates but does NOT play a sound on each scan.",
+      "expected_output": "The skill assigns a Feedback to barcodeCapture.feedback.success with a default vibration and a null sound, using BarcodeCaptureFeedback.defaultFeedback as the starting point.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "BarcodeCaptureFeedback.defaultFeedback (or new BarcodeCaptureFeedback()) is used as the starting feedback"},
+        {"text": "feedback.success is assigned a new Feedback instance"},
+        {"text": "Vibration.defaultVibration is passed to the Feedback constructor"},
+        {"text": "null is passed for the sound argument of Feedback (no sound)"},
+        {"text": "barcodeCapture.feedback is set to the customized feedback"},
+        {"text": "Imports for Feedback and Vibration are added from scandit-react-native-datacapture-core"},
+        {"text": "Imports for BarcodeCaptureFeedback are added from scandit-react-native-datacapture-barcode"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I only want to accept barcodes that appear inside a circular region in the middle of the frame (50% of the smaller dimension). Restrict the scan area in my BarcodeCapture React Native app.",
+      "expected_output": "The skill sets settings.locationSelection to a RadiusLocationSelection with a 0.5 fraction radius and applies the settings to BarcodeCapture.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "new RadiusLocationSelection( is constructed"},
+        {"text": "NumberWithUnit and MeasureUnit.Fraction are used to express the radius"},
+        {"text": "settings.locationSelection is assigned the RadiusLocationSelection"},
+        {"text": "Settings are applied to the BarcodeCapture mode either via barcodeCapture.applySettings(settings) or by passing settings into the constructor before the mode is added to the context (semantic)"},
+        {"text": "RadiusLocationSelection, NumberWithUnit, MeasureUnit are imported from scandit-react-native-datacapture-core"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to filter scans so duplicates within 500 milliseconds are ignored. Update my BarcodeCapture settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the BarcodeCaptureSettings instance before constructing the BarcodeCapture mode (or applies updated settings).",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter = 500 is set (or equivalent in the API units)"},
+        {"text": "codeDuplicateFilter is set before constructing BarcodeCapture, or barcodeCapture.applySettings(settings) is called after the change (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Switch my BarcodeCapture React Native app to manual scan intention so the SDK does not try to guess which barcode the user wants.",
+      "expected_output": "The skill sets settings.scanIntention = ScanIntention.Manual and applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.scanIntention = ScanIntention.Manual is set"},
+        {"text": "ScanIntention is imported from scandit-react-native-datacapture-core"},
+        {"text": "The updated settings (including scanIntention) are applied to the BarcodeCapture mode, either by calling barcodeCapture.applySettings(settings) or by passing the configured settings into the BarcodeCapture constructor (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I need to clean up properly when my React Native scan screen unmounts — stop the camera, remove the overlay, and unbind the BarcodeCapture mode from the context so its native resources are released.",
+      "expected_output": "The skill wires the cleanup function in useEffect to call switchToDesiredState(FrameSourceState.Off), removeOverlay, removeListener, and dataCaptureContext.removeMode(barcodeCaptureRef.current).",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "useEffect cleanup (returned function from useEffect) calls dataCaptureContext.removeMode(...)"},
+        {"text": "The BarcodeCapture mode passed to removeMode is the one held in the useRef"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.Off) (or useFocusEffect cleanup) stops the camera"},
+        {"text": "dataCaptureView.removeOverlay(...) is called for the overlay (in the cleanup or via the useEffect return)"},
+        {"text": "dataCaptureContext.dispose() is never actually invoked in the cleanup logic — it may appear in a comment explaining the rule, but no executable call to dispose() exists (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Change the symbologies my BarcodeCapture React Native app accepts to only QR and DataMatrix.",
+      "expected_output": "The skill replaces the enabled symbologies with Symbology.QR and Symbology.DataMatrix and re-applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Symbology.QR is enabled"},
+        {"text": "Symbology.DataMatrix is enabled"},
+        {"text": "The active enabled symbology list no longer includes Symbology.EAN13UPCA (it may still appear in a removed/before comment, but is not in the call to enableSymbologies) (semantic)"},
+        {"text": "The active enabled symbology list no longer includes Symbology.Code128 (it may still appear in a removed/before comment, but is not in the call to enableSymbologies) (semantic)"},
+        {"text": "settings.enableSymbologies(...) is called with QR and DataMatrix"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I want to enable composite codes (CompositeType A) alongside the regular barcodes in my BarcodeCapture React Native app.",
+      "expected_output": "The skill sets settings.enabledCompositeTypes to include CompositeType.A and calls settings.enableSymbologiesForCompositeTypes(...) to enable the symbologies the composite type needs.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.enabledCompositeTypes is assigned an array containing CompositeType.A"},
+        {"text": "settings.enableSymbologiesForCompositeTypes(...) is called with the composite types"},
+        {"text": "CompositeType is imported from scandit-react-native-datacapture-barcode"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ]
+    }
+  ]
+}

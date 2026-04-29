@@ -1,0 +1,90 @@
+{
+  "skill_name": "barcode-capture-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my BarcodeCapture Flutter integration to v7. Here's my scanner file: ScannerPage_v6.dart",
+      "expected_output": "The skill reads migration.md, applies the 6→7 changes in ScannerPage_v6.dart (notes the new Smart scan-intention default, keeps explicit composite-type opt-in), and summarizes all changes made. The BarcodeCapture.forContext factory is still valid in v7 so it does not have to be replaced for a 6→7 migration.",
+      "files": [
+        "fixtures/ScannerPage_v6.dart"
+      ],
+      "assertions": [
+        {"text": "Composite-type opt-in (enableSymbologiesForCompositeTypes and enabledCompositeTypes) is preserved or explicitly maintained"},
+        {"text": "Either the explicit ScanIntention.manual is preserved since the project set it, or the summary explains that v7 default is Smart and keeping manual is correct (semantic)"},
+        {"text": "BarcodeTracking → BarcodeBatch rename is mentioned in the summary if the user asks about MatrixScan, otherwise no false rename is performed"},
+        {"text": "A summary.md file is present describing changes"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're upgrading our Flutter app from Scandit SDK 7 to 8. Here's our BarcodeCapture code: ScannerPage_v7.dart. Please apply any necessary changes.",
+      "expected_output": "The skill applies the v7→v8 changes (BarcodeCapture.forContext → BarcodeCapture(settings) + dataCaptureContext.addMode, VideoResolution.auto → BarcodeCapture.recommendedCameraSettings) and summarizes the changes. DataCaptureContext.forLicenseKey is left as-is because it's still valid in v8 Flutter.",
+      "files": [
+        "fixtures/ScannerPage_v7.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeCapture(settings) is present in the output file"},
+        {"text": "BarcodeCapture.forContext( is NOT present in the output file"},
+        {"text": "dataCaptureContext.addMode( or dataCaptureContext.setMode( is called for the BarcodeCapture instance"},
+        {"text": "VideoResolution.auto is NOT present in the output file"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "DataCaptureContext.forLicenseKey( is preserved, or converted to DataCaptureContext.initialize — both are acceptable on Flutter (semantic)"},
+        {"text": "A summary.md is present listing the changes"},
+        {"text": "Summary mentions flutter pub get must be run after the package version bump"},
+        {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to upgrade our BarcodeCapture integration from SDK 6 all the way to v8. Here's our current code: ScannerPage_v6.dart",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
+      "files": [
+        "fixtures/ScannerPage_v6.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeCapture(settings) is present (7→8 constructor form applied)"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "dataCaptureContext.addMode( or dataCaptureContext.setMode( is called for the BarcodeCapture instance"},
+        {"text": "VideoResolution.auto is NOT present"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "Composite-type opt-in (enableSymbologiesForCompositeTypes and enabledCompositeTypes) is preserved"},
+        {"text": "Summary covers both migration steps (references both 6→7 and 7→8)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to upgrade my BarcodeCapture to the latest Scandit SDK version. Here's my code and pubspec.yaml.",
+      "expected_output": "The skill reads pubspec.yaml to detect v6.28.x, determines the target is v8, applies both migrations without asking the user for their version.",
+      "files": [
+        "fixtures/ScannerPage_v6.dart",
+        "fixtures/pubspec_v6.yaml"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.x or v6)"},
+        {"text": "Summary mentions the pubspec.yaml dependency versions need to be bumped to ^8.0.0"},
+        {"text": "Summary mentions flutter pub get must be run after the bump"},
+        {"text": "BarcodeCapture(settings) is present (7→8 constructor form applied)"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "VideoResolution.auto is NOT present"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Migrate my BarcodeCapture Flutter app from v7 to v8 — but I'm only attaching one mode to the context. Use the simplest API.",
+      "expected_output": "The skill replaces BarcodeCapture.forContext with BarcodeCapture(settings) and uses dataCaptureContext.setMode(barcodeCapture) (single-mode helper) instead of addMode. Camera resolution is also moved to BarcodeCapture.recommendedCameraSettings.",
+      "files": [
+        "fixtures/ScannerPage_v7.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeCapture(settings) is present in the output file"},
+        {"text": "BarcodeCapture.forContext( is NOT present"},
+        {"text": "dataCaptureContext.setMode( is used (single-mode helper, since the project only attaches one mode)"},
+        {"text": "VideoResolution.auto is NOT present"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is applied"},
+        {"text": "A summary.md is present listing the changes"}
+      ]
+    }
+  ]
+}

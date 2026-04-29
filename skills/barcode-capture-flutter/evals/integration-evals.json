@@ -1,0 +1,168 @@
+{
+  "skill_name": "barcode-capture-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my Flutter app. Here's my starter page: EmptyPage.dart. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into EmptyPage.dart (BLoC + page widget), and shows the setup checklist (pub packages to add, flutter pub get, iOS Info.plist, Android runtime permission, Android minSdk).",
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"},
+        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"},
+        {"text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"},
+        {"text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"},
+        {"text": "DataCaptureContext.forLicenseKey( or DataCaptureContext.initialize( is present"},
+        {"text": "A license key placeholder string is present (semantic)"},
+        {"text": "BarcodeCapture(settings) is used (v8 constructor form, not BarcodeCapture.forContext)"},
+        {"text": "dataCaptureContext.addMode( or dataCaptureContext.setMode( is called for the BarcodeCapture instance"},
+        {"text": "Symbology.ean13Upca is enabled"},
+        {"text": "Symbology.code128 is enabled"},
+        {"text": "No symbologies except ean13Upca and code128 are enabled"},
+        {"text": "Camera.defaultCamera is used as the frame source"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "DataCaptureView.forContext( is used to create the view"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is used (or BarcodeCaptureOverlay() + view.addOverlay)"},
+        {"text": "barcodeCapture.addListener( is called to register the scan listener"},
+        {"text": "A class implements BarcodeCaptureListener with didScan and didUpdateSession overrides"},
+        {"text": "didScan signature uses Future<FrameData?> Function() for the getFrameData parameter"},
+        {"text": "Imports come from scandit_flutter_datacapture_core (DataCaptureContext, Camera, DataCaptureView) and scandit_flutter_datacapture_barcode (BarcodeCapture, BarcodeCaptureSettings, BarcodeCaptureOverlay, Symbology)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add BarcodeCapture barcode scanning to ProductListBloc.dart. When a barcode is scanned, add it to the scannedItems list and emit through the existing stream.",
+      "expected_output": "The skill adds BarcodeCapture to ProductListBloc.dart alongside the existing stream/state code. All existing stream controller, list, and clear logic are preserved.",
+      "files": [
+        "fixtures/ProductListBloc.dart"
+      ],
+      "assertions": [
+        {"text": "The BLoC implements BarcodeCaptureListener"},
+        {"text": "DataCaptureContext.forLicenseKey( or DataCaptureContext.initialize( is present"},
+        {"text": "BarcodeCapture(settings) is used"},
+        {"text": "dataCaptureContext.addMode( or dataCaptureContext.setMode( is called"},
+        {"text": "DataCaptureView.forContext( or reference to it is present (the BLoC exposes captureView/context for the page to mount)"},
+        {"text": "BarcodeCaptureOverlay is created and attached to the view"},
+        {"text": "barcodeCapture.addListener(this) is called"},
+        {"text": "didScan override is present"},
+        {"text": "didScan appends to the existing scannedItems list"},
+        {"text": "Existing scannedItems list is preserved"},
+        {"text": "Existing stream controller (_scannedItemsController) is preserved and emits on new scans"},
+        {"text": "Existing clear() method is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Flutter app, I want to disable scanning, look up the code in a database (a long-running async call), and re-enable scanning when the lookup completes. Wire this up safely.",
+      "expected_output": "The skill sets barcodeCapture.isEnabled = false at the start of didScan, awaits the lookup, then sets isEnabled = true again. Avoids blocking the recognition pipeline by not doing the heavy work synchronously inside the callback.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set inside didScan"},
+        {"text": "An async lookup or Future is awaited inside didScan (or scheduled outside) before re-enabling"},
+        {"text": "barcodeCapture.isEnabled = true is set after the lookup completes"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to suppress the default beep and vibration when a barcode is scanned in my Flutter app — silent scanning. Update the BarcodeCapture feedback.",
+      "expected_output": "The skill assigns a Feedback with null sound and null vibration to barcodeCapture.feedback.success, or assigns a new BarcodeCaptureFeedback() (empty constructor) — both forms suppress feedback.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.feedback.success is assigned a Feedback(null, null), or a new BarcodeCaptureFeedback() with empty constructor is assigned to barcodeCapture.feedback (semantic)"},
+        {"text": "In the recommended/primary feedback configuration, both Sound.defaultSound and Vibration.defaultVibration are removed from the success Feedback (alternative or commented-out examples may still mention them) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a square viewfinder to my BarcodeCapture preview so users can see where to aim. Use the standard Scandit RectangularViewfinder.",
+      "expected_output": "The skill creates a RectangularViewfinder and assigns it to overlay.viewfinder. The overlay is the BarcodeCaptureOverlay that was created earlier.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A RectangularViewfinder (or similar Viewfinder) is constructed"},
+        {"text": "The viewfinder is assigned to a BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder = ...)"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored. Update my BarcodeCapture settings.",
+      "expected_output": "The skill sets codeDuplicateFilter on the BarcodeCaptureSettings instance (as a Duration of 500 ms) before constructing the BarcodeCapture mode.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.codeDuplicateFilter is set to Duration(milliseconds: 500)"},
+        {"text": "codeDuplicateFilter is set BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to handle the camera lifecycle properly — when the app goes to background the camera should turn off, and when it resumes the camera should turn back on. Wire this up.",
+      "expected_output": "The skill uses WidgetsBindingObserver and didChangeAppLifecycleState to call camera.switchToDesiredState(FrameSourceState.on) on resumed and switchToDesiredState(FrameSourceState.off) on paused/inactive.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "WidgetsBindingObserver is mixed into the page State"},
+        {"text": "didChangeAppLifecycleState is overridden"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.on) is called when the lifecycle state is resumed"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.off) is called for paused / inactive (or any non-resumed state)"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I need to clean up properly when my Flutter page is disposed — remove the BarcodeCapture listener, close the scan stream, and turn off the camera so resources are released.",
+      "expected_output": "The skill wires barcodeCapture.removeListener, StreamController.close(), and camera.switchToDesiredState(FrameSourceState.off) into the BLoC/state dispose() chain.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A dispose() method exists on the BLoC / controller"},
+        {"text": "barcodeCapture.removeListener(this) is called inside dispose()"},
+        {"text": "The StreamController (scan events) is closed inside dispose()"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.off) is called from State.dispose() or BLoC.dispose()"},
+        {"text": "The page State.dispose() invokes the BLoC's dispose()"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I want to restrict scanning to the centre 90% by 30% of the camera preview using a rectangular location selection. Update my BarcodeCapture settings.",
+      "expected_output": "The skill sets settings.locationSelection to a RectangularLocationSelection sized 0.9 x 0.3 in MeasureUnit.fraction.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.locationSelection is assigned a RectangularLocationSelection (or equivalent)"},
+        {"text": "MeasureUnit.fraction is used for the size with width 0.9 and height 0.3"},
+        {"text": "locationSelection is set BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Switch BarcodeCapture to manual scan intention — I'm using single-image frames in my Flutter app and Smart mode doesn't work for that.",
+      "expected_output": "The skill sets settings.scanIntention = ScanIntention.manual on the BarcodeCaptureSettings instance before constructing the BarcodeCapture mode.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.scanIntention = ScanIntention.manual is set"},
+        {"text": "scanIntention is set BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ]
+    }
+  ]
+}

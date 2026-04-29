@@ -1,0 +1,92 @@
+{
+  "skill_name": "barcode-capture-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my BarcodeCapture Cordova integration to v7. Here's my scanner file: ScannerApp_v6.js",
+      "expected_output": "The skill reads migration.md, applies the 6→7 changes (BarcodeTracking→BarcodeBatch where applicable, newlyRecognizedBarcodes→newlyRecognizedBarcode), and summarizes all changes made.",
+      "files": [
+        "fixtures/ScannerApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "session.newlyRecognizedBarcode is present in the output file"},
+        {"text": "session.newlyRecognizedBarcodes is NOT present in the output file"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is still present (v7 keeps this API)"},
+        {"text": "Scandit.BarcodeCapture.forContext( is still present (v7 keeps this API)"},
+        {"text": "Scandit.BarcodeCaptureOverlay.withBarcodeCaptureForView( is still present (v7 keeps this API)"},
+        {"text": "A summary.md file is present describing changes"},
+        {"text": "Summary mentions the newlyRecognizedBarcodes → newlyRecognizedBarcode session-property change"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We're upgrading our Cordova app from Scandit SDK 7 to 8. Here's our BarcodeCapture code: ScannerApp_v7.js. Please apply any necessary changes.",
+      "expected_output": "The skill applies the v7→v8 renames (DataCaptureContext.forLicenseKey → DataCaptureContext.initialize, BarcodeCapture.forContext → new BarcodeCapture + context.setMode, optionally BarcodeCaptureOverlay.withBarcodeCaptureForView → new BarcodeCaptureOverlay + view.addOverlay) and summarizes the changes.",
+      "files": [
+        "fixtures/ScannerApp_v7.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.DataCaptureContext.initialize( is present in the output file"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "new Scandit.BarcodeCapture( is present in the output file"},
+        {"text": "Scandit.BarcodeCapture.forContext( is NOT present in the output file"},
+        {"text": "context.setMode( or context.addMode( is called to register the mode after the constructor"},
+        {"text": "A summary.md is present listing the renames"},
+        {"text": "Summary mentions cordova prepare (or equivalent rebuild step) must be run after the plugin version bump"},
+        {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to upgrade our BarcodeCapture integration from SDK 6 all the way to v8. Here's our current code: ScannerApp_v6.js",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
+      "files": [
+        "fixtures/ScannerApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "session.newlyRecognizedBarcode is present (6→7 change applied)"},
+        {"text": "session.newlyRecognizedBarcodes is NOT present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new Scandit.BarcodeCapture( is present (7→8 rename applied)"},
+        {"text": "Scandit.BarcodeCapture.forContext( is NOT present"},
+        {"text": "context.setMode( or context.addMode( is called to register the mode"},
+        {"text": "Summary covers both migration steps (references both 6→7 and 7→8)"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to upgrade my BarcodeCapture to the latest Scandit SDK version. Here's my code and config.xml.",
+      "expected_output": "The skill reads config.xml to detect v6.28.x, determines the target is v8, applies both migrations without asking the user for their version.",
+      "files": [
+        "fixtures/ScannerApp_v6.js",
+        "fixtures/config_v6.xml"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.x or v6)"},
+        {"text": "Summary mentions the config.xml plugin specs need to be bumped to ^8.0.0"},
+        {"text": "Summary mentions cordova prepare (or equivalent) must be run after the bump"},
+        {"text": "session.newlyRecognizedBarcode is present (6→7 change applied)"},
+        {"text": "session.newlyRecognizedBarcodes is NOT present"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (7→8 rename applied)"},
+        {"text": "new Scandit.BarcodeCapture( is present (7→8 rename applied)"},
+        {"text": "context.setMode( or context.addMode( is called to register the mode"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I have legacy v7 BarcodeCapture code that uses Scandit.BarcodeCaptureOverlay.withBarcodeCaptureForView. Modernize it to the v8 constructor pattern.",
+      "expected_output": "The skill replaces the factory call with new Scandit.BarcodeCaptureOverlay(barcodeCapture) followed by view.addOverlay(overlay), preserving the rest of the code.",
+      "files": [
+        "fixtures/ScannerApp_v7.js"
+      ],
+      "assertions": [
+        {"text": "new Scandit.BarcodeCaptureOverlay( is present in the output file"},
+        {"text": "Scandit.BarcodeCaptureOverlay.withBarcodeCaptureForView( is NOT present in the output file"},
+        {"text": "view.addOverlay( is called after the new BarcodeCaptureOverlay constructor"},
+        {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
+      ]
+    }
+  ]
+}

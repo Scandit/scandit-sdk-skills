@@ -1,0 +1,21 @@
+{
+  "name": "my-capacitor-barcode-capture-app",
+  "version": "1.0.0",
+  "description": "Capacitor app using BarcodeCapture v7",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'static app'",
+    "sync": "npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "scandit-capacitor-datacapture-core": "7.6.0",
+    "scandit-capacitor-datacapture-barcode": "7.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}
