@@ -63,6 +63,7 @@ Phrase the handoff so it works whether or not the skill is already present, e.g.
 |---|---|---|---|
 | SparkScan | iOS | `sparkscan-ios` | "Ask me to integrate SparkScan into your iOS app" |
 | SparkScan | Web | `sparkscan-web` | "Ask me to integrate SparkScan into your web app" |
+| SparkScan | Android | `sparkscan-android` | "Ask me to integrate SparkScan into your Android app" |
 | SparkScan | React Native | `sparkscan-rn` | "Ask me to integrate SparkScan into your React Native app" |
 | SparkScan | Flutter | `sparkscan-flutter` | "Ask me to integrate SparkScan into your Flutter app" |
 | SparkScan | Capacitor | `sparkscan-capacitor` | "Ask me to integrate SparkScan into your Capacitor app" |
