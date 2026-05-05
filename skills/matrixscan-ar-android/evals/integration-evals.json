@@ -1,0 +1,67 @@
+{
+  "skill_name": "matrixscan-ar-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my Android app. Here's my empty Activity: EmptyActivity.kt. I need to scan EAN-13 and QR barcodes and show a rectangle highlight on each one.",
+      "expected_output": "The skill reads integration.md, fetches the latest SDK version, writes complete BarcodeAr integration code into EmptyActivity.kt (BarcodeAr constructor, BarcodeArListener, BarcodeArHighlightProvider with rectangle highlights, BarcodeArView lifecycle), and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyActivity.kt"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding com.scandit.datacapture:barcode and com.scandit.datacapture:core Gradle dependencies"},
+        {"text": "Setup checklist mentions adding CAMERA permission to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting CAMERA permission at runtime"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.forLicenseKey( is used"},
+        {"text": "BarcodeArSettings is constructed and configured"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.QR is enabled"},
+        {"text": "No symbologies other than EAN13_UPCA and QR are enabled"},
+        {"text": "BarcodeAr( constructor is used (not BarcodeAr.forDataCaptureContext)"},
+        {"text": "barcodeAr.addListener( is called"},
+        {"text": "BarcodeArView is constructed and stored"},
+        {"text": "BarcodeArHighlightProvider is implemented"},
+        {"text": "highlightForBarcode is overridden and returns a BarcodeArRectangleHighlight"},
+        {"text": "callback.onData( is used to deliver the highlight"},
+        {"text": "BarcodeArListener is implemented"},
+        {"text": "onSessionUpdated is overridden"},
+        {"text": "onObservationStarted and onObservationStopped are overridden"},
+        {"text": "barcodeArView.onResume() is called in onResume"},
+        {"text": "barcodeArView.onPause() is called in onPause"},
+        {"text": "barcodeArView.onDestroy() is called in onDestroy"},
+        {"text": "barcodeAr.removeListener( is called in onDestroy"},
+        {"text": "No Camera object is constructed and no setFrameSource is called"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add an info annotation to each tracked barcode in my MatrixScan AR Activity. The annotation should show the barcode's data as a single body row. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill adds BarcodeArAnnotationProvider to the Activity, implements annotationForBarcode to return a BarcodeArInfoAnnotation with the barcode data as a body row, and assigns it to barcodeArView.annotationProvider.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider is implemented"},
+        {"text": "annotationForBarcode is overridden"},
+        {"text": "BarcodeArInfoAnnotation is constructed for each barcode"},
+        {"text": "The barcode data (barcode.data) is used as annotation body content"},
+        {"text": "callback.onData( is used to deliver the annotation"},
+        {"text": "barcodeArView.annotationProvider is assigned"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, listener, highlight provider) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to suppress the default beep and vibration in my MatrixScan AR Android app — silent scanning. Update the BarcodeAr feedback.",
+      "expected_output": "The skill sets barcodeAr.feedback to a BarcodeArFeedback with no sound or vibration (empty constructor or equivalent).",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeAr.feedback is reassigned to suppress audio and haptic feedback (BarcodeArFeedback() empty constructor or equivalent)"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, listener, highlight provider) is preserved"}
+      ]
+    }
+  ]
+}
