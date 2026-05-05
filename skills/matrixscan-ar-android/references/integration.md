@@ -53,7 +53,7 @@ After providing the code, show this setup checklist:
 |-------|---------|
 | `BarcodeAr`, `BarcodeArSettings`, `BarcodeArListener`, `BarcodeArSession`, `BarcodeArFeedback` | `com.scandit.datacapture.barcode.ar.capture` |
 | `BarcodeArView`, `BarcodeArViewSettings`, `BarcodeArViewUiListener` | `com.scandit.datacapture.barcode.ar.ui` |
-| `BarcodeArRectangleHighlight`, `BarcodeArCircleHighlight` | `com.scandit.datacapture.barcode.ar.ui` |
+| `BarcodeArRectangleHighlight`, `BarcodeArCircleHighlight` | `com.scandit.datacapture.barcode.ar.ui.highlight` |
 | `BarcodeArHighlightProvider`, `BarcodeArHighlight` | `com.scandit.datacapture.barcode.ar.ui.highlight` |
 | `BarcodeArAnnotationProvider`, `BarcodeArAnnotation` | `com.scandit.datacapture.barcode.ar.ui.annotations` |
 | `BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation` | `com.scandit.datacapture.barcode.ar.ui.annotations` |
@@ -261,7 +261,7 @@ Highlights are visual overlays drawn over each tracked barcode. Implement `Barco
 
 ```kotlin
 import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArHighlightProvider
-import com.scandit.datacapture.barcode.ar.ui.BarcodeArRectangleHighlight
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArRectangleHighlight
 
 private inner class HighlightProvider : BarcodeArHighlightProvider {
     override fun highlightForBarcode(
@@ -282,7 +282,7 @@ barcodeArView.highlightProvider = HighlightProvider()
 
 **BarcodeArRectangleHighlight** — rectangular overlay matched to the barcode shape:
 ```kotlin
-import com.scandit.datacapture.barcode.ar.ui.BarcodeArRectangleHighlight
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArRectangleHighlight
 
 val highlight = BarcodeArRectangleHighlight(context, barcode)
 // Customize: highlight.brush, highlight.icon
@@ -290,7 +290,7 @@ val highlight = BarcodeArRectangleHighlight(context, barcode)
 
 **BarcodeArCircleHighlight** — circular dot or icon overlay:
 ```kotlin
-import com.scandit.datacapture.barcode.ar.ui.BarcodeArCircleHighlight
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArCircleHighlight
 
 val highlight = BarcodeArCircleHighlight(context, barcode, BarcodeArCircleHighlightPreset.DOT)
 // Customize: highlight.brush, highlight.icon, highlight.size (Float, min 18dp), highlight.isPulsing
@@ -396,8 +396,8 @@ import com.scandit.datacapture.barcode.ar.capture.BarcodeAr
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArListener
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArSession
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArSettings
-import com.scandit.datacapture.barcode.ar.ui.BarcodeArRectangleHighlight
 import com.scandit.datacapture.barcode.ar.ui.BarcodeArView
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArRectangleHighlight
 import com.scandit.datacapture.barcode.ar.ui.BarcodeArViewSettings
 import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArHighlightProvider
 import com.scandit.datacapture.barcode.batch.data.TrackedBarcode

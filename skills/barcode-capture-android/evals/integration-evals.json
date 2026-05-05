@@ -96,12 +96,12 @@
     {
       "id": 6,
       "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored. Update my BarcodeCapture settings.",
-      "expected_output": "The skill sets codeDuplicateFilter = 500 on the BarcodeCaptureSettings instance before creating the BarcodeCapture mode (or applies new settings via applySettings).",
+      "expected_output": "The skill sets codeDuplicateFilter = TimeInterval.millis(500) on the BarcodeCaptureSettings instance before creating the BarcodeCapture mode (or applies new settings via applySettings).",
       "files": [
         "fixtures/IntegratedActivity.kt"
       ],
       "assertions": [
-        {"text": "codeDuplicateFilter is set to 500 (milliseconds) on the BarcodeCaptureSettings"},
+        {"text": "codeDuplicateFilter is set to TimeInterval.millis(500) on the BarcodeCaptureSettings (not a bare integer 500)"},
         {"text": "codeDuplicateFilter is set before BarcodeCapture.forDataCaptureContext( or via applySettings"},
         {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
       ]

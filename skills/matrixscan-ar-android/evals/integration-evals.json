@@ -30,6 +30,7 @@
         {"text": "barcodeArView.onResume() is called in onResume"},
         {"text": "barcodeArView.onPause() is called in onPause"},
         {"text": "barcodeArView.onDestroy() is called in onDestroy"},
+        {"text": "barcodeArView.start() is called after providers are assigned"},
         {"text": "barcodeAr.removeListener( is called in onDestroy"},
         {"text": "No Camera object is constructed and no setFrameSource is called"}
       ]

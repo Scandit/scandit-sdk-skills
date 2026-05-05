@@ -8,10 +8,10 @@ import com.scandit.datacapture.barcode.ar.capture.BarcodeAr
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArListener
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArSession
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArSettings
-import com.scandit.datacapture.barcode.ar.ui.BarcodeArRectangleHighlight
 import com.scandit.datacapture.barcode.ar.ui.BarcodeArView
 import com.scandit.datacapture.barcode.ar.ui.BarcodeArViewSettings
 import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArHighlightProvider
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArRectangleHighlight
 import com.scandit.datacapture.barcode.batch.data.TrackedBarcode
 import com.scandit.datacapture.barcode.data.Barcode
 import com.scandit.datacapture.barcode.data.Symbology
