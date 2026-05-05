@@ -1,0 +1,32 @@
+{
+  "skill_name": "barcode-capture-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my Android BarcodeCapture app from SDK v6 to v7. Here is my current Activity: ActivityV6.kt.",
+      "expected_output": "The skill detects VideoResolution.AUTO usage and replaces the manual CameraSettings block with Camera.getDefaultCamera(BarcodeCapture.createRecommendedCameraSettings()). It informs the user about the Smart scan intention default change and mentions composite codes if applicable. It does not change BarcodeCapture.forDataCaptureContext.",
+      "files": [
+        "fixtures/ActivityV6.kt"
+      ],
+      "assertions": [
+        {"text": "VideoResolution.AUTO is removed"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is used (directly or passed to Camera.getDefaultCamera)"},
+        {"text": "The user is informed about the new default SMART scan intention"},
+        {"text": "BarcodeCapture.forDataCaptureContext( is preserved (not changed)"},
+        {"text": "The BarcodeCaptureListener implementation (onBarcodeScanned, etc.) is preserved"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit Android barcode scanning SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that native Android BarcodeCapture has no breaking API changes in v7→v8. The only change to watch for is VideoResolution.AUTO deprecation. It does NOT tell the user to replace BarcodeCapture.forDataCaptureContext with a new constructor pattern (that change is for cross-platform SDKs only).",
+      "files": [],
+      "assertions": [
+        {"text": "The skill mentions that there are no breaking API changes for native Android BarcodeCapture in v7→v8"},
+        {"text": "VideoResolution.AUTO deprecation is mentioned"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeCapture.forDataCaptureContext with BarcodeCapture(settings) + addMode (that is a cross-platform SDK change)"},
+        {"text": "Migration guide URL (https://docs.scandit.com/sdks/android/migrate-7-to-8/) is provided"}
+      ]
+    }
+  ]
+}
