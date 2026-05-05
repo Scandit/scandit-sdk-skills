@@ -1,6 +1,6 @@
 ---
 name: barcode-capture-android
-description: Use when BarcodeCapture is involved in an Android project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new Android app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading between SDK versions, or troubleshooting BarcodeCapture behavior. If the project is Android and BarcodeCapture is in play, use this skill.
+description: Use when BarcodeCapture is involved in an Android project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new Android app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading between SDK versions, troubleshooting BarcodeCapture behavior, or replacing a third-party barcode scanning library (such as ZXing or ML Kit) with BarcodeCapture. If the project is Android and BarcodeCapture is in play, use this skill.
 license: MIT
 metadata:
   author: scandit
@@ -17,7 +17,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 Android-specific gotchas worth flagging:
 - `Camera.getDefaultCamera(BarcodeCapture.createRecommendedCameraSettings())` passes the recommended camera settings directly into the `getDefaultCamera()` call — there is no separate `applySettings` call needed.
-- The listener callback on Android is `onBarcodeScanned(barcodeCapture, session, frameData)` — not `didScan` (that is the Flutter/iOS name). You must also implement `onSessionUpdated`, `onObservationStarted`, and `onObservationStopped`.
+- The listener callback on Android is `onBarcodeScanned(barcodeCapture, session, data)` — not `didScan` (that is the Flutter/iOS name). You must also implement `onSessionUpdated`, `onObservationStarted`, and `onObservationStopped`. The `FrameData` parameter is named `data`, not `frameData`.
 - `onBarcodeScanned` is called on a background thread. Any UI update must be dispatched via `runOnUiThread {}`.
 - Call `barcodeCapture.isEnabled = false` at the top of `onBarcodeScanned` before doing any work to prevent duplicate or racing scans. Re-enable with `barcodeCapture.isEnabled = true` when the app is ready to scan again.
 - Android symbology names use underscores: `Symbology.EAN13_UPCA`, `Symbology.CODE39`, `Symbology.INTERLEAVED_TWO_OF_FIVE` — not camelCase.
@@ -31,6 +31,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in Android", "how do I handle the camera in BarcodeCapture") → read `references/integration.md` and follow the instructions there.
 - **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Replacing a third-party barcode scanner with BarcodeCapture** (e.g. "replace my ZXing scanner with BarcodeCapture", "migrate from ML Kit barcode scanning to Scandit", "switch from [library] to BarcodeCapture") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
