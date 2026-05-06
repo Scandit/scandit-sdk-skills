@@ -1,0 +1,68 @@
+{
+  "skill_name": "matrixscan-batch-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my Android app. Here's my empty Activity: EmptyActivity.kt. I need to scan EAN-13 and QR barcodes.",
+      "expected_output": "The skill reads integration.md, fetches the latest SDK version, writes complete BarcodeBatch integration into EmptyActivity.kt (DataCaptureContext, Camera, BarcodeBatch.forDataCaptureContext, DataCaptureView, BarcodeBatchBasicOverlay, BarcodeBatchListener with onSessionUpdated, lifecycle), and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyActivity.kt"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding com.scandit.datacapture:barcode and com.scandit.datacapture:core Gradle dependencies"},
+        {"text": "Setup checklist mentions adding CAMERA permission to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting CAMERA permission at runtime"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
+        {"text": "DataCaptureContext.forLicenseKey( is used"},
+        {"text": "BarcodeBatchSettings is constructed and configured"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.QR is enabled"},
+        {"text": "Camera.getDefaultCamera(BarcodeBatch.createRecommendedCameraSettings()) is used"},
+        {"text": "dataCaptureContext.setFrameSource(camera) is called"},
+        {"text": "BarcodeBatch.forDataCaptureContext( is used (not a direct BarcodeBatch constructor)"},
+        {"text": "barcodeBatch.addListener( is called"},
+        {"text": "DataCaptureView.newInstance( is used and set as the content view"},
+        {"text": "BarcodeBatchBasicOverlay.newInstance( is called"},
+        {"text": "BarcodeBatchListener is implemented with onSessionUpdated"},
+        {"text": "onSessionUpdated signature has parameters (mode: BarcodeBatch, session: BarcodeBatchSession, data: FrameData)"},
+        {"text": "onSessionUpdated dispatches UI work via runOnUiThread"},
+        {"text": "onResume turns the camera on (switchToDesiredState(FrameSourceState.ON))"},
+        {"text": "onPause turns the camera off (switchToDesiredState(FrameSourceState.OFF))"},
+        {"text": "barcodeBatch.removeListener( is called in onDestroy"},
+        {"text": "dataCaptureContext.removeCurrentMode() is called in onDestroy"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to highlight EAN-13 barcodes in green and CODE128 barcodes in blue in my MatrixScan Batch Activity. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill implements BarcodeBatchBasicOverlayListener, overrides brushForTrackedBarcode to return colored brushes per symbology, and assigns the listener to the overlay.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayListener is implemented"},
+        {"text": "brushForTrackedBarcode is overridden"},
+        {"text": "EAN13_UPCA returns a green Brush"},
+        {"text": "CODE128 returns a blue Brush"},
+        {"text": "overlay.listener = this (or equivalent) is assigned"},
+        {"text": "Existing integration code (BarcodeBatch, DataCaptureView, BarcodeBatchListener, camera lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Batch Activity I want to log all currently tracked barcodes — their tracking ID and data — on every frame. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill updates onSessionUpdated to iterate over session.trackedBarcodes, log each TrackedBarcode's identifier and barcode.data.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "session.trackedBarcodes is accessed"},
+        {"text": "Each TrackedBarcode's identifier is used"},
+        {"text": "Each TrackedBarcode's barcode.data is used"},
+        {"text": "Data is copied out of the session before runOnUiThread (session.trackedBarcodes is not accessed inside the UI lambda)"},
+        {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
+      ]
+    }
+  ]
+}
