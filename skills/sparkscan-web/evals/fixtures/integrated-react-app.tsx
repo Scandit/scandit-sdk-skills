@@ -66,6 +66,7 @@ export function SparkScanScannerComponent() {
 
         return () => {
             isMounted = false;
+            mode.removeListener(sparkScanListener);
             sparkScanViewRef.current?.stopScanning().catch(console.error);
         };
     }, [sparkScanListener]);
@@ -73,13 +74,15 @@ export function SparkScanScannerComponent() {
     return (
         <>
             {dataCaptureContext && sparkScan ? (
-                <spark-scan-view
-                    dataCaptureContext={dataCaptureContext}
-                    sparkScan={sparkScan}
-                    ref={(view: SparkScanView | null) => {
-                        sparkScanViewRef.current = view;
-                    }}
-                />
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
+                    <spark-scan-view
+                        dataCaptureContext={dataCaptureContext}
+                        sparkScan={sparkScan}
+                        ref={(view: SparkScanView | null) => {
+                            sparkScanViewRef.current = view;
+                        }}
+                    />
+                </div>
             ) : null}
             <ul>
                 {scannedCodes.map((code, i) => (

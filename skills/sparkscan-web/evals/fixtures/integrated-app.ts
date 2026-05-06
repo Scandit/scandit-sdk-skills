@@ -31,16 +31,19 @@ async function run() {
 
     const sparkScan: SparkScan = SparkScan.forSettings(settings);
 
-    sparkScan.addListener({
+    const sparkScanListener = {
         didScan: (sparkScan: SparkScan, session: SparkScanSession) => {
             const barcode = session.newlyRecognizedBarcode;
             if (barcode) {
                 console.log("Scanned", barcode.symbology, barcode.data);
             }
         },
-    });
+    };
+    sparkScan.addListener(sparkScanListener);
 
     const sparkScanViewSettings = new SparkScanViewSettings();
+
+    document.body.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%;";
 
     const sparkScanView = SparkScanView.forElement(
         document.body,
@@ -66,6 +69,7 @@ async function run() {
     }
 
     async function unmount() {
+        sparkScan.removeListener(sparkScanListener);
         await sparkScanView.stopScanning();
     }
 
