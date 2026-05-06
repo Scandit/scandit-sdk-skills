@@ -10,6 +10,9 @@ import com.scandit.datacapture.barcode.ar.capture.BarcodeArSession
 import com.scandit.datacapture.barcode.ar.capture.BarcodeArSettings
 import com.scandit.datacapture.barcode.ar.ui.BarcodeArView
 import com.scandit.datacapture.barcode.ar.ui.BarcodeArViewSettings
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArAnnotationProvider
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArInfoAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArInfoAnnotationBodyComponent
 import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArHighlightProvider
 import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArRectangleHighlight
 import com.scandit.datacapture.barcode.batch.data.TrackedBarcode
@@ -42,6 +45,7 @@ class MainActivity : AppCompatActivity(), BarcodeArListener {
         val viewSettings = BarcodeArViewSettings()
         barcodeArView = BarcodeArView(container, barcodeAr, dataCaptureContext, viewSettings)
         barcodeArView.highlightProvider = HighlightProvider()
+        barcodeArView.annotationProvider = AnnotationProvider()
         barcodeArView.start()
     }
 
@@ -69,13 +73,29 @@ class MainActivity : AppCompatActivity(), BarcodeArListener {
         val added: List<TrackedBarcode> = session.addedTrackedBarcodes
         runOnUiThread {
             for (tracked in added) {
-                // TODO: handle tracked.barcode.data and tracked.barcode.symbology
             }
         }
     }
 
     override fun onObservationStarted(barcodeAr: BarcodeAr) {}
     override fun onObservationStopped(barcodeAr: BarcodeAr) {}
+
+    private inner class AnnotationProvider : BarcodeArAnnotationProvider {
+        override fun annotationForBarcode(
+            context: Context,
+            barcode: Barcode,
+            callback: BarcodeArAnnotationProvider.Callback
+        ) {
+            val annotation = BarcodeArInfoAnnotation(context, barcode).apply {
+                body = listOf(
+                    BarcodeArInfoAnnotationBodyComponent().apply {
+                        text = barcode.data ?: ""
+                    }
+                )
+            }
+            callback.onData(annotation)
+        }
+    }
 
     private inner class HighlightProvider : BarcodeArHighlightProvider {
         override fun highlightForBarcode(

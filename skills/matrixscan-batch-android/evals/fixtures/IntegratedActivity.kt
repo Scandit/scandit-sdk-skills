@@ -69,7 +69,6 @@ class MainActivity : AppCompatActivity(), BarcodeBatchListener {
         val added = session.addedTrackedBarcodes.map { it.barcode.data }
         runOnUiThread {
             for (barcodeData in added) {
-                // TODO: handle newly tracked barcode
             }
         }
     }

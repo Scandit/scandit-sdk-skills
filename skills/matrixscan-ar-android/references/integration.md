@@ -51,12 +51,13 @@ After providing the code, show this setup checklist:
 
 | Class | Package |
 |-------|---------|
-| `BarcodeAr`, `BarcodeArSettings`, `BarcodeArListener`, `BarcodeArSession`, `BarcodeArFeedback` | `com.scandit.datacapture.barcode.ar.capture` |
+| `BarcodeAr`, `BarcodeArSettings`, `BarcodeArListener`, `BarcodeArSession` | `com.scandit.datacapture.barcode.ar.capture` |
+| `BarcodeArFeedback` | `com.scandit.datacapture.barcode.ar.feedback` |
 | `BarcodeArView`, `BarcodeArViewSettings`, `BarcodeArViewUiListener` | `com.scandit.datacapture.barcode.ar.ui` |
 | `BarcodeArRectangleHighlight`, `BarcodeArCircleHighlight` | `com.scandit.datacapture.barcode.ar.ui.highlight` |
 | `BarcodeArHighlightProvider`, `BarcodeArHighlight` | `com.scandit.datacapture.barcode.ar.ui.highlight` |
-| `BarcodeArAnnotationProvider`, `BarcodeArAnnotation` | `com.scandit.datacapture.barcode.ar.ui.annotations` |
-| `BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation` | `com.scandit.datacapture.barcode.ar.ui.annotations` |
+| `BarcodeArAnnotationProvider`, `BarcodeArAnnotation`, `BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation` | `com.scandit.datacapture.barcode.ar.ui.annotations` |
+| `BarcodeArInfoAnnotationBodyComponent`, `BarcodeArInfoAnnotationHeader`, `BarcodeArInfoAnnotationFooter`, `BarcodeArInfoAnnotationWidthPreset`, `BarcodeArInfoAnnotationAnchor` | `com.scandit.datacapture.barcode.ar.ui.annotations.info` |
 | `TrackedBarcode` | `com.scandit.datacapture.barcode.batch.data` |
 
 ## Step 1 — Create the DataCaptureContext
@@ -342,15 +343,43 @@ barcodeArView.annotationProvider = AnnotationProvider()
 | `hasTip` | `Boolean` | `true` | Show pointer toward the barcode. |
 | `annotationTrigger` | `BarcodeArAnnotationTrigger` | `HIGHLIGHT_TAP_AND_BARCODE_SCAN` | When the annotation becomes visible. |
 
+**BarcodeArInfoAnnotation — body row example:**
+
+`BarcodeArInfoAnnotationBodyComponent` is in the `info` sub-package — **not** `ar.ui.annotations`:
+
+```kotlin
+// IMPORTANT: BarcodeArInfoAnnotationBodyComponent is in the .info sub-package:
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArAnnotationProvider
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArInfoAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.info.BarcodeArInfoAnnotationBodyComponent
+
+private inner class AnnotationProvider : BarcodeArAnnotationProvider {
+    override fun annotationForBarcode(
+        context: Context,
+        barcode: Barcode,
+        callback: BarcodeArAnnotationProvider.Callback
+    ) {
+        val annotation = BarcodeArInfoAnnotation(context, barcode).apply {
+            body = listOf(
+                BarcodeArInfoAnnotationBodyComponent().apply {
+                    text = barcode.data ?: ""
+                }
+            )
+        }
+        callback.onData(annotation)
+    }
+}
+```
+
 **BarcodeArInfoAnnotation Properties:**
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `body` | `List<BarcodeArInfoAnnotationBodyComponent>` | `[]` | Body rows. |
-| `header` | `BarcodeArInfoAnnotationHeader?` | `null` | Optional header. |
-| `footer` | `BarcodeArInfoAnnotationFooter?` | `null` | Optional footer. |
-| `width` | `BarcodeArInfoAnnotationWidthPreset` | `SMALL` | `SMALL`, `MEDIUM`, or `LARGE`. |
-| `anchor` | `BarcodeArInfoAnnotationAnchor` | `BOTTOM` | `TOP`, `BOTTOM`, `LEFT`, `RIGHT`. |
+| `body` | `List<BarcodeArInfoAnnotationBodyComponent>` | `[]` | Body rows. Import from `ar.ui.annotations.info`. |
+| `header` | `BarcodeArInfoAnnotationHeader?` | `null` | Optional header. Import from `ar.ui.annotations.info`. |
+| `footer` | `BarcodeArInfoAnnotationFooter?` | `null` | Optional footer. Import from `ar.ui.annotations.info`. |
+| `width` | `BarcodeArInfoAnnotationWidthPreset` | `SMALL` | `SMALL`, `MEDIUM`, or `LARGE`. Import from `ar.ui.annotations.info`. |
+| `anchor` | `BarcodeArInfoAnnotationAnchor` | `BOTTOM` | `TOP`, `BOTTOM`, `LEFT`, `RIGHT`. Import from `ar.ui.annotations.info`. |
 | `hasTip` | `Boolean` | `true` | Show pointer toward the barcode. |
 | `isEntireAnnotationTappable` | `Boolean` | `false` | `true` = whole annotation fires one tap callback. |
 | `backgroundColor` | `Color` | `#CCFFFFFF` | Background color. |
@@ -485,7 +514,7 @@ class BarcodeArActivity : AppCompatActivity(), BarcodeArListener {
 BarcodeAr plays a sound and vibrates by default. To customize:
 
 ```kotlin
-import com.scandit.datacapture.barcode.ar.capture.BarcodeArFeedback
+import com.scandit.datacapture.barcode.ar.feedback.BarcodeArFeedback
 
 // Suppress all feedback:
 barcodeAr.feedback = BarcodeArFeedback()

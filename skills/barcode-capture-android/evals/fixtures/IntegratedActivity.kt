@@ -65,7 +65,6 @@ class MainActivity : AppCompatActivity(), BarcodeCaptureListener {
         val barcode = session.newlyRecognizedBarcode ?: return
         barcodeCapture.isEnabled = false
         runOnUiThread {
-            // TODO: handle barcode.data and barcode.symbology
         }
     }
 

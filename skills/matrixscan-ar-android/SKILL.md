@@ -26,6 +26,8 @@ Android-specific gotchas worth flagging:
 - Android symbology names use underscores: `Symbology.EAN13_UPCA`, `Symbology.CODE39` — not camelCase.
 - All symbologies are disabled by default in `BarcodeArSettings`. Enabling only what the app needs improves tracking performance.
 - Request the `CAMERA` permission at runtime before scanning starts; the manifest declaration alone is not sufficient.
+- `BarcodeArFeedback` is in `com.scandit.datacapture.barcode.ar.feedback` — **not** `ar.capture`. Import: `import com.scandit.datacapture.barcode.ar.feedback.BarcodeArFeedback`.
+- `BarcodeArInfoAnnotationBodyComponent` is in `com.scandit.datacapture.barcode.ar.ui.annotations.info` — **not** `ar.ui.annotations`. Import: `import com.scandit.datacapture.barcode.ar.ui.annotations.info.BarcodeArInfoAnnotationBodyComponent`. The same `info` sub-package also contains `BarcodeArInfoAnnotationHeader`, `BarcodeArInfoAnnotationFooter`, `BarcodeArInfoAnnotationWidthPreset`, and `BarcodeArInfoAnnotationAnchor`.
 
 ## Intent Routing
 

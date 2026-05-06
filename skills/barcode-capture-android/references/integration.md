@@ -328,6 +328,39 @@ class BarcodeScanActivity : AppCompatActivity(), BarcodeCaptureListener {
 
 ## Optional configuration
 
+### Async work after a scan (coroutines)
+
+When the scan result requires a network or database call, disable scanning immediately on the scanner thread, then use `lifecycleScope.launch` to do the async work on the main coroutine scope. Re-enable in a `finally` block so scanning always resumes even if the lookup fails.
+
+```kotlin
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+override fun onBarcodeScanned(
+    barcodeCapture: BarcodeCapture,
+    session: BarcodeCaptureSession,
+    data: FrameData
+) {
+    val barcodeData = session.newlyRecognizedBarcode?.data ?: return
+    barcodeCapture.isEnabled = false  // prevent duplicate scans while lookup is in flight
+
+    lifecycleScope.launch {           // safe to call from any thread; runs on Main
+        try {
+            val result = withContext(Dispatchers.IO) {
+                // your network or database call here
+            }
+            // update UI with result — already on Main
+        } finally {
+            barcodeCapture.isEnabled = true
+        }
+    }
+}
+```
+
+`lifecycleScope` is automatically cancelled when the Activity is destroyed — no manual cleanup needed. Add `implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")` to `build.gradle` if it is not already present.
+
 ### BarcodeCaptureFeedback
 
 By default, BarcodeCapture beeps and vibrates on success. To customize feedback, replace `barcodeCapture.feedback`:

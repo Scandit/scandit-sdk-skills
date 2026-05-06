@@ -4,14 +4,13 @@
     {
       "id": 1,
       "prompt": "I need to upgrade my Android BarcodeCapture app from SDK v6 to v7. Here is my current Activity: ActivityV6.kt.",
-      "expected_output": "The skill detects VideoResolution.AUTO usage and replaces the manual CameraSettings block with Camera.getDefaultCamera(BarcodeCapture.createRecommendedCameraSettings()). It informs the user about the Smart scan intention default change and mentions composite codes if applicable. It does not change BarcodeCapture.forDataCaptureContext.",
+      "expected_output": "The skill informs the user about the SMART scan intention default change in v7 and provides the migration guide URL. It does not change BarcodeCapture.forDataCaptureContext, and preserves the BarcodeCaptureListener implementation.",
       "files": [
         "fixtures/ActivityV6.kt"
       ],
       "assertions": [
-        {"text": "VideoResolution.AUTO is removed"},
-        {"text": "BarcodeCapture.createRecommendedCameraSettings() is used (directly or passed to Camera.getDefaultCamera)"},
-        {"text": "The user is informed about the new default SMART scan intention"},
+        {"text": "The user is informed about the new default SMART scan intention in v7"},
+        {"text": "The migration guide URL (https://docs.scandit.com/sdks/android/migrate-6-to-7/) is provided"},
         {"text": "BarcodeCapture.forDataCaptureContext( is preserved (not changed)"},
         {"text": "The BarcodeCaptureListener implementation (onBarcodeScanned, etc.) is preserved"}
       ]

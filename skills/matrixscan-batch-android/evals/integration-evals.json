@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I want to add MatrixScan Batch to my Android app. Here's my empty Activity: EmptyActivity.kt. I need to scan EAN-13 and QR barcodes.",
-      "expected_output": "The skill reads integration.md, fetches the latest SDK version, writes complete BarcodeBatch integration into EmptyActivity.kt (DataCaptureContext, Camera, BarcodeBatch.forDataCaptureContext, DataCaptureView, BarcodeBatchBasicOverlay, BarcodeBatchListener with onSessionUpdated, lifecycle), and shows the setup checklist.",
+      "prompt": "I want to add MatrixScan Batch to my Android app. Here's my empty Activity: EmptyActivity.kt. I need to scan EAN-13 and QR barcodes. Please show me the complete updated Activity code in your response.",
+      "expected_output": "The skill reads integration.md, fetches the latest SDK version, returns complete BarcodeBatch integration code inline (DataCaptureContext, Camera, BarcodeBatch.forDataCaptureContext, DataCaptureView, BarcodeBatchBasicOverlay, BarcodeBatchListener with onSessionUpdated, lifecycle), and shows the setup checklist.",
       "files": [
         "fixtures/EmptyActivity.kt"
       ],

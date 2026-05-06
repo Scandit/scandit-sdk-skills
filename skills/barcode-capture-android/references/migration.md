@@ -40,7 +40,26 @@ Search for files that use BarcodeCapture (search for `BarcodeCapture`, `BarcodeC
 
 ## Migration: 6 → 7
 
-The 6→7 step for native Android BarcodeCapture is minimal — the core API (`BarcodeCapture.forDataCaptureContext`, `BarcodeCaptureListener`, `BarcodeCaptureSession`, `BarcodeCaptureOverlay`) is unchanged. The two behavioral deltas are scan intention and composite codes.
+The 6→7 step has three things to handle: a camera setup update, a scan intention behavioral change, and a class rename. Go through each section below and apply every change that matches the project — do not skip a section just because most of the API is unchanged.
+
+### Camera setup — update to the v7+ recommended pattern
+
+Look for any of these patterns in the project: `CameraSettings()`, `VideoResolution.AUTO`, `camera?.applySettings(...)`. If found, replace the block — `createRecommendedCameraSettings()` is the canonical API from v7 onwards, and updating during the v6→v7 migration avoids accumulating camera setup tech debt. Inform the user that `VideoResolution.AUTO` will be formally deprecated in v8.
+
+**Before (v6 pattern — remove this):**
+```kotlin
+val cameraSettings = CameraSettings()
+cameraSettings.preferredResolution = VideoResolution.AUTO
+camera = Camera.getDefaultCamera()
+camera?.applySettings(cameraSettings)
+```
+
+**After (v7+ pattern — use this):**
+```kotlin
+val camera = Camera.getDefaultCamera(BarcodeCapture.createRecommendedCameraSettings())
+```
+
+Remove the `CameraSettings` and `VideoResolution` imports after making the change. If `createRecommendedCameraSettings()` is already in use, skip this section.
 
 ### Scan intention default change
 
@@ -62,8 +81,6 @@ If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, ren
 
 ### New v7 APIs (optional, no action required unless the user wants them)
 
-These are available in v7 — mention them only if the user asks:
-- `BarcodeCapture.createRecommendedCameraSettings()` — static helper returning the recommended `CameraSettings` for BarcodeCapture.
 - `SparkScanViewState` — tracks the current UI state of the SparkScan view.
 
 ---
