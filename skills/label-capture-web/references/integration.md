@@ -2,6 +2,24 @@
 
 Label Capture (Smart Label Capture) extracts multiple fields from a single label in one scan — e.g. a barcode, an expiry date, and a total price on a grocery label. You declare the structure of the label (which fields, required/optional, barcode symbologies or text regex) and the SDK returns all matched fields per frame.
 
+> **Label Capture reads printed text only.** Handwritten text is not supported.
+
+## Starting from zero? Use the pre-built sample
+
+If the user has no existing app yet, offer the official sample as the fastest path to a working integration — it already has the correct project structure, dependencies, and best practices in place:
+
+- **LabelCaptureSimpleSample:** <https://github.com/Scandit/datacapture-web-samples/tree/master/03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture/LabelCaptureSimpleSample>
+
+Tell the user to clone the repo and open the sample folder. Once they have it open, help them:
+
+1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with their key from <https://ssl.scandit.com>
+2. Adjust the label definition to match their use case (fields, symbologies, regex patterns)
+3. Run `npm install` (or their package manager of choice) and start the app
+
+Only proceed to the manual integration steps below if the user already has an existing project they need to add Label Capture to.
+
+---
+
 ## Prerequisites
 
 - Scandit Data Capture SDK for web — install three npm packages with your user's package manager (npm, pnpm, or yarn):
@@ -18,7 +36,10 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 **Question A — What's on your label?** Present this checklist of supported field types and ask the user to pick everything that applies.
 
+> **Always prefer pre-built field builders over custom ones.** If the user's use case matches a pre-built type (e.g. expiry date, weight, price), use that builder — it ships with tuned regex patterns and anchor text optimised for that field type. Only reach for `CustomTextBuilder` when no pre-built type covers the field, and only use `CustomBarcodeBuilder` when none of the pre-built barcode types (`ImeiOneBarcodeBuilder`, `PartNumberBarcodeBuilder`, etc.) apply.
+
 *Barcode fields:*
+
 - `CustomBarcodeBuilder` — any barcode, user chooses symbologies
 - `ImeiOneBarcodeBuilder` — IMEI 1 (typically for smartphone boxes)
 - `ImeiTwoBarcodeBuilder` — IMEI 2
@@ -26,6 +47,7 @@ Before writing any code, walk the user through their label. Ask one question at 
 - `SerialNumberBarcodeBuilder` — serial number
 
 *Text fields (preset recognisers):*
+
 - `ExpiryDateTextBuilder` — expiry date (with configurable date format)
 - `PackingDateTextBuilder` — packing date
 - `DateTextBuilder` — generic date
@@ -33,15 +55,31 @@ Before writing any code, walk the user through their label. Ask one question at 
 - `UnitPriceTextBuilder` — unit price
 - `TotalPriceTextBuilder` — total price
 
+> **Language limitation:** predefined text field builders have hardcoded anchor keyword values in **English, French, and German** only (e.g. "EXP", "BBE", "DLC", "Poids", "Gewicht"). If the label uses anchor text in another language, the predefined builder will not match it — use `CustomTextBuilder` with a custom `anchorRegex` instead.
+
 *Text fields (custom):*
-- `CustomTextBuilder` — any text, user provides a regex
+
+- `CustomTextBuilder` — any text, user provides a regex. Supports any language since both `anchorRegex` and `valueRegex` are fully user-defined.
 
 **Question B — For each selected field:**
-- Is it **required** or **optional**? (required = label is not considered captured until this field matches; optional = captured when/if it matches)
+
+- Is it **required** or **optional**?
+  - **Required** (default): the label is not considered captured until this field is successfully read. In the Validation Flow, a required field also blocks the user from completing the flow — they must either scan it or type it in manually before the `onValidationFlowLabelCaptured` callback fires.
+  - **Optional**: the field is captured if found, but its absence does not block capture or the Validation Flow submission. The user can complete the flow without it.
 - For `CustomBarcodeBuilder`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy.
 - For `CustomTextBuilder`: what **regex pattern** should the text match?
 
-**Question C — Which file should the integration code go in?** Then write the code directly into that file. Do not just show it in chat.
+**Question C — What scanning experience do you need?**
+
+| Option | When to use |
+|---|---|
+| **Validation Flow** *(recommended)* | The user wants a guided scanning experience: the SDK shows which fields have been captured and which are still missing, lets users manually type a value when OCR fails, and confirms the result before handing it back. Best for most production integrations. |
+| **Basic Overlay** | Fully automated scanning with no confirmation step. The app processes results as soon as all required fields match, with no chance for the user to review or correct. Use when the label is very clean and OCR accuracy is not a concern. |
+| **Advanced Overlay** | The app needs fully custom AR rendering — drawing its own overlays on top of the camera feed with full control over position, style, and animations. Only choose this if Basic Overlay and Validation Flow are not flexible enough visually. |
+
+Default to recommending Validation Flow unless the user explicitly says they do not want a confirmation step or need a fully custom AR experience.
+
+**Question D — Which file should the integration code go in?** Then write the code directly into that file. Do not just show it in chat.
 
 ## Minimal Integration (Web)
 
@@ -102,7 +140,7 @@ async function run() {
 
   await LabelCaptureBasicOverlay.withLabelCaptureForView(mode, view);
 
-  mode.addListener({
+  const labelCaptureListener = {
     didUpdateSession: (_labelCapture, session: LabelCaptureSession, _frameData) => {
       for (const capturedLabel of session.capturedLabels) {
         for (const field of capturedLabel.fields as LabelField[]) {
@@ -110,13 +148,41 @@ async function run() {
         }
       }
     },
-  });
+  };
+  mode.addListener(labelCaptureListener);
+
+  async function cleanup() {
+    mode.removeListener(labelCaptureListener);
+    await DataCaptureContext.sharedInstance.frameSource?.switchToDesiredState(FrameSourceState.Off);
+  }
+
+  return cleanup;
 }
 
 run();
 ```
 
-Notes when generating this code:
+## anchorRegex vs valueRegex
+
+Every text field definition has two kinds of regex:
+
+- **`anchorRegex`** — identifies the *context* of the field on the label. It matches the keyword or phrase near the value (e.g. `"EXP"`, `"BBE"`, `"Best Before"`). The SDK uses this to locate which part of the label contains this field, especially when multiple fields could otherwise match the same value pattern.
+- **`valueRegex`** — validates the *content* of the field. It matches the actual data to extract (e.g. `"\\d{2}/\\d{2}/\\d{4}"` for a date).
+
+**Pre-built field builders ship with default anchor and value regexes** tuned for their field type and the supported languages (English, French, German). You can override them with `setAnchorRegex(pattern)` / `setAnchorRegexes([...])` and `setValueRegex(pattern)` / `setValueRegexes([...])`.
+
+**Resetting the anchorRegex** — available only on pre-built field builders, not on `CustomTextBuilder`. Call `resetAnchorRegexes()` to remove all default anchor patterns and let the SDK rely solely on the `valueRegex` for detection. Use this when the label has no consistent anchor keyword near the field:
+
+```typescript
+await new ExpiryDateTextBuilder()
+  .resetAnchorRegexes()
+  .setValueRegex("\\d{2}/\\d{2}/\\d{4}")
+  .build("Expiry Date")
+```
+
+**Keep regexes simple.** The SDK regex engine supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`), and groups. Lookahead and lookbehind assertions are not supported and will cause the pattern to fail to match.
+
+## Notes when generating this code
 
 - Import ONLY the field builders the user actually selected (`CustomBarcodeBuilder`, `ExpiryDateTextBuilder`, etc.). Do not import unused ones.
 - The corresponding `addXxx` method on `LabelDefinitionBuilder` mirrors the field type: `addCustomBarcode`, `addExpiryDateText`, `addWeightText`, `addUnitPriceText`, `addTotalPriceText`, `addCustomText`, `addPackingDateText`, `addDateText`, `addImeiOneBarcode`, `addImeiTwoBarcode`, `addPartNumberBarcode`, `addSerialNumberBarcode`.
@@ -134,11 +200,15 @@ After writing the integration code, show this checklist:
    - `@scandit/web-datacapture-label`
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your license key from <https://ssl.scandit.com>.
 3. Make sure `libraryLocation` points to a self-hosted copy of the SDK library (the path in `new URL(...)`). You can copy the `sdc-lib` directory from `node_modules/@scandit/web-datacapture-label/sdc-lib/`, or use the CDN instead: `libraryLocation: "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-label@8/sdc-lib/"`.
-4. Ensure a DOM element with id `data-capture-view` exists on the page before `run()` executes.
+4. Ensure a DOM element with id `data-capture-view` exists on the page before `run()` executes. The element must have a defined size and be visible — `DataCaptureView` renders the camera feed into it, so if the element has zero dimensions or `display: none` the viewfinder will not appear. A common setup is `width: 100%; height: 100vh;` or any other CSS that gives the element a non-zero area.
 
-## Optional: Validation Flow
+## Overlay Integration
 
-If the user wants to confirm OCR results, manually correct errors, or capture missing fields without rescanning, enable the Validation Flow. Skip this section if the user is fine with the minimal scan-and-handle path above.
+### Validation Flow (recommended default)
+
+The Validation Flow gives users a guided scanning experience: a persistent checklist shows which fields have been captured and which are still missing, and users can manually type a value when OCR fails. It handles partial captures across multiple package surfaces and confirms the result before returning it to the app. **Use this for most production integrations.**
+
+> **The Validation Flow must be implemented full screen.** The `data-capture-view` element must cover the full viewport. Do not embed the Validation Flow inside a card, modal, or partial-screen widget — it will not work correctly. The entire page/screen should be dedicated to the scanning experience for the duration of the capture.
 
 **Before writing Validation Flow code, determine the user's SDK version.** Prefer reading `package.json` for `@scandit/web-datacapture-label`. If that is unreadable or missing, ask: "Which version of `@scandit/web-datacapture-label` are you on?" Then write the version-matched block below — write only one, not both.
 
@@ -205,6 +275,167 @@ overlay.listener = {
 ```
 
 If the user plans to upgrade to v8.2+, route them to the migration guide (`migration.md` §2) for the listener change (`onManualInput` becomes required) and the optional switch to `setPlaceholderTextForLabelDefinition`.
+
+### Validation Flow customization
+
+The Validation Flow is a **fully managed UI component**. Scandit owns the layout, colors, button styles, and branding. This is intentional — the VF provides a battle-tested, accessible scanning experience without requiring the integrator to design or maintain the UI.
+
+**What you can customize** (via `LabelCaptureValidationFlowSettings`):
+
+| What | API | Version |
+|---|---|---|
+| Placeholder text shown inside a field input (e.g. expected format hint) | `setPlaceholderTextForLabelDefinition(fieldName, placeholder)` | v8.2+ |
+| Text of the manual-input button | `setManualInputButtonText(text)` | v8.1 only (deprecated in v8.2, no effect) |
+| Error message shown when a required field is missing | `setRequiredFieldErrorText(text)` | v8.1 only (deprecated in v8.2, no effect) |
+| Hint shown when optional fields are absent | `setMissingFieldsHintText(text)` | v8.1 only (deprecated in v8.2, no effect) |
+
+**What you cannot customize**: colors, button styles, layout, fonts, spacing, branding, or any visual aspect of the VF panel. If a customer asks to change these, explain that the VF is a managed component and these are not exposed. If they need full visual control, they should use `LabelCaptureAdvancedOverlay` and build their own UI — but that comes with significantly more implementation cost.
+
+**Customizing field highlighting on the camera feed (brushes):** Even when using the Validation Flow, you can add a `LabelCaptureBasicOverlay` alongside it to control how detected fields are highlighted in the live camera view. The VF manages the panel UI; the Basic Overlay manages the AR highlight brushes. Add both:
+
+```typescript
+const vfOverlay = await LabelCaptureValidationFlowOverlay.withLabelCaptureForView(mode, view);
+const basicOverlay = await LabelCaptureBasicOverlay.withLabelCaptureForView(mode, view);
+```
+
+Store both references — they can be removed from the view later with `view.removeOverlay(vfOverlay)` / `view.removeOverlay(basicOverlay)`. Then attach a `LabelCaptureBasicOverlayListener` to the basic overlay to customize brushes per field and per label (see the Basic Overlay section below).
+
+Validation Flow listener callbacks (assigned to `overlay.listener`):
+
+| Callback | When it fires | Version |
+|---|---|---|
+| `onValidationFlowLabelCaptured(fields)` | All required fields captured and user confirmed | v8.1+ |
+| `onManualInput(field, oldValue, newValue)` | User manually entered or corrected a field value | v8.2+ |
+| `onValidationFlowResultUpdate(type, fields, frameData)` | Partial result updated during capture (useful for live progress UI) | v8.4+ |
+
+### Basic Overlay
+
+Use `LabelCaptureBasicOverlay` when fully automated scanning is sufficient and no confirmation step is needed. It renders AR highlights over detected fields directly in the camera feed.
+
+```typescript
+const basicOverlay = await LabelCaptureBasicOverlay.withLabelCaptureForView(mode, view);
+```
+
+Store the reference — it lets you remove the overlay from the view later when scanning is done:
+
+```typescript
+view.removeOverlay(basicOverlay);
+```
+
+**Customizing brushes via `LabelCaptureBasicOverlayListener`:**
+
+Attach a listener to control how individual fields and whole labels are highlighted:
+
+```typescript
+basicOverlay.listener = {
+  brushForField: (overlay, field, label) => {
+    // Return a Brush for a specific field, or null to use the default
+    if (field.name === "Expiry Date") {
+      return new Brush(Color.fromRGBA(255, 0, 0, 0.3), Color.fromRGBA(255, 0, 0, 1), 2);
+    }
+    return null;
+  },
+  brushForLabel: (overlay, label) => {
+    // Return a Brush for the whole label bounding box, or null to use the default
+    return null;
+  },
+};
+```
+
+`Brush` takes a fill color, stroke color, and stroke width. Import `Brush` and `Color` from `@scandit/web-datacapture-core`. Return `null` from either method to keep the default highlight for that element.
+
+For the full list of styling options, fetch the [Advanced Configurations](https://docs.scandit.com/sdks/web/label-capture/advanced/) page.
+
+### Capturing the scanned frame image
+
+When users want to store or display the image of the frame alongside the captured label data, use `frameData.toBlob()`. The approach differs depending on which overlay is in use.
+
+**Do not `await` the blob conversion** — use `.then()/.catch()` instead. JPEG at quality 0.3 is the fastest option.
+
+**With Validation Flow** — use `onValidationFlowResultUpdate` (v8.4+):
+
+```typescript
+overlay.listener = {
+  onManualInput: (_field, _oldValue, _newValue) => {},
+  onValidationFlowLabelCaptured: (fields) => { /* handle final result */ },
+  onValidationFlowResultUpdate: (_type, fields, frameData) => {
+    if (!frameData) return;
+    // JPEG is fastest — do not await
+    frameData
+      .toBlob("image/jpeg", 0.3)
+      .then((blob) => {
+        addScanResult(blob, fields);
+      })
+      .catch((error) => {
+        console.error(error);
+        addScanResult(null, fields);
+      });
+  },
+};
+```
+
+**With Basic or Advanced Overlay** — use `didUpdateSession`:
+
+`didUpdateSession` fires on every camera frame (~30 times per second). Do not call `toBlob()` unconditionally — only capture the frame when a label is actually fully captured, and disable the mode first so scanning stops before the conversion runs:
+
+```typescript
+const labelCaptureListener = {
+  didUpdateSession: async (_labelCapture, session, frameData) => {
+    if (session.capturedLabels.length === 0) return;
+
+    // Disable mode to stop scanning before capturing the frame
+    await mode.setEnabled(false);
+
+    const capturedLabel = session.capturedLabels[0];
+    const fields = capturedLabel.fields as LabelField[];
+
+    // JPEG is fastest — do not await
+    frameData
+      .toBlob("image/jpeg", 0.3)
+      .then((blob) => {
+        addScanResult(blob, fields);
+      })
+      .catch((error) => {
+        console.error(error);
+        addScanResult(null, fields);
+      });
+  },
+};
+mode.addListener(labelCaptureListener);
+```
+
+---
+
+### Advanced Overlay
+
+Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — drawing its own HTML elements or canvas graphics on top of the camera feed with full positional control. This requires significantly more implementation work. Refer to the [Advanced Configurations](https://docs.scandit.com/sdks/web/label-capture/advanced/) page for the listener interface and anchor points.
+
+---
+
+## ARE — Adaptive Recognition Engine
+
+ARE is Scandit's cloud-based fallback for on-device text recognition. When the on-device OCR engine cannot confidently read a text field, ARE sends the frame to the cloud for processing and returns the result. This improves accuracy on difficult labels (low contrast, unusual fonts, worn text) without requiring a custom model.
+
+**Important constraints — tell the user all of these before they try to enable it:**
+
+- **Validation Flow only.** ARE works exclusively with the Validation Flow overlay (`LabelCaptureValidationFlowOverlay`). It does not work with `LabelCaptureBasicOverlay` or `LabelCaptureAdvancedOverlay`.
+- **Requires a license key with the ARE feature flag.** The standard license key does not include ARE. Trial license keys can be issued with ARE enabled for evaluation — direct the user to <support@scandit.com> to request one.
+- **For production use, contact Scandit.** ARE is in Beta and requires explicit enablement on the production license key. Tell the user to contact <support@scandit.com> to get it enabled for their production key before going live.
+
+Enable ARE by setting `AdaptiveRecognitionMode.Auto` on the label definition:
+
+```typescript
+import { AdaptiveRecognitionMode } from "@scandit/web-datacapture-label";
+
+const labelDef = await new LabelDefinitionBuilder()
+  .adaptiveRecognitionMode(AdaptiveRecognitionMode.Auto)
+  .addExpiryDateText(await new ExpiryDateTextBuilder().build("Expiry Date"))
+  .build("My Label");
+```
+
+With `Auto`, the SDK decides when to invoke the cloud fallback. Results arrive through the same Validation Flow callbacks — no additional handling is needed.
+
+Mention ARE only if the user asks about improving OCR accuracy or mentions difficulty reading certain labels. Do not enable it by default.
 
 ## Where to Go Next
 
