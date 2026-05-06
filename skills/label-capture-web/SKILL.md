@@ -17,13 +17,17 @@ Your training data may contain outdated or incorrect Scandit Label Capture APIs.
 - In v8.2, the Validation Flow UI was redesigned and three customisation properties were deprecated.
 - In v8.5, additive ergonomic shorthands were introduced for the builders.
 
+**ARE (Adaptive Recognition Engine)** is Scandit's cloud-based OCR fallback — enabled via `AdaptiveRecognitionMode.Auto` on label definitions. It is currently in Beta, works **only with the Validation Flow overlay**, and requires a license key with the ARE feature flag enabled. Trial keys can be issued for evaluation; production keys require contacting support@scandit.com. Do not enable it by default.
+
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or builder shapes. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
 
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating Label Capture from scratch** (e.g. "add Label Capture to my app", "scan a price tag with barcode and expiry date", "how do I use Smart Label Capture", "how do I enable the Validation Flow") → read `references/integration.md` and follow the instructions there.
+- **Questions about other Scandit products or scanning modes** (e.g. SparkScan, Barcode Capture, MatrixScan, ID Capture, or general SDK setup questions not specific to Label Capture) → hand off to the `data-capture-sdk` skill. Do not attempt to answer questions about other capture modes from memory — the dedicated skill has the correct and up-to-date references.
+
+- **Integrating Label Capture from scratch** (e.g. "add Label Capture to my app", "scan a price tag with barcode and expiry date", "how do I use Smart Label Capture", "how do I enable the Validation Flow", "I want to build a label scanning app", "which overlay should I use", "what is ARE", "how do I improve OCR accuracy") → read `references/integration.md` and follow the instructions there. If the user has no existing project, the guide will direct you to offer the pre-built sample first.
 - **Migrating or upgrading an existing Label Capture integration** (e.g. "upgrade my Label Capture to the latest SDK", "migrate from v8.1 to v8.2", "what changed between SDK versions for Label Capture") → read `references/migration.md` and follow the instructions there.
 
 ## API Usage Policy
