@@ -10,7 +10,7 @@ If the user has no existing app yet, always offer the official sample as the fas
 
 Ask whether they are using React or plain web (TypeScript/JavaScript), then point them to the right sample:
 
-- **Vanilla JS / TypeScript:** <https://github.com/Scandit/datacapture-web-samples/tree/master/01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample>
+- **Vanilla JS / TypeScript:** <https://github.com/Scandit/datacapture-web-samples/tree/master/01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low-level_API/BarcodeCaptureSimpleSample>
 - **React:** <https://github.com/Scandit/datacapture-web-samples/tree/master/05_Framework_Integration_Samples/BarcodeCaptureReactSample>
 
 Tell the user to clone the repo and open the relevant sample folder. Once they have it open, help them:
