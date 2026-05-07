@@ -1,0 +1,124 @@
+{
+  "skill_name": "barcode-capture-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my Android app. Here's my empty Activity: EmptyActivity.kt. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, fetches the latest SDK version, writes complete BarcodeCapture integration code into EmptyActivity.kt (BarcodeCapture.forDataCaptureContext, BarcodeCaptureListener, Camera, DataCaptureView, BarcodeCaptureOverlay, onResume/onPause lifecycle), and shows the setup checklist (Gradle deps, AndroidManifest permissions, runtime permission, license key).",
+      "files": [
+        "fixtures/EmptyActivity.kt"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding com.scandit.datacapture:barcode and com.scandit.datacapture:core Gradle dependencies"},
+        {"text": "Setup checklist mentions adding CAMERA permission to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting CAMERA permission at runtime"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.forLicenseKey( is used to create the context"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is used (not VideoResolution.AUTO)"},
+        {"text": "Camera.getDefaultCamera( is used to obtain the camera"},
+        {"text": "dataCaptureContext.setFrameSource( is called with the camera"},
+        {"text": "BarcodeCaptureSettings is constructed and configured"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.CODE128 is enabled"},
+        {"text": "No symbologies other than EAN13_UPCA and CODE128 are enabled"},
+        {"text": "BarcodeCapture.forDataCaptureContext(dataCaptureContext, settings) is used to create the mode"},
+        {"text": "barcodeCapture.addListener( is called"},
+        {"text": "DataCaptureView.newInstance( is used to create the view"},
+        {"text": "BarcodeCaptureOverlay.newInstance(barcodeCapture, dataCaptureView) is called"},
+        {"text": "The Activity implements BarcodeCaptureListener"},
+        {"text": "onBarcodeScanned is overridden and reads session.newlyRecognizedBarcode"},
+        {"text": "onSessionUpdated, onObservationStarted, and onObservationStopped are overridden"},
+        {"text": "barcodeCapture.isEnabled = false is called inside onBarcodeScanned"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.ON) is called in onResume (or equivalent)"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.OFF) is called in onPause (or equivalent)"},
+        {"text": "barcodeCapture.removeListener( is called in onDestroy"},
+        {"text": "dataCaptureContext.removeCurrentMode() is called in onDestroy"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add barcode scanning to my existing Android Activity. Here's the Activity: EmptyActivity.kt. I want to scan QR codes and Data Matrix. When a barcode is scanned, print the barcode data to the log.",
+      "expected_output": "The skill integrates BarcodeCapture into EmptyActivity.kt with QR and Data Matrix symbologies enabled. onBarcodeScanned logs the barcode data using Log.d or similar. Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyActivity.kt"
+      ],
+      "assertions": [
+        {"text": "Symbology.QR is enabled"},
+        {"text": "Symbology.DATA_MATRIX is enabled"},
+        {"text": "No symbologies other than QR and DATA_MATRIX are enabled"},
+        {"text": "BarcodeCapture.forDataCaptureContext( is used"},
+        {"text": "onBarcodeScanned is implemented and accesses barcode.data"},
+        {"text": "The scan result is logged (Log.d, println, or similar)"},
+        {"text": "onResume turns the camera on"},
+        {"text": "onPause turns the camera off"},
+        {"text": "Setup checklist mentions Gradle dependencies"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my Android BarcodeCapture app, I want to disable scanning, look up the barcode in a remote API (a suspend function / coroutine call), and re-enable scanning when the lookup completes. Wire this up safely.",
+      "expected_output": "The skill sets barcodeCapture.isEnabled = false at the start of onBarcodeScanned, launches a coroutine for the async lookup, and re-enables scanning when the coroutine completes. Uses lifecycleScope or similar so the coroutine is tied to the Activity lifecycle.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set inside onBarcodeScanned before the async work"},
+        {"text": "A coroutine (launch, async) or runOnUiThread with post is used to perform the async lookup"},
+        {"text": "barcodeCapture.isEnabled = true is set after the lookup completes"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to suppress the default beep and vibration when a barcode is scanned in my Android app — silent scanning. Update the BarcodeCapture feedback.",
+      "expected_output": "The skill sets barcodeCapture.feedback to a BarcodeCaptureFeedback with no sound or vibration (either the empty constructor or by assigning null/empty Feedback to the success property).",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.feedback is reassigned to suppress audio and haptic feedback (BarcodeCaptureFeedback() empty constructor or equivalent)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a square viewfinder to my Android BarcodeCapture preview so users can see where to aim.",
+      "expected_output": "The skill creates a RectangularViewfinder with SQUARE style and assigns it to overlay.viewfinder. The overlay is the BarcodeCaptureOverlay created in the Activity.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A RectangularViewfinder is constructed with a SQUARE style (or equivalent)"},
+        {"text": "The viewfinder is assigned to a BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder = ...)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored. Update my BarcodeCapture settings.",
+      "expected_output": "The skill sets codeDuplicateFilter = TimeInterval.millis(500) on the BarcodeCaptureSettings instance before creating the BarcodeCapture mode (or applies new settings via applySettings).",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "codeDuplicateFilter is set to TimeInterval.millis(500) on the BarcodeCaptureSettings (not a bare integer 500)"},
+        {"text": "codeDuplicateFilter is set before BarcodeCapture.forDataCaptureContext( or via applySettings"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Clean up my BarcodeCapture Android integration properly when the Activity is destroyed — remove the listener, remove the mode from the context, and turn off the camera.",
+      "expected_output": "The skill ensures onDestroy calls barcodeCapture.removeListener(this) and dataCaptureContext.removeCurrentMode(), and that onPause calls camera.switchToDesiredState(FrameSourceState.OFF).",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "onDestroy calls barcodeCapture.removeListener(this) or equivalent"},
+        {"text": "onDestroy calls dataCaptureContext.removeCurrentMode() or removeAllModes()"},
+        {"text": "onPause (or onDestroy) calls camera.switchToDesiredState(FrameSourceState.OFF)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    }
+  ]
+}
