@@ -244,13 +244,11 @@ public partial class ViewController : UIViewController, IBarcodeCaptureListener
         }
 
         // Prevent duplicate / racing scans while we handle this one.
+        // Re-enabled inside ShowResult below when the user dismisses the dialog.
         barcodeCapture.Enabled = false;
 
-        // OnBarcodeScanned is called on a background thread — dispatch UI work.
-        DispatchQueue.MainQueue.DispatchAsync(() =>
-        {
-            // Handle barcode.Data, barcode.Symbology
-        });
+        var description = new SymbologyDescription(barcode.Symbology).ReadableName;
+        this.ShowResult($"Scanned {barcode.Data} ({description})");
 
         // Dispose the frame when you have finished processing it. If the frame is not
         // properly disposed, different issues could arise, e.g. a frozen, non-responsive,
@@ -284,10 +282,8 @@ this.barcodeCapture.BarcodeScanned += (sender, args) =>
     {
         if (barcode == null) return;
         args.BarcodeCapture.Enabled = false;
-        DispatchQueue.MainQueue.DispatchAsync(() =>
-        {
-            // Handle barcode.Data, barcode.Symbology
-        });
+        var description = new SymbologyDescription(barcode.Symbology).ReadableName;
+        this.ShowResult($"Scanned {barcode.Data} ({description})");
     }
     finally
     {
@@ -321,6 +317,36 @@ this.barcodeCapture.BarcodeScanned += (sender, args) =>
 | `NewlyLocalizedBarcodes` | `IList<LocalizedOnlyBarcode>` | Codes that were located but not decoded. |
 | `FrameSequenceId` | `long` | Identifier of the current frame sequence (stable until camera interruption). |
 | `Reset()` | method | Clears the session's duplicate-filter history. **Only call inside the listener callbacks.** |
+
+### Showing the result and re-enabling scanning
+
+`barcodeCapture.Enabled = false` stops new detections until you set it back to `true`. The handler must own that re-enable — otherwise the scanner stays dead after the first scan. The canonical Scandit sample uses a `UIAlertController` so the user dismisses the result with an OK button, which is also the natural point to re-enable:
+
+```csharp
+public void ShowResult(string result)
+{
+    DispatchQueue.MainQueue.DispatchAsync(() =>
+    {
+        var alert = UIAlertController.Create(
+            result, message: null, preferredStyle: UIAlertControllerStyle.Alert);
+        var ok = UIAlertAction.Create("OK", UIAlertActionStyle.Default, _ =>
+        {
+            this.barcodeCapture.Enabled = true;
+        });
+        alert.AddAction(ok);
+        this.PresentViewController(alert, animated: true, completionHandler: () => { });
+    });
+}
+```
+
+No need to retain the controller — iOS dismisses it automatically when the user taps OK, and `ViewWillDisappear` already turns the camera off if the view is backgrounded while a dialog is up. Call `ShowResult` from `OnBarcodeScanned`:
+
+```csharp
+string description = new SymbologyDescription(barcode.Symbology).ReadableName;
+this.ShowResult($"Scanned {barcode.Data} ({description})");
+```
+
+This matches Scandit's official `BarcodeCaptureSimpleSample` flow on iOS. The rule regardless of UX choice: every `barcodeCapture.Enabled = false` must be balanced by a matching `Enabled = true` on the path that returns control to the user.
 
 ## Step 7 — Lifecycle management
 
@@ -439,13 +465,28 @@ public partial class ViewController : UIViewController, IBarcodeCaptureListener
             return;
         }
 
+        // Stop scanning while we display the result. Re-enabled when the user dismisses the alert.
         barcodeCapture.Enabled = false;
-        DispatchQueue.MainQueue.DispatchAsync(() =>
-        {
-            // handle barcode.Data and barcode.Symbology
-        });
+
+        var description = new SymbologyDescription(barcode.Symbology).ReadableName;
+        this.ShowResult($"Scanned {barcode.Data} ({description})");
 
         frameData.Dispose();
+    }
+
+    public void ShowResult(string result)
+    {
+        DispatchQueue.MainQueue.DispatchAsync(() =>
+        {
+            var alert = UIAlertController.Create(
+                result, message: null, preferredStyle: UIAlertControllerStyle.Alert);
+            var ok = UIAlertAction.Create("OK", UIAlertActionStyle.Default, _ =>
+            {
+                this.barcodeCapture.Enabled = true;
+            });
+            alert.AddAction(ok);
+            this.PresentViewController(alert, animated: true, completionHandler: () => { });
+        });
     }
 
     public void OnSessionUpdated(

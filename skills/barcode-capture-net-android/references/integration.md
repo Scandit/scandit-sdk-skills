@@ -279,13 +279,11 @@ public class BarcodeScanActivity : AppCompatActivity, IBarcodeCaptureListener
         if (barcode == null) return;
 
         // Prevent duplicate / racing scans while we handle this one.
+        // Re-enabled inside ShowResults below when the user dismisses the dialog.
         barcodeCapture.Enabled = false;
 
         // OnBarcodeScanned is called on a background thread — dispatch UI work.
-        RunOnUiThread(() =>
-        {
-            // Handle barcode.Data, barcode.Symbology
-        });
+        RunOnUiThread(() => this.ShowResults($"Scanned: {barcode.Data}"));
     }
 
     public void OnSessionUpdated(
@@ -313,10 +311,7 @@ this.barcodeCapture.BarcodeScanned += (sender, args) =>
     if (barcode == null) return;
 
     args.BarcodeCapture.Enabled = false;
-    RunOnUiThread(() =>
-    {
-        // Handle barcode.Data, barcode.Symbology
-    });
+    RunOnUiThread(() => this.ShowResults($"Scanned: {barcode.Data}"));
 };
 ```
 
@@ -345,6 +340,64 @@ this.barcodeCapture.BarcodeScanned += (sender, args) =>
 | `NewlyLocalizedBarcodes` | `IList<LocalizedOnlyBarcode>` | Codes that were located but not decoded. |
 | `FrameSequenceId` | `long` | Identifier of the current frame sequence (stable until camera interruption). |
 | `Reset()` | method | Clears the session's duplicate-filter history. **Only call inside the listener callbacks.** |
+
+### Showing the result and re-enabling scanning
+
+`barcodeCapture.Enabled = false` stops new detections until you set it back to `true`. The handler must own that re-enable — otherwise the scanner stays dead after the first scan. The canonical Scandit sample uses an `AlertDialog` so the user dismisses the result with an OK button, which is also the natural point to re-enable:
+
+```csharp
+using Android.Content; // for DialogClickEventArgs
+
+private AlertDialog? dialog;
+
+private void ShowResults(string result)
+{
+    this.dialog = new AlertDialog.Builder(this)
+        .SetCancelable(false)!
+        .SetTitle(result)!
+        .SetPositiveButton(Android.Resource.String.Ok, (sender, args) =>
+        {
+            this.barcodeCapture.Enabled = true;
+        })!
+        .Create();
+    this.dialog?.Show();
+}
+
+private void DismissScannedCodesDialog()
+{
+    if (this.dialog != null)
+    {
+        this.dialog.Dismiss();
+        this.dialog = null;
+    }
+}
+```
+
+Hook `DismissScannedCodesDialog` into `ResumeFrameSource` so a dialog left over from a previous foreground session is cleared when the activity comes back:
+
+```csharp
+private void ResumeFrameSource()
+{
+    this.DismissScannedCodesDialog();
+    this.barcodeCapture.Enabled = true;
+    this.camera?.SwitchToDesiredStateAsync(FrameSourceState.On);
+}
+```
+
+This matches Scandit's official `BarcodeCaptureSimpleSample` flow on Android.
+
+If you only need a brief non-blocking notification, use a `Toast` and schedule the re-enable explicitly instead — `Toast.MakeText().Show()` is fire-and-forget, so the re-enable has to be on a timer:
+
+```csharp
+RunOnUiThread(async () =>
+{
+    Toast.MakeText(this, $"Scanned: {barcode.Data}", ToastLength.Short)?.Show();
+    await Task.Delay(TimeSpan.FromSeconds(2)); // ToastLength.Short ≈ 2s on Android
+    this.barcodeCapture.Enabled = true;
+});
+```
+
+The rule either way: every `Enabled = false` needs a matching `Enabled = true` on the path that returns control to the user.
 
 ## Step 7 — Lifecycle management
 
@@ -450,6 +503,7 @@ Then derive the scanning activity from `CameraPermissionActivity` and call `Requ
 ## Complete minimal example
 
 ```csharp
+using Android.Content;
 using Android.OS;
 using Android.Widget;
 
@@ -474,6 +528,7 @@ public class BarcodeScanActivity : CameraPermissionActivity, IBarcodeCaptureList
     private Camera? camera;
     private DataCaptureView dataCaptureView = null!;
     private BarcodeCaptureOverlay overlay = null!;
+    private AlertDialog? dialog;
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
@@ -512,8 +567,18 @@ public class BarcodeScanActivity : CameraPermissionActivity, IBarcodeCaptureList
 
     private void ResumeFrameSource()
     {
+        this.DismissScannedCodesDialog();
         this.barcodeCapture.Enabled = true;
         this.camera?.SwitchToDesiredStateAsync(FrameSourceState.On);
+    }
+
+    private void DismissScannedCodesDialog()
+    {
+        if (this.dialog != null)
+        {
+            this.dialog.Dismiss();
+            this.dialog = null;
+        }
     }
 
     private void InitializeAndStartBarcodeScanning()
@@ -559,11 +624,25 @@ public class BarcodeScanActivity : CameraPermissionActivity, IBarcodeCaptureList
         var barcode = session.NewlyRecognizedBarcode;
         if (barcode == null) return;
 
+        // Stop scanning while we display the result. Re-enabled when the user dismisses the dialog.
         barcodeCapture.Enabled = false;
-        RunOnUiThread(() =>
-        {
-            // handle barcode.Data and barcode.Symbology
-        });
+
+        var description = new SymbologyDescription(barcode.Symbology);
+        var result = $"Scanned: {barcode.Data} ({description.ReadableName})";
+        RunOnUiThread(() => this.ShowResults(result));
+    }
+
+    private void ShowResults(string result)
+    {
+        this.dialog = new AlertDialog.Builder(this)
+            .SetCancelable(false)!
+            .SetTitle(result)!
+            .SetPositiveButton(Android.Resource.String.Ok, (sender, args) =>
+            {
+                this.barcodeCapture.Enabled = true;
+            })!
+            .Create();
+        this.dialog?.Show();
     }
 
     public void OnSessionUpdated(
