@@ -55,10 +55,13 @@ npx skills add Scandit/scandit-sdk-skills
 
 ### Claude Code plugin
 
-Claude Code can also install the skills as a plugin from the marketplace:
+Claude Code can also install the skills as a plugin from the marketplace. Run the commands one at a time:
 
 ```bash
 /plugin marketplace add Scandit/scandit-sdk-skills
+```
+
+```bash
 /plugin install scandit-sdk@scandit-plugins
 ```
 
