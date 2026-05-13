@@ -16,10 +16,11 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
   </ItemGroup>
   ```
   Both packages are published on NuGet.org. Do **not** add `Scandit.DataCapture.Core.Maui` or `Scandit.DataCapture.Barcode.Maui` — those are MAUI-only.
-- `Xamarin.AndroidX.AppCompat` — required because the `CameraPermissionActivity` helper below inherits from `AppCompatActivity`, and the default manifest theme `@style/Theme.AppCompat` resolves through this package. The `dotnet new android` template already pulls it in transitively via `Xamarin.AndroidX.AppCompat.AppCompatResources`, but for manually scaffolded projects add it explicitly:
+- `Xamarin.AndroidX.AppCompat` — required because the `CameraPermissionActivity` helper below inherits from `AppCompatActivity`, and the AppCompat manifest theme (see the manifest setup bullet below) resolves through this package. The `dotnet new android` template already pulls it in transitively via `Xamarin.AndroidX.AppCompat.AppCompatResources`, but for manually scaffolded projects add it explicitly:
   ```xml
-  <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="<latest-version>" />
+  <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="<latest-version-with-xamarin-suffix>" />
   ```
+  **When fetching the latest version, pick the highest available including any Xamarin-revision suffix — e.g. `1.7.1.3`, not bare `1.7.1`.** The `.X` suffix marks Xamarin-binding patch revisions and carries critical transitive-dep updates. The suffix-less form has a known `Xamarin.AndroidX.SavedState` constraint mismatch that fails compilation with `CS7069: Reference to type 'ISavedStateRegistryOwner' ... could not be found`. If the NuGet API response lists `1.7.1`, `1.7.1.1`, `1.7.1.2`, and `1.7.1.3`, the correct pick is `1.7.1.3`. A `jq -r '.versions | last'` filter on the flatcontainer endpoint returns the highest version correctly.
 - **SDK initialization (Scandit 8.0+).** Add a `MainApplication.cs` next to `MainActivity.cs` that initializes the Scandit DI container at process start. Without this, the first `DataCaptureView.Create` / `BarcodeCapture.Create` call crashes because the container has no registrations.
 
   ```csharp
@@ -46,12 +47,26 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
-- Camera permission. Add the manifest declaration to `AndroidManifest.xml`:
-  ```xml
-  <uses-feature android:name="android.hardware.camera" android:required="true" />
-  <uses-permission android:name="android.permission.CAMERA" />
-  ```
-  Add **only** these `<uses-feature>` / `<uses-permission>` elements. Do **not** add an `<activity>` declaration for `MainActivity` (or any other class decorated with `[Activity]`) — the attribute is the canonical registration in .NET for Android, and the build merges a correctly-named entry into the final manifest using the .NET-derived Java class name (typically `<lowercase-namespace>.MainActivity`). A manual `<activity android:name=".MainActivity">` resolves against `<ApplicationId>` and won't match the generated class, producing `ClassNotFoundException` at launch. Request the permission at runtime using `RequestPermissions` before scanning starts (Android API 23+).
+- `AndroidManifest.xml` setup — three concerns, all required:
+
+  1. **Camera entries** (top-level, sibling to `<application>`):
+     ```xml
+     <uses-feature android:name="android.hardware.camera" android:required="true" />
+     <uses-permission android:name="android.permission.CAMERA" />
+     ```
+
+  2. **AppCompat theme on `<application>`** — set `android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"` (or another `Theme.AppCompat` descendant) on the `<application>` element:
+     ```xml
+     <application
+         ...
+         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+     </application>
+     ```
+     Required because `AppCompatActivity` throws `java.lang.IllegalStateException: You need to use a Theme.AppCompat theme (or descendant) with this activity` at instant launch otherwise. `dotnet new android` does not set this attribute, so it must be added explicitly. `Theme.AppCompat.DayNight.NoActionBar` is the right default for a full-screen camera preview; `Theme.AppCompat.Light.NoActionBar` is also fine.
+
+  3. **Do not add `<activity>` declarations** for `MainActivity` (or any other class decorated with `[Activity]`). The attribute is the canonical registration in .NET for Android — the build merges a correctly-named entry into the final manifest using the .NET-derived Java class name (typically `<lowercase-namespace>.MainActivity`). A manual `<activity android:name=".MainActivity">` resolves against `<ApplicationId>` and won't match the generated class, producing `ClassNotFoundException` at launch.
+
+  Request the camera permission at runtime using `RequestPermissions` before scanning starts (Android API 23+).
 
 ### Project scaffolding (new projects only)
 
