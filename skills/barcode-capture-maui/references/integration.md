@@ -323,7 +323,9 @@ For scans that trigger a network/database lookup, see [Async work after a scan](
 
 #### Displaying the scan result to the user
 
-The idiomatic way to display a scanned barcode in MAUI is `Page.DisplayAlertAsync` — **not** a custom label / `VerticalStackLayout`. The alert blocks until the user dismisses it, which gives you a natural place to re-enable scanning. Don't use the obsolete `DisplayAlert` (the non-`Async` version) — it produces `CS0618`.
+The idiomatic way to display a scanned barcode in MAUI is `Page.DisplayAlertAsync` — **not** a custom label / `VerticalStackLayout`. The alert blocks until the user dismisses it, which gives you a natural place to re-enable scanning.
+
+> ⚠️ **The method name ends in `Async`.** Use `await this.DisplayAlertAsync(title, message, "OK")`. The unsuffixed `DisplayAlert(...)` overload is **obsolete** as of .NET MAUI 9 and produces a `CS0618: 'Page.DisplayAlert(string, string, string)' is obsolete: 'Use DisplayAlertAsync instead'` warning. Both compile, so this is easy to miss if you copy patterns from older code or pre-MAUI-9 samples — always type `DisplayAlertAsync`.
 
 **Inline (code-behind) form** — simplest, fine for a single `MainPage`:
 
@@ -628,7 +630,7 @@ public partial class MainPage : ContentPage
         this.barcodeCapture.Enabled = false;
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            await this.DisplayAlert("Scanned", barcode.Data, "OK");
+            await this.DisplayAlertAsync("Scanned", barcode.Data, "OK");
             this.barcodeCapture.Enabled = true;
         });
     }
@@ -768,4 +770,5 @@ ICollection<Symbology>? licensed = licenseInfo?.LicensedSymbologies;
 9. **Camera permission** — `await Permissions.CheckStatusAsync<Permissions.Camera>()` + `await Permissions.RequestAsync<Permissions.Camera>()`. On iOS, set `NSCameraUsageDescription` in `Platforms/iOS/Info.plist`.
 10. **Disable inside callback** — set `barcodeCapture.Enabled = false` at the start of `OnBarcodeScanned`. Re-enable when ready for the next scan.
 11. **Event API is idiomatic** — prefer `barcodeCapture.BarcodeScanned += handler` over `AddListener` in MAUI. If using the listener interface, dispose `frameData` at the end of every callback.
-12. **`TimeSpan`, not `TimeInterval`** — `CodeDuplicateFilter` is `TimeSpan`. Use `CodeDuplicate.DefaultDuplicateFilter` / `CodeDuplicate.ReportDataAndSymbologyOnlyOnce` / `TimeSpan.FromMilliseconds(...)` / `TimeSpan.Zero`.
+12. **`DisplayAlertAsync` (with the `Async` suffix), not `DisplayAlert`** — use `await this.DisplayAlertAsync(title, message, "OK")` to show scan results. The non-`Async` `DisplayAlert(string, string, string)` overload is obsolete in MAUI 9 and produces `CS0618`. Both compile; the `Async` suffix is mandatory for new code.
+13. **`TimeSpan`, not `TimeInterval`** — `CodeDuplicateFilter` is `TimeSpan`. Use `CodeDuplicate.DefaultDuplicateFilter` / `CodeDuplicate.ReportDataAndSymbologyOnlyOnce` / `TimeSpan.FromMilliseconds(...)` / `TimeSpan.Zero`.
