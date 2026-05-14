@@ -321,6 +321,104 @@ Application.Current!.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(500), () =>
 
 For scans that trigger a network/database lookup, see [Async work after a scan](#async-work-after-a-scan) below — re-enable inside a `finally` block instead.
 
+#### Displaying the scan result to the user
+
+The idiomatic way to display a scanned barcode in MAUI is `Page.DisplayAlertAsync` — **not** a custom label / `VerticalStackLayout`. The alert blocks until the user dismisses it, which gives you a natural place to re-enable scanning. Don't use the obsolete `DisplayAlert` (the non-`Async` version) — it produces `CS0618`.
+
+**Inline (code-behind) form** — simplest, fine for a single `MainPage`:
+
+```csharp
+private void OnBarcodeScanned(object? sender, BarcodeCaptureEventArgs args)
+{
+    var barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    // Stop scanning while the alert is visible.
+    this.barcodeCapture.Enabled = false;
+
+    MainThread.BeginInvokeOnMainThread(async () =>
+    {
+        var description = new SymbologyDescription(barcode.Symbology);
+        var title = $"Scanned: {barcode.Data} ({description.ReadableName})";
+        await this.DisplayAlertAsync(title, "Continue scanning?", "OK");
+        // The await completes when the user dismisses the alert — safe to re-enable.
+        this.barcodeCapture.Enabled = true;
+    });
+}
+```
+
+**Injectable `IMessageService` form** — recommended for MVVM apps where the scan handler lives on a view model that has no `Page` reference. This is the pattern used in the official Scandit MAUI BarcodeCapture sample. It wraps `DisplayAlertAsync` behind an interface so the view model can be unit-tested without a UI.
+
+```csharp
+// Services/IMessageService.cs
+namespace MyApp.Services;
+
+public interface IMessageService
+{
+    Task ShowAsync(string title, string message, string buttonText = "OK", Action? onDismiss = null);
+}
+
+// Services/Internals/MessageService.cs
+namespace MyApp.Services.Internals;
+
+internal class MessageService : IMessageService
+{
+    async Task IMessageService.ShowAsync(string title, string message, string buttonText, Action? onDismiss)
+    {
+        if (string.IsNullOrEmpty(message)) return;
+
+        if (Application.Current?.Windows.Count > 0)
+        {
+            Page? page = Application.Current.Windows[0].Page;
+            if (page != null)
+            {
+                await page.DisplayAlertAsync(title, message, buttonText);
+                onDismiss?.Invoke();
+            }
+        }
+    }
+}
+```
+
+Register it in `MauiProgram.cs` alongside the `IDataCaptureManager`:
+
+```csharp
+builder.Services.AddSingleton<IMessageService, MessageService>();
+```
+
+Then inject and use it from the view model. The `onDismiss` callback fires after the user taps OK, which is the natural place to re-enable scanning:
+
+```csharp
+public MainPageViewModel(IDataCaptureManager dataCaptureManager, IMessageService messageService)
+{
+    this.messageService = messageService;
+    /* … */
+    this.BarcodeCapture.BarcodeScanned += this.OnBarcodeScanned;
+}
+
+private void OnBarcodeScanned(object? sender, BarcodeCaptureEventArgs args)
+{
+    var barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    this.BarcodeCapture.Enabled = false;
+
+    var description = new SymbologyDescription(barcode.Symbology);
+    var title = $"Scanned: {barcode.Data} ({description.ReadableName})";
+
+    MainThread.BeginInvokeOnMainThread(async () =>
+    {
+        await this.messageService.ShowAsync(
+            title: title,
+            message: "Continue scanning?",
+            buttonText: "OK",
+            onDismiss: () => this.BarcodeCapture.Enabled = true);
+    });
+}
+```
+
+`SymbologyDescription` lives in `Scandit.DataCapture.Barcode.Data`; `ReadableName` returns the human-readable name (e.g. `"EAN-13"` instead of `Ean13Upca`).
+
 ### Listener interface alternative
 
 If the project prefers `IBarcodeCaptureListener`, use the standard interface signatures (PascalCase methods). On iOS, remember to call `frameData.Dispose()` at the end of every callback (including early returns) — see the iOS-specific note in `SKILL.md`.
