@@ -198,6 +198,8 @@ public interface IDataCaptureManager
 </ContentPage>
 ```
 
+> ⚠️ **`DataCaptureContext="{Binding DataCaptureContext}"` is mandatory.** Without this binding the view has no context, the frame source is never attached to the preview, and the camera renders as a **black/blank screen** even though the code-behind looks correct. The page's `BindingContext` (whether it's a view model or the page itself via `BindingContext = this`) must expose a `DataCaptureContext` property of type `Scandit.DataCapture.Core.Capture.DataCaptureContext`, and the XAML element must bind to it. Setting `x:Name="dataCaptureView"` does **not** wire the context — the binding is separate and required.
+
 `DataCaptureView` exposes:
 
 | Member | Description |
@@ -661,7 +663,7 @@ ICollection<Symbology>? licensed = licenseInfo?.LicensedSymbologies;
 2. **Android `SupportedOSPlatformVersion` ≥ 24** — the MAUI template defaults to `21`; Scandit's Android AAR requires 24. Bump the `.csproj` value if it's lower.
 3. **Builder chain** — `MauiProgram.cs` must call `.UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode()`. `UseScanditBarcode` takes no inner configure.
 4. **Four NuGet packages** — Core + Core.Maui + Barcode + Barcode.Maui. All four.
-5. **DataCaptureView is XAML** — use `<scandit:DataCaptureView>` with the `xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"` namespace. Bind `DataCaptureContext` to a VM property.
+5. **DataCaptureView is XAML, and `DataCaptureContext="{Binding DataCaptureContext}"` is mandatory** — use `<scandit:DataCaptureView>` with the `xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"` namespace. The `DataCaptureContext` bindable property **must** be set; omitting it produces a black camera preview at runtime even though the code-behind compiles and runs. Bind it to a property of type `DataCaptureContext` on the page's `BindingContext` (view model or page itself).
 6. **Overlay after HandlerChanged** — create `BarcodeCaptureOverlay.Create(barcodeCapture)` inside `dataCaptureView.HandlerChanged`, then attach with `dataCaptureView.AddOverlay(overlay)`. Don't use the two-argument `Create(mode, view)` overload in MAUI.
 7. **MAUI lifecycle** — wire `OnAppearing` → start camera + `Enabled = true`; `OnDisappearing` → stop camera + `Enabled = false`.
 8. **MainThread dispatch** — use `MainThread.BeginInvokeOnMainThread(() => …)`, not `RunOnUiThread` or `DispatchQueue.MainQueue.DispatchAsync`. **`MainThread.StartTimer` does not exist** — `StartTimer` is on `IDispatcher` (`Dispatcher.StartTimer(...)` / `Application.Current.Dispatcher.StartTimer(...)`), or use `await Task.Delay(...)` inside a `BeginInvokeOnMainThread(async () => …)` lambda.

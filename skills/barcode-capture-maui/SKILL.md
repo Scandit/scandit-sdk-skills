@@ -30,7 +30,7 @@ MAUI-specific gotchas worth flagging:
   ```
   `UseScanditBarcode()` takes **no inner configure** — there is no MAUI handler for BarcodeCapture itself, the call exists only to invoke `ScanditBarcodeCapture.Initialize()`. Do **not** write `UseScanditBarcode(configure => configure.AddBarcodeCaptureView())` — that method does not exist.
 - `BarcodeCapture` does **not** have a pre-built MAUI view (unlike `BarcodeArView`, `BarcodeCountView`, `BarcodeFindView`, `BarcodePickView`, `SparkScanView`). The MAUI integration uses the generic `<scandit:DataCaptureView>` from `Scandit.DataCapture.Core.UI.Maui` and a `BarcodeCaptureOverlay` is added on top.
-- XAML namespace for `DataCaptureView` is `xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"`. Bind its `DataCaptureContext` property to a view model property.
+- XAML namespace for `DataCaptureView` is `xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"`. **`DataCaptureContext="{Binding DataCaptureContext}"` is mandatory on the `<scandit:DataCaptureView>` element** — without it the preview renders as a **black/blank camera** at runtime even though the code-behind compiles and the camera is started. Setting `x:Name="dataCaptureView"` is not enough; the bindable property is what wires the context to the preview. The page's `BindingContext` (view model or `this`) must expose a `DataCaptureContext` property of type `Scandit.DataCapture.Core.Capture.DataCaptureContext`.
 - The `BarcodeCaptureOverlay` must be created **after** the platform handler has been attached. The pattern used in the official sample is:
   ```csharp
   this.dataCaptureView.HandlerChanged += (s, e) =>
