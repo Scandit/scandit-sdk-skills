@@ -1,0 +1,15 @@
+{
+  "originHash" : "abc123",
+  "pins" : [
+    {
+      "identity" : "datacapture-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Scandit/datacapture-spm",
+      "state" : {
+        "revision" : "0000000000000000000000000000000000000000",
+        "version" : "8.3.1"
+      }
+    }
+  ],
+  "version" : 3
+}

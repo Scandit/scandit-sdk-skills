@@ -1,0 +1,65 @@
+{
+  "skill_name": "label-capture-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm upgrading my Label Capture integration from Scandit iOS SDK v7 to v8. Update the regex-method names in before-8.0-regex.swift.",
+      "expected_output": "The skill renames setPattern→valueRegex, setPatterns→valueRegexes, setDataTypePattern→anchorRegex, setDataTypePatterns→anchorRegexes throughout the file; leaves everything else (imports, isOptional, symbology values, LabelCaptureSettings DSL) untouched.",
+      "files": [
+        "fixtures/before-8.0-regex.swift"
+      ],
+      "assertions": [
+        { "text": "setPattern( is renamed to valueRegex(" },
+        { "text": "setPatterns( is renamed to valueRegexes(" },
+        { "text": "setDataTypePattern( is renamed to anchorRegex(" },
+        { "text": "setDataTypePatterns( is renamed to anchorRegexes(" },
+        { "text": "The old method names (setPattern, setPatterns, setDataTypePattern, setDataTypePatterns) are absent from the final file" },
+        { "text": "Imports and non-regex logic are preserved: ScanditLabelCapture import, Symbology .ean13UPCA, the v7-style LabelCaptureSettings(labelDefinitions: [...]) array initializer (the result-builder DSL was only introduced in v8.1 and must NOT be silently introduced as part of a v7→v8.0 regex-rename migration), .optional(true), and the field names are still present" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I upgraded my iOS app to Scandit SDK 8.2 and I'd like to use the new per-field placeholder text API in my Validation Flow. Here's my current integration: before-8.2-validation-flow.swift. How do I add a placeholder for the expiry date field?",
+      "expected_output": "The skill reads migration.md, identifies the v8.2 LabelCaptureValidationFlowSettings.setPlaceholderText(_:forLabelDefinition:) addition, instantiates LabelCaptureValidationFlowSettings, sets a placeholder for the expiry date field, and applies the settings to the overlay.",
+      "files": [
+        "fixtures/before-8.2-validation-flow.swift"
+      ],
+      "assertions": [
+        { "text": "LabelCaptureValidationFlowSettings() is instantiated in the updated code" },
+        { "text": "setPlaceholderText(_:forLabelDefinition:) is called with the expiry date field name and a placeholder string (e.g. \"MM/DD/YYYY\")" },
+        { "text": "validationFlowOverlay.apply( is called with the settings object" },
+        { "text": "The existing Validation Flow setup is preserved: LabelCaptureValidationFlowOverlay(labelCapture:view:), the delegate assignment, and the labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implementation are still present" },
+        { "text": "The fix is applied to or shown in context of the user's before-8.2-validation-flow.swift code, not just described abstractly" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I just upgraded from Scandit iOS SDK 8.0 to 8.1 and I want to react to manual-input events from the Validation Flow (log them to our analytics back-end). Here's my current integration: before-8.2-validation-flow.swift. Add the new optional listener method.",
+      "expected_output": "The skill adds the optional labelCaptureValidationFlowOverlay(_:didSubmitManualInputFor:replacingValue:withValue:) delegate method (added in v8.1.0) to the existing LabelCaptureValidationFlowDelegate conformance. The required didCaptureLabelWith: method is preserved.",
+      "files": [
+        "fixtures/before-8.2-validation-flow.swift"
+      ],
+      "assertions": [
+        { "text": "The optional method labelCaptureValidationFlowOverlay(_:didSubmitManualInputFor:replacingValue:withValue:) is added to the LabelCaptureValidationFlowDelegate conformance" },
+        { "text": "The method signature includes the parameters: field: LabelField, replacingValue oldValue: String?, withValue newValue: String" },
+        { "text": "The existing required method labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) is preserved" },
+        { "text": "The didUpdateResult method is NOT added (only the v8.1 method was requested; didUpdateResult is v8.2+)" },
+        { "text": "The existing Validation Flow setup is preserved: LabelCaptureValidationFlowOverlay(labelCapture:view:) and the delegate assignment are still present" }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I just upgraded from Scandit iOS SDK 8.1 to 8.2 and I want to react to partial result updates so I can show live progress and capture the frame image. Here's my current integration: before-8.2-validation-flow.swift. Add the new optional listener method.",
+      "expected_output": "The skill adds the optional labelCaptureValidationFlowOverlay(_:didUpdateResult:asyncId:fields:frameData:) delegate method (added in v8.2.0) to the existing LabelCaptureValidationFlowDelegate conformance. The method receives a LabelResultUpdateType, an Int asyncId, an [LabelField], and an optional FrameData. The required didCaptureLabelWith: method is preserved.",
+      "files": [
+        "fixtures/before-8.2-validation-flow.swift"
+      ],
+      "assertions": [
+        { "text": "The optional method labelCaptureValidationFlowOverlay(_:didUpdateResult:asyncId:fields:frameData:) is added to the LabelCaptureValidationFlowDelegate conformance" },
+        { "text": "The method signature includes: type: LabelResultUpdateType, asyncId: Int, fields: [LabelField], frameData: FrameData? (FrameData is OPTIONAL — `FrameData?`)" },
+        { "text": "The existing required method labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) is preserved" },
+        { "text": "The existing Validation Flow setup is preserved: LabelCaptureValidationFlowOverlay(labelCapture:view:) and the delegate assignment are still present" }
+      ]
+    }
+  ]
+}
