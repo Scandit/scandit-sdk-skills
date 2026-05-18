@@ -7,7 +7,7 @@
     "url": "https://www.scandit.com/"
   },
   "homepage": "https://docs.scandit.com",
-  "repository": "https://github.com/Scandit/skills",
+  "repository": "https://github.com/scandit/skills",
   "license": "MIT",
   "keywords": [
     "scandit",
