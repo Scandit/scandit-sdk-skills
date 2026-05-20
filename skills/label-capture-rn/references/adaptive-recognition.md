@@ -1,8 +1,8 @@
-# Label Capture React Native — Adaptive Recognition
+# Label Capture React Native — Adaptive Recognition Engine (Cloud Fallback)
 
-> **The Adaptive Recognition API is in beta** and may change in future SDK versions. To enable it on a customer's subscription, **contact `support@scandit.com`**. There is no client-side license-key flag — access is granted server-side per Scandit subscription.
+> **The Adaptive Recognition Engine is in beta** and may change in future SDK versions. To enable it on a customer's subscription, **contact `support@scandit.com`**. There is no client-side license-key flag — access is granted server-side per Scandit subscription.
 
-The **Adaptive Recognition Engine (ARE)** is a cloud-based fallback for Label Capture's on-device model. When the on-device model fails to capture a field on a particular frame, the SDK automatically forwards the frame to the cloud model and merges the result back into the capture session. The customer-facing wording from the docs: *"helps making Smart Label Capture more robust and scalable thanks to its larger, more capable model hosted in the cloud. Whenever Smart Label Capture's on-device model fails, the SDK will automatically trigger the Adaptive Recognition Engine."*
+The **Adaptive Recognition Engine (ARE)** — also referred to as the **Cloud Fallback** by some developers — is a cloud-based fallback for Label Capture's on-device model. When the on-device model fails to capture a field on a particular frame, the SDK automatically forwards the frame to the cloud model and merges the result back into the capture session. The customer-facing wording from the docs: *"helps making Smart Label Capture more robust and scalable thanks to its larger, more capable model hosted in the cloud. Whenever Smart Label Capture's on-device model fails, the SDK will automatically trigger the Adaptive Recognition Engine."*
 
 ARE has **two distinct activation paths** — pick one based on the use case.
 
