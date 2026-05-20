@@ -54,6 +54,14 @@ The [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel installs s
 npx skills add scandit/skills
 ```
 
+The CLI does **not** auto-update installed skills. We ship updates as Scandit adds new products, frameworks, and SDK versions — re-run periodically to pull the latest:
+
+```bash
+npx skills update scandit/skills
+```
+
+(Or `npx skills update` to refresh every installed skill at once.)
+
 ### Claude Code plugin
 
 Claude Code can also install the skills as a plugin from the marketplace. Run the commands one at a time:
@@ -66,9 +74,11 @@ Claude Code can also install the skills as a plugin from the marketplace. Run th
 /plugin install scandit-sdk@scandit-plugins
 ```
 
+Auto-update is off by default for third-party marketplaces, so we recommend turning it on: open `/plugin` → **Marketplaces** → select `scandit-plugins` → **Enable auto-update**. See the [Claude Code plugins docs](https://code.claude.com/docs/en/discover-plugins) for details.
+
 ### Cursor plugin
 
-Install the official Scandit plugin in Cursor with one click from the [Cursor marketplace](https://cursor.com/marketplace/scandit).
+Install the official Scandit plugin in Cursor with one click from the [Cursor marketplace](https://cursor.com/marketplace/scandit). Cursor manages plugin updates automatically — installed plugins are kept current through the marketplace without manual action.
 
 ## Using a skill
 
