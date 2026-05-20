@@ -9,26 +9,12 @@ Each skill teaches your coding assistant how to integrate a specific Scandit SDK
 
 ## What you get
 
-Each skill bundles:
+Each integration skill is specific to a product and a framework. Each skill bundles:
 
-- The recommended integration code for a specific SDK (e.g. SparkScan iOS)
+- The recommended integration code for that product + framework (e.g. SparkScan iOS)
 - Up-to-date setup, permissions, and license-key wiring
 - Common customization recipes (modes, callbacks, UI tweaks)
 - Links back to the relevant Scandit documentation
-
-A shared `data-capture-sdk` skill provides cross-cutting integration knowledge (license activation, framework boilerplate, troubleshooting). We recommend installing it alongside any product skill.
-
-## Available skills
-
-| Skill | Description |
-| --- | --- |
-| `data-capture-sdk` | Shared baseline — product selection, license activation, framework boilerplate, troubleshooting. Recommended alongside any product skill. |
-| `sparkscan-{framework}` | [SparkScan](https://docs.scandit.com/sdks/ios/sparkscan/intro/) integration & migration. Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
-| `barcode-capture-{framework}` | [BarcodeCapture](https://docs.scandit.com/sdks/ios/barcode-capture/intro/) (single-barcode scanning) integration & migration — `BarcodeCaptureSettings`, listener wiring, `DataCaptureView` + `BarcodeCaptureOverlay`, camera lifecycle, plus 6→7 and 7→8 deltas. Available for `android`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
-| `matrixscan-ar-{framework}` | [MatrixScan AR](https://docs.scandit.com/sdks/ios/matrixscan-ar/intro/) (Barcode AR) integration & BarcodeBatch → BarcodeAr migration. Available for `android`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
-| `matrixscan-count-{framework}` | [MatrixScan Count](https://docs.scandit.com/sdks/ios/matrixscan-count/intro/) (BarcodeCount) integration — counting against a list, status overlays, capture-list and not-in-list workflows, plus pre-7.6 → 7.6 constructor migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
-| `matrixscan-batch-{framework}` | [MatrixScan Batch](https://docs.scandit.com/sdks/ios/matrixscan/intro/) (BarcodeBatch, formerly BarcodeTracking) integration — tracking sessions, basic-overlay brushes, and per-barcode AR annotations via the advanced overlay. Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
-| `label-capture-{framework}` | [Smart Label Capture](https://docs.scandit.com/sdks/ios/label-capture/intro/) integration & migration (regex renames v7.6→v8.0, Validation Flow redesign v8.1→v8.2, optional update callback v8.2→v8.4). Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
 ## Not sure which product you need?
 
@@ -44,7 +30,19 @@ Install it the same way as any other skill (see [Installation](#installation) be
 /data-capture-sdk here's a photo of the labels we want to capture — what fits best?
 ```
 
-Most agents will also pick the skill up automatically from prompts like _"help me choose a Scandit product"_ or _"which Scandit SDK fits my use case?"_. Once you've landed on a product and platform, the advisor hands you off to the right `sparkscan-*`, `barcode-capture-*`, `matrixscan-*-*`, or `label-capture-*` skill from the table above.
+Most agents will also pick the skill up automatically from prompts like _"help me choose a Scandit product"_ or _"which Scandit SDK fits my use case?"_. Once you've landed on a product and platform, the advisor hands you off to the right `sparkscan-*`, `barcode-capture-*`, `matrixscan-*-*`, or `label-capture-*` skill from the table below.
+
+## Available skills
+
+| Skill | Description |
+| --- | --- |
+| `data-capture-sdk` | Product-selection advisor — recommends the right Scandit product for your use case and hands off to the matching implementation skill. |
+| `sparkscan-{framework}` | [SparkScan](https://docs.scandit.com/sdks/ios/sparkscan/intro/) integration & migration. Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `barcode-capture-{framework}` | [BarcodeCapture](https://docs.scandit.com/sdks/ios/barcode-capture/intro/) (single-barcode scanning) integration & migration — `BarcodeCaptureSettings`, listener wiring, `DataCaptureView` + `BarcodeCaptureOverlay`, camera lifecycle, plus 6→7 and 7→8 deltas. Available for `android`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `matrixscan-ar-{framework}` | [MatrixScan AR](https://docs.scandit.com/sdks/ios/matrixscan-ar/intro/) (Barcode AR) integration & BarcodeBatch → BarcodeAr migration. Available for `android`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `matrixscan-count-{framework}` | [MatrixScan Count](https://docs.scandit.com/sdks/ios/matrixscan-count/intro/) (BarcodeCount) integration — counting against a list, status overlays, capture-list and not-in-list workflows, plus pre-7.6 → 7.6 constructor migration. Available for `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `matrixscan-batch-{framework}` | [MatrixScan Batch](https://docs.scandit.com/sdks/ios/matrixscan/intro/) (BarcodeBatch, formerly BarcodeTracking) integration — tracking sessions, basic-overlay brushes, and per-barcode AR annotations via the advanced overlay. Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
+| `label-capture-{framework}` | [Smart Label Capture](https://docs.scandit.com/sdks/ios/label-capture/intro/) integration & migration (regex renames v7.6→v8.0, Validation Flow redesign v8.1→v8.2, optional update callback v8.2→v8.4). Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
 ## Installation
 
@@ -83,10 +81,6 @@ Two ways the skill is invoked:
   ```
 
 - **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
-
-## Support
-
-If you hit issues with a skill or have questions, search for an existing issue or open a new one in the [GitHub issue tracker](https://github.com/scandit/skills/issues).
 
 ## Contributing
 
